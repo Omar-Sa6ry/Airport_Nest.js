@@ -1,0 +1,10 @@
+{
+  "compilerOptions": {
+    "assets": [
+      {
+        "include": "src/common/translation/locales/**/*",
+        "watchAssets": true
+      }
+    ]
+  }
+}

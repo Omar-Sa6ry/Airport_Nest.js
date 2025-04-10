@@ -1,0 +1,132 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type UserOutput {
+  id: String!
+  firstName: String!
+  lastName: String!
+  phone: String!
+  fullName: String!
+  email: String!
+  passportNumber: Int!
+  nationality: String!
+  dateOfBirth: DateTime!
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+type UserResponse {
+  message: String
+  success: Boolean
+  timeStamp: String
+  statusCode: Float
+  data: UserOutput
+}
+
+type AuthOutPut {
+  user: UserOutput!
+  token: String!
+}
+
+type AuthResponse {
+  message: String
+  success: Boolean
+  timeStamp: String
+  statusCode: Float
+  data: AuthOutPut
+}
+
+type AdminOutput {
+  id: String!
+  firstName: String!
+  lastName: String!
+  fullName: String!
+  phone: String!
+  email: String!
+  role: Role!
+}
+
+"""User roles in the system"""
+enum Role {
+  PILOT
+  ADMIN
+  CREW
+  MANAGER
+}
+
+type AdminResponse {
+  message: String
+  success: Boolean
+  timeStamp: String
+  statusCode: Float
+  data: AdminOutput
+}
+
+type Query {
+  sayHello: String!
+  getUserById(id: String!): UserResponse!
+  getUserByEmail(email: String!): UserResponse!
+  getUserByphone(phone: String!): UserResponse!
+  deleteUser: UserResponse!
+}
+
+type Mutation {
+  register(fcmToken: String!, createUserDto: CreateUserDto!, createPassengerDto: CreatePassengerDto!, avatar: CreateImagDto): AuthResponse!
+  login(fcmToken: String!, loginDto: LoginDto!): AuthResponse!
+  forgotPassword: AuthResponse!
+  resetPassword(resetPasswordDto: ResetPasswordDto!): UserResponse!
+  changePassword(changePasswordDto: ChangePasswordDto!): UserResponse!
+  adminLogin(fcmToken: String!, loginDto: LoginDto!, role: String!): AuthResponse!
+  updateUser(updateUserDto: UpdateUserDto!): UserResponse!
+  UpdateUserRole(id: String!, role: String!): AdminResponse!
+}
+
+input CreateUserDto {
+  firstName: String!
+  lastName: String!
+  email: String!
+  phone: String!
+  password: String!
+}
+
+input CreatePassengerDto {
+  passportNumber: Int!
+  nationality: String!
+  dateOfBirth: DateTime!
+}
+
+input CreateImagDto {
+  name: String
+  breed: String
+  image: Upload!
+}
+
+"""The `Upload` scalar type represents a file upload."""
+scalar Upload
+
+input LoginDto {
+  email: String!
+  password: String!
+}
+
+input ResetPasswordDto {
+  token: String!
+  password: String!
+}
+
+input ChangePasswordDto {
+  password: String!
+  newPassword: String!
+}
+
+input UpdateUserDto {
+  firstName: String
+  lastName: String
+  avatar: CreateImagDto
+  email: String
+  phone: String
+}
