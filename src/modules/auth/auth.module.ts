@@ -11,8 +11,9 @@ import { SendEmailService } from 'src/common/queues/email/sendemail.service'
 import { SequelizeModule } from '@nestjs/sequelize'
 import { WebSocketModule } from 'src/common/websocket/websocket.module'
 import { JwtModule } from './jwt/jwt.module'
-import { Employee } from '../users/entities/employee.model'
+import { Employee } from '../employee/entity/employee.model'
 import { Passenger } from '../users/entities/passenger.model'
+import { AirportModule } from '../airport/airport.module'
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { Passenger } from '../users/entities/passenger.model'
     UserModule,
     RedisModule,
     UploadModule,
+    AirportModule,
     EmailModule,
     WebSocketModule,
     JwtModule,

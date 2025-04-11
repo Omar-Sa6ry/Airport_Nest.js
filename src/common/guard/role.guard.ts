@@ -1,10 +1,10 @@
-import { UserService } from 'src/modules/users/users.service'
-import { User } from 'src/modules/users/entities/user.entity'
 import { GqlExecutionContext } from '@nestjs/graphql'
 import { I18nService } from 'nestjs-i18n'
 import { Reflector } from '@nestjs/core'
 import { JwtService } from '@nestjs/jwt'
+import { InjectModel } from '@nestjs/sequelize'
 import { Request } from 'express'
+import { User } from 'src/modules/users/entities/user.entity'
 import { Role } from '../constant/enum.constant'
 import {
   CanActivate,
@@ -13,9 +13,6 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common'
-import { InjectModel } from '@nestjs/sequelize'
-import { Passenger } from 'src/modules/users/entities/passenger.model'
-import { Employee } from 'src/modules/users/entities/employee.model'
 @Injectable()
 export class RoleGuard implements CanActivate {
   constructor (
@@ -23,8 +20,6 @@ export class RoleGuard implements CanActivate {
     private jwtService: JwtService,
     private reflector: Reflector,
     @InjectModel(User) private userRepo: typeof User,
-    @InjectModel(Passenger) private passengerRepo: typeof Passenger,
-    @InjectModel(Employee) private employeeRepo: typeof Employee,
   ) {}
 
   async canActivate (context: ExecutionContext): Promise<boolean> {
@@ -41,43 +36,27 @@ export class RoleGuard implements CanActivate {
       })
 
       if (payload.id && payload.email) {
-        const user = await (
-          await this.userRepo.findByPk(payload.id)
-        )?.dataValues
+        const user = await (await this.userRepo.findByPk(payload.id))?.dataValues
         if (!user) {
           throw new NotFoundException(
             'User with id ' + payload.id + ' not found',
           )
         }
 
-        const passenger = await this.passengerRepo.findOne({
-          where: { userId: user.id },
-        })
-        if (!passenger) {
-          const employee = await this.employeeRepo.findOne({
-            where: { userId: user.id },
-          })
+        const requiredRoles = await this.reflector.get<Role[]>(
+          'roles',
+          context.getHandler(),
+        )
 
-          const requiredRoles = await this.reflector.get<Role[]>(
-            'roles',
-            context.getHandler(),
-          )
-
-          if (requiredRoles && requiredRoles.includes(employee.role)) {
-            request['user'] = {
-              id: payload.id,
-              email: payload.email,
-            }
-          } else {
-            throw new UnauthorizedException(
-              await this.i18n.t('user.INVALID_TOKEN_PAYLOAD'),
-            )
+        if (requiredRoles && requiredRoles.includes(user.role)) {
+          request['user'] = {
+            id: payload.id,
+            email: payload.email,
           }
-        }
-
-        request['user'] = {
-          id: payload.id,
-          email: payload.email,
+        } else {
+          throw new UnauthorizedException(
+            await this.i18n.t('user.INVALID_TOKEN_PAYLOAD'),
+          )
         }
       } else {
         throw new UnauthorizedException(

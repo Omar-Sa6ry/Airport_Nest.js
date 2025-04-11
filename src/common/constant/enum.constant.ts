@@ -5,6 +5,7 @@ export enum Role {
   ADMIN = 'admin',
   CREW = 'crew',
   MANAGER = 'manager',
+  PASSENGER = 'passenger',
 }
 
 registerEnumType(Role, {

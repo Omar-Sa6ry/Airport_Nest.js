@@ -14,6 +14,7 @@ import { RedisService } from 'src/common/redis/redis.service'
 import { CreatePassengerDto } from './input/CreatePassengerData.dto'
 import { UserResponse } from '../users/dtos/UserResponse.dto'
 import { Auth } from 'src/common/decerator/auth.decerator'
+import { AdminAuthResponse } from './dtos/AdminAuthRes.dto'
 
 @Resolver(of => User)
 export class AuthResolver {
@@ -77,19 +78,18 @@ export class AuthResolver {
     return await this.authService.changePassword(user?.id, changePasswordDto)
   }
 
-  @Mutation(returns => AuthResponse)
+  @Mutation(returns => AdminAuthResponse)
   async adminLogin (
     @Args('fcmToken') fcmToken: string,
     @Args('loginDto') loginDto: LoginDto,
-    @Args('role') role: Role,
-  ): Promise<AuthResponse> {
+  ): Promise<AdminAuthResponse> {
     const userCacheKey = `auth:${loginDto.email}`
     const cachedUser = await this.redisService.get(userCacheKey)
 
-    if (cachedUser instanceof AuthResponse) {
+    if (cachedUser instanceof AdminAuthResponse) {
       return { ...cachedUser }
     }
 
-    return await this.authService.roleLogin(fcmToken, loginDto, role)
+    return await this.authService.roleLogin(fcmToken, loginDto)
   }
 }

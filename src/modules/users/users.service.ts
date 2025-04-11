@@ -1,10 +1,13 @@
 import { User } from './entities/user.entity'
 import { UpdateUserDto } from './dtos/UpdateUser.dto'
 import { RedisService } from 'src/common/redis/redis.service'
-import { Employee } from './entities/employee.model'
+import { Employee } from '../employee/entity/employee.model'
 import { Passenger } from './entities/passenger.model'
 import { UserInput, UserInputResponse } from './input/User.input'
-import { AdminInput, AdminInputResponse } from './input/Admin.input'
+import {
+  EmployeeInput,
+  EmployeeInputResponse,
+} from '../employee/input/Employee.input'
 import { WebSocketMessageGateway } from 'src/common/websocket/websocket.gateway'
 import { UploadService } from '../../common/upload/upload.service'
 import { InjectModel } from '@nestjs/sequelize'
@@ -176,52 +179,5 @@ export class UserService {
     this.uploadService.deleteImage(user.avatar)
     user.destroy()
     return { message: await this.i18n.t('user.DELETED'), data: null }
-  }
-
-  async editUserRole (id: string, role: Role): Promise<AdminInputResponse> {
-    const user = await this.userRepo.findByPk(id)
-    if (!user) {
-      throw new NotFoundException(await this.i18n.t('user.NOT_FOUND'))
-    }
-
-    const passenger = await this.passengerRepo.findOne({
-      where: { userId: user?.id },
-    })
-    if (!(passenger instanceof Passenger))
-      throw new BadRequestException(
-        await this.i18n.t('passenger.PASSENGER_NOT_FOUND'),
-      )
-
-    const transaction = await this.employeeRepo.sequelize.transaction()
-
-    try {
-      passenger.destroy()
-
-      const employee = await this.employeeRepo.create({
-        role,
-        userId: user?.id,
-      })
-      await transaction.commit()
-
-      const userWithEmployee: AdminInput = {
-        ...user.dataValues,
-        ...employee.dataValues,
-      }
-      const relationCacheKey = `user:${user.id}`
-      this.redisService.set(relationCacheKey, userWithEmployee)
-
-      this.websocketGateway.broadcast('userUpdateRole', {
-        userId: user.id,
-        user,
-      })
-
-      return {
-        data: userWithEmployee,
-        message: await this.i18n.t('user.UPDATED'),
-      }
-    } catch (error) {
-      await transaction.rollback()
-      throw error
-    }
   }
 }

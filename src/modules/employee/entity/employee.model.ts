@@ -1,6 +1,6 @@
 import { ObjectType, Field } from '@nestjs/graphql'
-import { User } from './user.entity'
-import { Role } from 'src/common/constant/enum.constant'
+import { Airport } from 'src/modules/airport/entity/airport.model'
+import { User } from '../../users/entities/user.entity'
 import { BaseEntity } from 'src/common/bases/BaseEntity'
 import {
   Column,
@@ -14,24 +14,20 @@ import {
 @ObjectType()
 @Table({ tableName: 'employee', timestamps: true })
 export class Employee extends BaseEntity<Employee> {
-  @Field(() => Role)
-  @Column({ type: DataType.ENUM(...Object.values(Role)) })
-  role: Role
-
   @Field(() => String)
   @ForeignKey(() => User)
   @Column({ type: DataType.STRING(26), allowNull: false, onDelete: 'CASCADE' })
   @Index
   userId: string
-  
+
+  @Field(() => Airport)
+  @ForeignKey(() => Airport)
+  @Column({ type: DataType.STRING(26), allowNull: false, onDelete: 'CASCADE' })
+  airportId: string
+
   @BelongsTo(() => User)
   user: User
 
-  // @Field()
-  // @ForeignKey(() => Airport)
-  // @Column
-  // airportId: number
-
-  // @BelongsTo(() => Airport)
-  // airport: Airport
+  @BelongsTo(() => Airport)
+  airport: Airport
 }

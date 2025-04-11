@@ -1,3 +1,9 @@
 {
-  "employee_NOT_FOUND": "Employee not found"
+  "NOT_FOUND": "Employee not found",
+  "NOT_FOUNDS": "Employees not found",
+  "CREATED": "Employee created successfully",
+  "UPDATED": "Employee updated successfully",
+  "DELETED": "Employee deleted successfully",
+  "ROLE_NOT_FOUND": "Role not found",
+  "ROLE_NOT_Admin": "You don't have permission to perform this action"
 }

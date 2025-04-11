@@ -1,3 +1,6 @@
+import { Passenger } from './passenger.model'
+import { Employee } from '../../employee/entity/employee.model'
+import { Role } from 'src/common/constant/enum.constant'
 import { ObjectType, Field } from '@nestjs/graphql'
 import { Exclude } from 'class-transformer'
 import { BaseEntity } from 'src/common/bases/BaseEntity'
@@ -10,8 +13,6 @@ import {
   DataType,
   HasOne,
 } from 'sequelize-typescript'
-import { Passenger } from './passenger.model'
-import { Employee } from './employee.model'
 
 @ObjectType()
 @Table({ tableName: 'user', timestamps: true })
@@ -46,6 +47,13 @@ export class User extends BaseEntity<User> {
   @Exclude()
   @Column({ type: DataType.STRING, allowNull: false })
   password: string
+
+  @Field(() => Role)
+  @Column({
+    type: DataType.ENUM(...Object.values(Role)),
+    defaultValue: Role.PASSENGER,
+  })
+  role: Role
 
   @Exclude()
   @Column({ type: DataType.STRING, allowNull: true })

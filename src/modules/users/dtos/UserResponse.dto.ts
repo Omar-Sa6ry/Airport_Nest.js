@@ -13,10 +13,10 @@ export class UserOutput {
   lastName: string
 
   @Field(() => String)
-  phone: string
+  fullName: string
 
   @Field(() => String)
-  fullName: string
+  phone: string
 
   @Field(() => String)
   email: string

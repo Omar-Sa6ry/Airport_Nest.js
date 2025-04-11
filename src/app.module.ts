@@ -8,6 +8,8 @@ import { DataBaseModule } from './common/database/database'
 import { ThrottlerModule } from './common/throttler/throttling.module'
 import { AuthModule } from './modules/auth/auth.module'
 import { UserModule } from './modules/users/users.module'
+import { AirportModule } from './modules/airport/airport.module'
+import { EmployeeModule } from './modules/employee/employee.module'
 
 @Module({
   imports: [
@@ -19,6 +21,8 @@ import { UserModule } from './modules/users/users.module'
 
     AuthModule,
     UserModule,
+    EmployeeModule,
+    AirportModule,
   ],
 
   providers: [AppService, AppResolver],

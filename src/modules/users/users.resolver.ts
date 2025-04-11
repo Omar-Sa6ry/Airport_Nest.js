@@ -8,7 +8,7 @@ import { CurrentUser } from 'src/common/decerator/currentUser.decerator'
 import { RedisService } from 'src/common/redis/redis.service'
 import { Auth } from 'src/common/decerator/auth.decerator'
 import { UserResponse } from './dtos/UserResponse.dto'
-import { AdminResponse } from './dtos/AdminResponse.dto'
+import { EmployeeResponse } from '../employee/dto/Employee.response.dto'
 
 @Resolver(() => User)
 export class UserResolver {
@@ -63,14 +63,5 @@ export class UserResolver {
   @Auth(Role.ADMIN, Role.MANAGER)
   async deleteUser (@CurrentUser() user: CurrentUserDto): Promise<UserResponse> {
     return await this.usersService.deleteUser(user.id)
-  }
-
-  @Mutation(returns => AdminResponse)
-  // @Auth(Role.ADMIN, Role.MANAGER)
-  async UpdateUserRole (
-    @Args('id') id: string,
-    @Args('role') role: Role,
-  ): Promise<AdminResponse> {
-    return await this.usersService.editUserRole(id, role)
   }
 }

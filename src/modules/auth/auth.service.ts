@@ -9,9 +9,8 @@ import { ResetPasswordDto } from './dtos/ResetPassword.dto'
 import { LoginDto } from './dtos/Login.dto'
 import { ComparePassword } from './utils/comparePassword'
 import { SendEmailService } from 'src/common/queues/email/sendemail.service'
-import { Role } from 'src/common/constant/enum.constant'
 import { Passenger } from '../users/entities/passenger.model'
-import { Employee } from '../users/entities/employee.model'
+import { Employee } from '../employee/entity/employee.model'
 import { CreatePassengerDto } from './input/CreatePassengerData.dto'
 import { CreateImagDto } from 'src/common/upload/dtos/createImage.dto'
 import { RedisService } from 'src/common/redis/redis.service'
@@ -25,22 +24,25 @@ import { UserInput, UserInputResponse } from '../users/input/User.input'
 import {
   BadRequestException,
   Injectable,
-  UnauthorizedException,
+  NotFoundException,
 } from '@nestjs/common'
+import { EmployeeInput } from '../employee/input/Employee.input'
+import { AuthEmployeeInputResponse } from './input/AuthEmployee'
+import { AirportService } from '../airport/airport.service'
 
 @Injectable()
 export class AuthService {
   constructor (
     private readonly i18n: I18nService,
-    private userService: UserService,
-    private generateToken: GenerateToken,
+    private readonly generateToken: GenerateToken,
+    private readonly airportService: AirportService,
     private readonly redisService: RedisService,
     private readonly uploadService: UploadService,
     private readonly sendEmailService: SendEmailService,
     private readonly websocketGateway: WebSocketMessageGateway,
     @InjectModel(User) private userRepo: typeof User,
     @InjectModel(Passenger) private passengerRepo: typeof Passenger,
-    @InjectModel(Employee) private EmployeeRepo: typeof Employee,
+    @InjectModel(Employee) private employeeRepo: typeof Employee,
   ) {}
 
   async register (
@@ -168,7 +170,7 @@ export class AuthService {
     })
 
     if (!(user instanceof User))
-      throw new BadRequestException(await this.i18n.t('user.EMAIL_WRONG'))
+      throw new NotFoundException(await this.i18n.t('user.EMAIL_WRONG'))
 
     const token = randomBytes(32).toString('hex')
     user.resetToken = token
@@ -246,7 +248,7 @@ export class AuthService {
     try {
       const user = await this.userRepo.findByPk(id)
       if (!user)
-        throw new BadRequestException(await this.i18n.t('user.EMAIL_WRONG'))
+        throw new NotFoundException(await this.i18n.t('user.EMAIL_WRONG'))
 
       const isMatch = await ComparePassword(password, user.password)
       if (!isMatch)
@@ -286,24 +288,18 @@ export class AuthService {
   async roleLogin (
     fcmToken: string,
     loginDto: LoginDto,
-    role: Role,
-  ): Promise<AuthInputResponse> {
+  ): Promise<AuthEmployeeInputResponse> {
     const { email, password } = loginDto
 
-    let user = await this.userService.findByEmail(email.toLowerCase())
+    let user = await this.userRepo.findOne({ where: { email } })
     if (!(user instanceof User))
       throw new BadRequestException(await this.i18n.t('user.EMAIL_WRONG'))
 
-    const employee = await this.EmployeeRepo.findOne({
+    const employee = await this.employeeRepo.findOne({
       where: { userId: user.id },
     })
     if (!employee)
-      throw new BadRequestException(
-        await this.i18n.t('employee.employee_NOT_FOUND'),
-      )
-
-    if (employee.role !== role)
-      throw new UnauthorizedException(await this.i18n.t('user.NOT_ADMIN'))
+      throw new BadRequestException(await this.i18n.t('employee.NOT_FOUND'))
 
     await ComparePassword(password, user?.password)
     const token = await this.generateToken.jwt(user?.email, user?.id)
@@ -312,26 +308,24 @@ export class AuthService {
     user.fcmToken = fcmToken
     await user.save()
 
-    const passenger = await this.passengerRepo.findOne({
-      where: { userId: user.id },
-    })
-    if (!passenger)
-      throw new BadRequestException(
-        await this.i18n.t('passenger.PASSENGER_NOT_FOUND'),
-      )
+    const airport = (await this.airportService.findById(employee.airportId))
+      ?.data
+    if (!airport)
+      throw new NotFoundException(await this.i18n.t('airport.NOT_FOUND'))
 
-    const userWithPassenger: UserInput = {
+    const userWithEmployee: EmployeeInput = {
       ...user.dataValues,
-      ...passenger.dataValues,
+      ...employee.dataValues,
+      airport,
     }
-    const result: AuthInputResponse = {
-      data: { user: userWithPassenger, token },
+    const result: AuthEmployeeInputResponse = {
+      data: { user: userWithEmployee, token },
       statusCode: 201,
       message: await this.i18n.t('user.CREATED'),
     }
 
     const relationCacheKey = `user:${user.id}`
-    this.redisService.set(relationCacheKey, userWithPassenger)
+    this.redisService.set(relationCacheKey, userWithEmployee)
 
     const relationCacheKey2 = `auth:${user.id}`
     this.redisService.set(relationCacheKey2, result)

@@ -7,7 +7,7 @@ import { UploadService } from '../../common/upload/upload.service'
 import { EmailModule } from 'src/common/queues/email/email.module'
 import { SequelizeModule } from '@nestjs/sequelize'
 import { WebSocketModule } from 'src/common/websocket/websocket.module'
-import { Employee } from './entities/employee.model'
+import { Employee } from '../employee/entity/employee.model'
 import { Passenger } from './entities/passenger.model'
 
 @Module({
@@ -18,6 +18,6 @@ import { Passenger } from './entities/passenger.model'
     RedisModule,
   ],
   providers: [UserService, UserResolver, UploadService],
-  exports: [UserService],
+  exports: [SequelizeModule, UserService],
 })
 export class UserModule {}
