@@ -49,7 +49,7 @@ export class EmployeeService {
         await this.airportService.findById(airportId)
       )?.data
       if (!airport) {
-        throw new NotFoundException(await this.i18n.t('airort.NOT_FOUND'))
+        throw new NotFoundException(await this.i18n.t('airport.NOT_FOUND'))
       }
 
       const employee = await this.employeeRepo.create(
@@ -100,7 +100,7 @@ export class EmployeeService {
       await this.airportService.findById(employee.airportId)
     )?.data
     if (!airport) {
-      throw new NotFoundException(await this.i18n.t('airort.NOT_FOUND'))
+      throw new NotFoundException(await this.i18n.t('airport.NOT_FOUND'))
     }
 
     const userWithemployee: EmployeeInput = {
@@ -130,7 +130,7 @@ export class EmployeeService {
       await this.airportService.findById(employee.airportId)
     )?.data
     if (!airport) {
-      throw new NotFoundException(await this.i18n.t('airort.NOT_FOUND'))
+      throw new NotFoundException(await this.i18n.t('airport.NOT_FOUND'))
     }
 
     const userWithemployee: EmployeeInput = {
@@ -160,7 +160,7 @@ export class EmployeeService {
       await this.airportService.findById(employee.airportId)
     )?.data
     if (!airport) {
-      throw new NotFoundException(await this.i18n.t('airort.NOT_FOUND'))
+      throw new NotFoundException(await this.i18n.t('airport.NOT_FOUND'))
     }
 
     const userWithemployee: EmployeeInput = {
@@ -220,7 +220,7 @@ export class EmployeeService {
         await this.airportService.findById(employee.airportId)
       )?.data
       if (!airport) {
-        throw new NotFoundException(await this.i18n.t('airort.NOT_FOUND'))
+        throw new NotFoundException(await this.i18n.t('airport.NOT_FOUND'))
       }
 
       const userWithEmployee: EmployeeInput = {
@@ -269,7 +269,7 @@ export class EmployeeService {
         await this.airportService.findById(employee.airportId)
       )?.data
       if (!airport) {
-        throw new NotFoundException(await this.i18n.t('airort.NOT_FOUND'))
+        throw new NotFoundException(await this.i18n.t('airport.NOT_FOUND'))
       }
 
       const userWithEmployee: EmployeeInput = {

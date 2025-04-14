@@ -2,6 +2,19 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
+type Terminal {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  name: String!
+  airportId: Airport!
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
 type Airport {
   id: ID!
   createdAt: DateTime!
@@ -13,11 +26,6 @@ type Airport {
   country: String!
   timezone: String!
 }
-
-"""
-A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
-"""
-scalar DateTime
 
 type UserOutput {
   id: String!
@@ -140,6 +148,36 @@ type AdminAuthResponse {
   data: AdminAuthOutPut
 }
 
+type TerminalOutput {
+  id: String!
+  name: String!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  airport: Airport!
+}
+
+type TerminalResponse {
+  message: String
+  success: Boolean
+  timeStamp: String
+  statusCode: Float
+  data: TerminalOutput
+}
+
+type TerminalsOutput {
+  airport: Airport!
+  terminals: [Terminal!]!
+}
+
+type TerminalsResponse {
+  message: String
+  success: Boolean
+  timeStamp: String
+  statusCode: Float
+  items: TerminalsOutput
+  pagination: PaginationInfo
+}
+
 type Query {
   sayHello: String!
   getUserById(id: String!): UserResponse!
@@ -154,6 +192,14 @@ type Query {
   getEmployeeByphone(phone: String!): EmployeeResponse!
   deleteEmployee: EmployeeResponse!
   employeesInAirport(airportId: String!, page: Int, limit: Int): EmployeesResponse!
+  terminalById(id: String!): TerminalResponse!
+  terminalByData(findTerminalDto: FindTerminalDto!): TerminalResponse!
+  allTerminalsInAirport(airportId: String!, page: Int, limit: Int): TerminalsResponse!
+}
+
+input FindTerminalDto {
+  name: String
+  airportId: String
 }
 
 type Mutation {
@@ -170,6 +216,9 @@ type Mutation {
   createEmployee(userId: String!, airportId: String!, role: String!): EmployeeResponse!
   UpdateEmployeeRoleToAdmin(id: String!): EmployeeResponse!
   UpdateEmployeeRoleInairport(id: String!, role: String!): EmployeeResponse!
+  createTerminal(createTerminalDto: CreateTerminalDto!): TerminalResponse!
+  updateTerminal(updateTerminalDto: UpdateTerminalDto!): TerminalResponse!
+  deleteTerminal(id: String!): TerminalResponse!
 }
 
 input CreateUserDto {
@@ -234,4 +283,15 @@ input UpdateAirportDto {
   city: String
   country: String
   timezone: String
+}
+
+input CreateTerminalDto {
+  name: String
+  airportId: String
+}
+
+input UpdateTerminalDto {
+  name: String
+  airportId: String
+  id: String!
 }

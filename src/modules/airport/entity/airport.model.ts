@@ -1,7 +1,8 @@
-import { Table, Column, Model, DataType, HasMany } from 'sequelize-typescript'
-import { ObjectType, Field, ID } from '@nestjs/graphql'
+import { Table, Column, DataType, HasMany } from 'sequelize-typescript'
+import { ObjectType, Field } from '@nestjs/graphql'
 import { BaseEntity } from 'src/common/bases/BaseEntity'
 import { Employee } from 'src/modules/employee/entity/employee.model'
+import { Terminal } from 'src/modules/terminal/entity/terminal.model'
 
 @ObjectType()
 @Table({ tableName: 'airport', timestamps: true })
@@ -32,4 +33,7 @@ export class Airport extends BaseEntity<Airport> {
 
   @HasMany(() => Employee, { onDelete: 'SET NULL' })
   employees: Employee[]
+
+  @HasMany(() => Terminal, { onDelete: 'SET NULL' })
+  terminals: Terminal[]
 }

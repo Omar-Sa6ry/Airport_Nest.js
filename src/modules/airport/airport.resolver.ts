@@ -75,4 +75,5 @@ export class AirportResolver {
   ): Promise<AirportsResponse> {
     return this.airportService.findAll(page, limit)
   }
+  
 }

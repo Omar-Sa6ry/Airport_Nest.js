@@ -10,6 +10,7 @@ import { AuthModule } from './modules/auth/auth.module'
 import { UserModule } from './modules/users/users.module'
 import { AirportModule } from './modules/airport/airport.module'
 import { EmployeeModule } from './modules/employee/employee.module'
+import { TerminalModule } from './modules/terminal/terminal.module'
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { EmployeeModule } from './modules/employee/employee.module'
     UserModule,
     EmployeeModule,
     AirportModule,
+    TerminalModule,
   ],
 
   providers: [AppService, AppResolver],
