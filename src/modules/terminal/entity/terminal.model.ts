@@ -22,7 +22,7 @@ import {
 })
 export class Terminal extends BaseEntity<Terminal> {
   @Field(() => String)
-  @Column({ type: DataType.STRING, allowNull: false })
+  @Column({ type: DataType.STRING(10), allowNull: false })
   name: string
 
   @Field(() => Airport)

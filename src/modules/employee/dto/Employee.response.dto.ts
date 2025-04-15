@@ -3,7 +3,7 @@ import { IsOptional } from 'class-validator'
 import { BaseResponse } from 'src/common/bases/BaseResponse'
 import { Role } from 'src/common/constant/enum.constant'
 import { PaginationInfo } from 'src/common/dtos/pagintion'
-import { AirportOutput } from 'src/modules/airport/dtos/airport.response'
+import { Airport } from 'src/modules/airport/entity/airport.model'
 
 @ObjectType()
 export class EmployeeOutput {
@@ -27,21 +27,36 @@ export class EmployeeOutput {
 
   @Field(() => Role)
   role: Role
+}
 
-  @Field(() => AirportOutput)
-  airport: AirportOutput
+@ObjectType()
+export class EmployeeWithAirportInput {
+  @Field(() => EmployeeOutput)
+  employee: EmployeeOutput
+
+  @Field(() => Airport)
+  airport: Airport
 }
 
 @ObjectType()
 export class EmployeeResponse extends BaseResponse {
-  @Field(() => EmployeeOutput, { nullable: true })
-  data: EmployeeOutput
+  @Field(() => EmployeeWithAirportInput, { nullable: true })
+  data: EmployeeWithAirportInput
+}
+
+@ObjectType()
+export class EmployeesWithAirportOtput {
+  @Field(() => [EmployeeOutput])
+  employees: EmployeeOutput[]
+
+  @Field(() => Airport)
+  airport: Airport
 }
 
 @ObjectType()
 export class EmployeesResponse extends BaseResponse {
-  @Field(() => [EmployeeOutput], { nullable: true })
-  items: EmployeeOutput[]
+  @Field(() => EmployeesWithAirportOtput, { nullable: true })
+  items: EmployeesWithAirportOtput
 
   @IsOptional()
   @Field(() => PaginationInfo, { nullable: true })

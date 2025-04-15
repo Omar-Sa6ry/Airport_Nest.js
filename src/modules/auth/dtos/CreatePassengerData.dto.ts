@@ -1,5 +1,5 @@
 import { Field, InputType, Int } from '@nestjs/graphql'
-import { IsString, IsDate, IsInt } from 'class-validator'
+import { IsString, IsDate, IsInt, MaxLength } from 'class-validator'
 
 @InputType()
 export class CreatePassengerDto {
@@ -9,6 +9,7 @@ export class CreatePassengerDto {
 
   @Field(() => String)
   @IsString()
+  @MaxLength(50)
   nationality: string
 
   @Field(() => Date)

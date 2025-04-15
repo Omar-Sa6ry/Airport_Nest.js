@@ -19,7 +19,7 @@ export class Passenger extends BaseEntity<Passenger> {
   passportNumber: number
 
   @Field(() => String)
-  @Column({ type: 'varchar', allowNull: false })
+  @Column({ type: DataType.STRING, allowNull: false })
   nationality: string
 
   @Field(() => Date)

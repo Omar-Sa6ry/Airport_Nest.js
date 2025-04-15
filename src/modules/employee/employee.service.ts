@@ -6,7 +6,6 @@ import {
 import { WebSocketMessageGateway } from 'src/common/websocket/websocket.gateway'
 import { RedisService } from 'src/common/redis/redis.service'
 import { User } from '../users/entities/user.entity'
-import { AirportService } from '../airport/airport.service'
 import { Limit, Page } from 'src/common/constant/messages.constant'
 import { Airport } from '../airport/entity/airport.model'
 import { EmployeeLoader } from './loader/Employee.loader'
@@ -26,7 +25,6 @@ export class EmployeeService {
     private readonly i18n: I18nService,
     private readonly redisService: RedisService,
     private readonly websocketGateway: WebSocketMessageGateway,
-    private readonly airportService: AirportService,
     private readonly employeeLoader: EmployeeLoader,
     @InjectModel(Airport) private airportRepo: typeof Airport,
     @InjectModel(User) private userRepo: typeof User,
@@ -45,9 +43,7 @@ export class EmployeeService {
         throw new NotFoundException(await this.i18n.t('user.NOT_FOUND'))
       }
 
-      const airport = await (
-        await this.airportService.findById(airportId)
-      )?.data
+      const airport = await this.airportRepo.findByPk(airportId)
       if (!airport) {
         throw new NotFoundException(await this.i18n.t('airport.NOT_FOUND'))
       }
@@ -61,13 +57,15 @@ export class EmployeeService {
       await user.save({ transaction })
       await transaction.commit()
 
-      const userWithEmployee: EmployeeInput = {
-        ...user.dataValues,
-        ...employee.dataValues,
-        airport,
+      const result: EmployeeInputResponse = {
+        data: {
+          employee: { ...user.dataValues, ...employee.dataValues },
+          airport: airport.dataValues,
+        },
       }
+
       const relationCacheKey = `user:${user.id}`
-      this.redisService.set(relationCacheKey, userWithEmployee)
+      this.redisService.set(relationCacheKey, result)
 
       this.websocketGateway.broadcast('employeeCreate', {
         userId: user.id,
@@ -75,7 +73,7 @@ export class EmployeeService {
       })
 
       return {
-        data: userWithEmployee,
+        data: result.data,
         message: await this.i18n.t('employee.CREATED'),
       }
     } catch (error) {
@@ -96,22 +94,25 @@ export class EmployeeService {
     if (!employee)
       throw new BadRequestException(await this.i18n.t('employee.NOT_FOUND'))
 
-    const airport = await (
-      await this.airportService.findById(employee.airportId)
-    )?.data
+    const airport = await this.airportRepo.findByPk(employee.airportId)
     if (!airport) {
       throw new NotFoundException(await this.i18n.t('airport.NOT_FOUND'))
     }
 
-    const userWithemployee: EmployeeInput = {
-      ...user.dataValues,
-      ...employee.dataValues,
-      airport,
+    const result: EmployeeInputResponse = {
+      data: {
+        employee: {
+          ...user.dataValues,
+          ...employee.dataValues,
+        },
+        airport: airport.dataValues,
+      },
     }
-    const userCacheKey = `user:${user.id}`
-    this.redisService.set(userCacheKey, userWithemployee)
 
-    return { data: userWithemployee }
+    const userCacheKey = `user:${user.id}`
+    this.redisService.set(userCacheKey, result)
+
+    return result
   }
 
   async findByPhone (phone: string): Promise<EmployeeInputResponse> {
@@ -126,22 +127,25 @@ export class EmployeeService {
     if (!employee)
       throw new BadRequestException(await this.i18n.t('employee.NOT_FOUND'))
 
-    const airport = await (
-      await this.airportService.findById(employee.airportId)
-    )?.data
+    const airport = await this.airportRepo.findByPk(employee.airportId)
     if (!airport) {
       throw new NotFoundException(await this.i18n.t('airport.NOT_FOUND'))
     }
 
-    const userWithemployee: EmployeeInput = {
-      ...user.dataValues,
-      ...employee.dataValues,
-      airport,
+    const result: EmployeeInputResponse = {
+      data: {
+        employee: {
+          ...user.dataValues,
+          ...employee.dataValues,
+        },
+        airport: airport.dataValues,
+      },
     }
-    const userCacheKey = `user:${user.id}`
-    this.redisService.set(userCacheKey, userWithemployee)
 
-    return { data: userWithemployee }
+    const userCacheKey = `user:${user.id}`
+    this.redisService.set(userCacheKey, result)
+
+    return result
   }
 
   async findByEmail (email: string): Promise<EmployeeInputResponse> {
@@ -156,22 +160,25 @@ export class EmployeeService {
     if (!employee)
       throw new BadRequestException(await this.i18n.t('employee.NOT_FOUND'))
 
-    const airport = await (
-      await this.airportService.findById(employee.airportId)
-    )?.data
+    const airport = await this.airportRepo.findByPk(employee.airportId)
     if (!airport) {
       throw new NotFoundException(await this.i18n.t('airport.NOT_FOUND'))
     }
 
-    const userWithemployee: EmployeeInput = {
-      ...user.dataValues,
-      ...employee.dataValues,
-      airport,
+    const result: EmployeeInputResponse = {
+      data: {
+        employee: {
+          ...user.dataValues,
+          ...employee.dataValues,
+        },
+        airport: airport.dataValues,
+      },
     }
-    const userCacheKey = `user:${user.id}`
-    this.redisService.set(userCacheKey, userWithemployee)
 
-    return { data: userWithemployee }
+    const userCacheKey = `user:${user.id}`
+    this.redisService.set(userCacheKey, result)
+
+    return result
   }
 
   async delete (id: string): Promise<EmployeeInputResponse> {
@@ -185,7 +192,7 @@ export class EmployeeService {
     if (!employee)
       throw new BadRequestException(await this.i18n.t('employee.NOT_FOUND'))
 
-    employee.destroy()
+    await employee.destroy()
     return { message: await this.i18n.t('employee.DELETED'), data: null }
   }
 
@@ -193,10 +200,10 @@ export class EmployeeService {
     id: string,
     role: Role,
   ): Promise<EmployeeInputResponse> {
-    if (role !== Role.PILOT && role !== Role.CREW)
-      throw new BadRequestException(
-        await this.i18n.t('employee.ROLE_NOT_FOUND'),
-      )
+    // if (role !== Role.PILOT && role !== Role.CREW)
+    //   throw new BadRequestException(
+    //     await this.i18n.t('employee.ROLE_NOT_FOUND'),
+    //   )
 
     const transaction = await this.employeeRepo.sequelize.transaction()
 
@@ -211,25 +218,29 @@ export class EmployeeService {
       })
       if (!(employee instanceof Employee))
         throw new BadRequestException(await this.i18n.t('employee.NOT_FOUND'))
+
       user.role = role
       await user.save({ transaction })
 
       await transaction.commit()
 
-      const airport = await (
-        await this.airportService.findById(employee.airportId)
-      )?.data
+      const airport = await this.airportRepo.findByPk(employee.airportId)
       if (!airport) {
         throw new NotFoundException(await this.i18n.t('airport.NOT_FOUND'))
       }
 
-      const userWithEmployee: EmployeeInput = {
-        ...user.dataValues,
-        ...employee.dataValues,
-        airport,
+      const result: EmployeeInputResponse = {
+        data: {
+          employee: {
+            ...user.dataValues,
+            ...employee.dataValues,
+          },
+          airport: airport.dataValues,
+        },
       }
+
       const relationCacheKey = `user:${user.id}`
-      this.redisService.set(relationCacheKey, userWithEmployee)
+      this.redisService.set(relationCacheKey, result)
 
       this.websocketGateway.broadcast('userUpdateRole', {
         userId: user.id,
@@ -237,7 +248,7 @@ export class EmployeeService {
       })
 
       return {
-        data: userWithEmployee,
+        data: result.data,
         message: await this.i18n.t('employee.UPDATED'),
       }
     } catch (error) {
@@ -246,7 +257,7 @@ export class EmployeeService {
     }
   }
 
-  async editUserRoleToAdmin (id: string): Promise<EmployeeInputResponse> {
+  async editUserRoleToManager (id: string): Promise<EmployeeInputResponse> {
     const transaction = await this.employeeRepo.sequelize.transaction()
 
     try {
@@ -260,25 +271,29 @@ export class EmployeeService {
       })
       if (!(employee instanceof Employee))
         throw new BadRequestException(await this.i18n.t('employee.NOT_FOUND'))
-      user.role = Role.ADMIN
+
+      user.role = Role.MANAGER
       await user.save({ transaction })
 
       await transaction.commit()
 
-      const airport = await (
-        await this.airportService.findById(employee.airportId)
-      )?.data
+      const airport = await this.airportRepo.findByPk(employee.airportId)
       if (!airport) {
         throw new NotFoundException(await this.i18n.t('airport.NOT_FOUND'))
       }
 
-      const userWithEmployee: EmployeeInput = {
-        ...user.dataValues,
-        ...employee.dataValues,
-        airport,
+      const result: EmployeeInputResponse = {
+        data: {
+          employee: {
+            ...user.dataValues,
+            ...employee.dataValues,
+          },
+          airport: airport.dataValues,
+        },
       }
+
       const relationCacheKey = `user:${user.id}`
-      this.redisService.set(relationCacheKey, userWithEmployee)
+      this.redisService.set(relationCacheKey, result)
 
       this.websocketGateway.broadcast('userUpdateRole', {
         userId: user.id,
@@ -286,7 +301,7 @@ export class EmployeeService {
       })
 
       return {
-        data: userWithEmployee,
+        data: result.data,
         message: await this.i18n.t('employee.UPDATED'),
       }
     } catch (error) {
@@ -329,16 +344,13 @@ export class EmployeeService {
     })
 
     const result: EmployeeInputsResponse = {
-      items,
+      items: { employees: items, airport: airport?.dataValues },
       pagination: {
         totalItems: total,
         currentPage: page,
         totalPages: Math.ceil(total / limit),
       },
     }
-
-    const relationCacheKey = `employee-from-airportId:${airport.id}`
-    this.redisService.set(relationCacheKey, result)
 
     return result
   }

@@ -19,6 +19,7 @@ import { AirportModule } from '../airport/airport.module'
   imports: [
     SequelizeModule.forFeature([User, Employee, Passenger]),
     UserModule,
+    // AirportModule,
     RedisModule,
     UploadModule,
     AirportModule,

@@ -7,6 +7,8 @@ import { TerminalResolver } from './terminal.resolver'
 import { TerminalService } from './terminal.service'
 import { Terminal } from './entity/terminal.model'
 import { Airport } from '../airport/entity/airport.model'
+import { AirportService } from '../airport/airport.service'
+import { EmployeeLoader } from '../employee/loader/Employee.loader'
 
 @Module({
   imports: [
@@ -15,6 +17,11 @@ import { Airport } from '../airport/entity/airport.model'
     WebSocketModule,
     RedisModule,
   ],
-  providers: [TerminalResolver, TerminalService],
+  providers: [
+    TerminalResolver,
+    TerminalService,
+    AirportService,
+    EmployeeLoader,
+  ],
 })
 export class TerminalModule {}

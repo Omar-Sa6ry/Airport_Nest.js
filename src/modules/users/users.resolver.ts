@@ -8,7 +8,6 @@ import { CurrentUser } from 'src/common/decerator/currentUser.decerator'
 import { RedisService } from 'src/common/redis/redis.service'
 import { Auth } from 'src/common/decerator/auth.decerator'
 import { UserResponse } from './dtos/UserResponse.dto'
-import { EmployeeResponse } from '../employee/dto/Employee.response.dto'
 
 @Resolver(() => User)
 export class UserResolver {
@@ -51,7 +50,7 @@ export class UserResolver {
   }
 
   @Mutation(returns => UserResponse)
-  @Auth(Role.ADMIN, Role.MANAGER)
+  @Auth(Role.ADMIN, Role.MANAGER,Role.CREW,Role.PILOT,Role.SECURITY,Role.FLIGHT_ATTENDANT,Role.GROUND_STAFF)
   async updateUser (
     @Args('updateUserDto') updateUserDto: UpdateUserDto,
     @CurrentUser() user: CurrentUserDto,

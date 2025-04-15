@@ -1,18 +1,32 @@
-import { Args, Int, Mutation, Query, Resolver } from '@nestjs/graphql'
 import { CreateAirportDto } from './dtos/CreateAirport.dto'
 import { UpdateAirportDto } from './dtos/UpdateAirport.dto'
 import { AirportService } from './airport.service'
 import { Airport } from './entity/airport.model'
+import { Terminal } from '../terminal/entity/terminal.model'
 import { Auth } from 'src/common/decerator/auth.decerator'
 import { Role } from 'src/common/constant/enum.constant'
 import { RedisService } from 'src/common/redis/redis.service'
 import { AirportResponse, AirportsResponse } from './dtos/airport.response'
+import { TerminalService } from '../terminal/terminal.service'
+import { EmployeesResponse } from '../employee/dto/Employee.response.dto'
+import { EmployeeService } from '../employee/employee.service'
+import {
+  Args,
+  Int,
+  Mutation,
+  Parent,
+  Query,
+  ResolveField,
+  Resolver,
+} from '@nestjs/graphql'
 
 @Resolver(of => Airport)
 export class AirportResolver {
   constructor (
     private readonly redisService: RedisService,
-    private readonly airportService: AirportService,
+    private airportService: AirportService,
+    private employeeService: EmployeeService,
+    private termoinalService: TerminalService,
   ) {}
 
   @Mutation(() => AirportResponse)
@@ -24,6 +38,7 @@ export class AirportResolver {
   }
 
   @Mutation(() => AirportResponse)
+  @Auth(Role.ADMIN, Role.MANAGER)
   async updateAirport (
     @Args('id') id: string,
     @Args('updateAirportDto') updateAirportDto: UpdateAirportDto,
@@ -32,16 +47,13 @@ export class AirportResolver {
   }
 
   @Mutation(() => AirportResponse)
+  @Auth(Role.ADMIN, Role.MANAGER)
   async deleteAirport (@Args('id') id: string): Promise<AirportResponse> {
     return this.airportService.delete(id)
   }
 
   @Query(() => AirportResponse)
-  async airportById (
-    @Args('id') id: string,
-    @Args('page', { type: () => Int, nullable: true }) page?: number,
-    @Args('limit', { type: () => Int, nullable: true }) limit?: number,
-  ): Promise<AirportResponse> {
+  async airportById (@Args('id') id: string): Promise<AirportResponse> {
     const airportCacheKey = `airport:${id}`
     const cachedAirport = await this.redisService.get(airportCacheKey)
 
@@ -49,15 +61,11 @@ export class AirportResolver {
       return { ...cachedAirport }
     }
 
-    return this.airportService.findById(id, page, limit)
+    return this.airportService.findById(id)
   }
 
   @Query(() => AirportResponse)
-  async airportByName (
-    @Args('name') name: string,
-    @Args('page', { type: () => Int, nullable: true }) page?: number,
-    @Args('limit', { type: () => Int, nullable: true }) limit?: number,
-  ): Promise<AirportResponse> {
+  async airportByName (@Args('name') name: string): Promise<AirportResponse> {
     const airportCacheKey = `airport-name:${name}`
     const cachedAirport = await this.redisService.get(airportCacheKey)
 
@@ -65,7 +73,7 @@ export class AirportResolver {
       return { ...cachedAirport }
     }
 
-    return this.airportService.findByName(name, page, limit)
+    return this.airportService.findByName(name)
   }
 
   @Query(() => AirportsResponse)
@@ -75,5 +83,32 @@ export class AirportResolver {
   ): Promise<AirportsResponse> {
     return this.airportService.findAll(page, limit)
   }
-  
+
+  @ResolveField(() => EmployeesResponse)
+  async employees (
+    @Parent() airport: Airport,
+    @Args('page', { type: () => Int, nullable: true }) page?: number,
+    @Args('limit', { type: () => Int, nullable: true }) limit?: number,
+  ): Promise<EmployeesResponse> {
+    const employees = await this.employeeService.findEmployeeInAirport(
+      airport.id,
+      page,
+      limit,
+    )
+    return employees
+  }
+
+  @ResolveField(() => [Terminal])
+  async terminals (
+    @Parent() airport: Airport,
+    @Args('page', { type: () => Int, nullable: true }) page?: number,
+    @Args('limit', { type: () => Int, nullable: true }) limit?: number,
+  ): Promise<Terminal[]> {
+    const terminals = await this.termoinalService.findTerminalsInAirport(
+      airport.id,
+      page,
+      limit,
+    )
+    return terminals.items
+  }
 }

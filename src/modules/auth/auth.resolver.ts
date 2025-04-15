@@ -1,8 +1,8 @@
-import { Args, Mutation, Resolver } from '@nestjs/graphql'
+import { Args, Mutation, Parent, ResolveField, Resolver } from '@nestjs/graphql'
 import { AuthService } from './auth.service'
 import { User } from '../users/entities/user.entity'
 import { AuthResponse } from './dtos/AuthRes.dto'
-import { CreateUserDto } from './input/CreateUserData.dto'
+import { CreateUserDto } from './dtos/CreateUserData.dto'
 import { LoginDto } from './dtos/Login.dto'
 import { ResetPasswordDto } from './dtos/ResetPassword.dto'
 import { ChangePasswordDto } from './dtos/ChangePassword.dto'
@@ -11,16 +11,20 @@ import { CurrentUser } from 'src/common/decerator/currentUser.decerator'
 import { CurrentUserDto } from 'src/common/dtos/currentUser.dto'
 import { Role } from 'src/common/constant/enum.constant'
 import { RedisService } from 'src/common/redis/redis.service'
-import { CreatePassengerDto } from './input/CreatePassengerData.dto'
+import { CreatePassengerDto } from './dtos/CreatePassengerData.dto'
 import { UserResponse } from '../users/dtos/UserResponse.dto'
 import { Auth } from 'src/common/decerator/auth.decerator'
 import { AdminAuthResponse } from './dtos/AdminAuthRes.dto'
+// import { Airport } from '../airport/entity/airport.model'
+// import { AirportService } from '../airport/airport.service'
+// import { Employee } from '../employee/entity/employee.model'
 
 @Resolver(of => User)
 export class AuthResolver {
   constructor (
     private readonly redisService: RedisService,
     private authService: AuthService,
+    // private airportService: AirportService,
   ) {}
 
   @Mutation(returns => AuthResponse)
@@ -92,4 +96,10 @@ export class AuthResolver {
 
     return await this.authService.roleLogin(fcmToken, loginDto)
   }
+
+  // @ResolveField(() => Airport)
+  // async airport (@Parent() employee: Employee): Promise<Airport> {
+  //   const airport = await this.airportService.findById(employee.airportId)
+  //   return airport?.data?.airport
+  // }
 }

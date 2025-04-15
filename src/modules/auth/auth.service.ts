@@ -1,5 +1,4 @@
 import { Op } from 'sequelize'
-import { UserService } from '../users/users.service'
 import { GenerateToken } from './jwt/jwt.service'
 import { User } from '../users/entities/user.entity'
 import { HashPassword } from './utils/hashPassword'
@@ -11,10 +10,14 @@ import { ComparePassword } from './utils/comparePassword'
 import { SendEmailService } from 'src/common/queues/email/sendemail.service'
 import { Passenger } from '../users/entities/passenger.model'
 import { Employee } from '../employee/entity/employee.model'
-import { CreatePassengerDto } from './input/CreatePassengerData.dto'
+import { CreatePassengerDto } from './dtos/CreatePassengerData.dto'
 import { CreateImagDto } from 'src/common/upload/dtos/createImage.dto'
 import { RedisService } from 'src/common/redis/redis.service'
-import { CreateUserDto } from './input/CreateUserData.dto'
+import { CreateUserDto } from './dtos/CreateUserData.dto'
+import { EmployeeInput } from '../employee/input/Employee.input'
+import { AuthEmployeeInputResponse } from './input/AuthEmployee'
+import { AirportService } from '../airport/airport.service'
+import { Role } from 'src/common/constant/enum.constant'
 import { UploadService } from '../../common/upload/upload.service'
 import { AuthInputResponse } from './input/Auth.input'
 import { InjectModel } from '@nestjs/sequelize'
@@ -26,9 +29,6 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common'
-import { EmployeeInput } from '../employee/input/Employee.input'
-import { AuthEmployeeInputResponse } from './input/AuthEmployee'
-import { AirportService } from '../airport/airport.service'
 
 @Injectable()
 export class AuthService {
@@ -84,6 +84,15 @@ export class AuthService {
         },
         { transaction },
       )
+
+      // first user is admin automatic
+      const users = await this.userRepo.findAll({
+        limit: 2,
+      })
+      if (users.length < 1) {
+        user.role = Role.ADMIN
+        await user.save({ transaction })
+      }
 
       await transaction.commit()
 
@@ -316,7 +325,6 @@ export class AuthService {
     const userWithEmployee: EmployeeInput = {
       ...user.dataValues,
       ...employee.dataValues,
-      airport,
     }
     const result: AuthEmployeeInputResponse = {
       data: { user: userWithEmployee, token },

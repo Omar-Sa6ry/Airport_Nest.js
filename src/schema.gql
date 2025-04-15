@@ -8,6 +8,7 @@ type Terminal {
   updatedAt: DateTime!
   name: String!
   airportId: Airport!
+  airport: Airport!
 }
 
 """
@@ -24,7 +25,8 @@ type Airport {
   icaoCode: String!
   city: String!
   country: String!
-  timezone: String!
+  employees(page: Int, limit: Int): EmployeesResponse!
+  terminals(page: Int, limit: Int): [Terminal!]!
 }
 
 type UserOutput {
@@ -66,7 +68,7 @@ type PaginationInfo {
   totalItems: Int!
 }
 
-type EmployeeOutputType {
+type EmployeeOutput {
   id: String!
   firstName: String!
   lastName: String!
@@ -78,44 +80,19 @@ type EmployeeOutputType {
 
 """User roles in the system"""
 enum Role {
+  CREW
   PILOT
   ADMIN
-  CREW
   MANAGER
   PASSENGER
+  SECURITY
+  GROUND_STAFF
+  FLIGHT_ATTENDANT
 }
 
-type AirportOutput {
+type EmployeeWithAirportInput {
+  employee: EmployeeOutput!
   airport: Airport!
-  employees: [EmployeeOutputType!]
-}
-
-type AirportsResponse {
-  message: String
-  success: Boolean
-  timeStamp: String
-  statusCode: Float
-  items: [AirportOutput!]
-  pagination: PaginationInfo
-}
-
-type AirportResponse {
-  message: String
-  success: Boolean
-  timeStamp: String
-  statusCode: Float
-  data: AirportOutput
-}
-
-type EmployeeOutput {
-  id: String!
-  firstName: String!
-  lastName: String!
-  fullName: String!
-  phone: String!
-  email: String!
-  role: Role!
-  airport: AirportOutput!
 }
 
 type EmployeeResponse {
@@ -123,7 +100,12 @@ type EmployeeResponse {
   success: Boolean
   timeStamp: String
   statusCode: Float
-  data: EmployeeOutput
+  data: EmployeeWithAirportInput
+}
+
+type EmployeesWithAirportOtput {
+  employees: [EmployeeOutput!]!
+  airport: Airport!
 }
 
 type EmployeesResponse {
@@ -131,7 +113,7 @@ type EmployeesResponse {
   success: Boolean
   timeStamp: String
   statusCode: Float
-  items: [EmployeeOutput!]
+  items: EmployeesWithAirportOtput
   pagination: PaginationInfo
 }
 
@@ -148,12 +130,29 @@ type AdminAuthResponse {
   data: AdminAuthOutPut
 }
 
-type TerminalOutput {
-  id: String!
-  name: String!
-  createdAt: DateTime!
-  updatedAt: DateTime!
+type AirportsOutput {
+  airports: [Airport!]!
+}
+
+type AirportsResponse {
+  message: String
+  success: Boolean
+  timeStamp: String
+  statusCode: Float
+  items: AirportsOutput
+  pagination: PaginationInfo
+}
+
+type AirportOutput {
   airport: Airport!
+}
+
+type AirportResponse {
+  message: String
+  success: Boolean
+  timeStamp: String
+  statusCode: Float
+  data: AirportOutput
 }
 
 type TerminalResponse {
@@ -161,12 +160,7 @@ type TerminalResponse {
   success: Boolean
   timeStamp: String
   statusCode: Float
-  data: TerminalOutput
-}
-
-type TerminalsOutput {
-  airport: Airport!
-  terminals: [Terminal!]!
+  data: Terminal
 }
 
 type TerminalsResponse {
@@ -174,7 +168,7 @@ type TerminalsResponse {
   success: Boolean
   timeStamp: String
   statusCode: Float
-  items: TerminalsOutput
+  items: [Terminal!]
   pagination: PaginationInfo
 }
 
@@ -184,13 +178,12 @@ type Query {
   getUserByEmail(email: String!): UserResponse!
   getUserByphone(phone: String!): UserResponse!
   deleteUser: UserResponse!
-  airportById(id: String!, page: Int, limit: Int): AirportResponse!
-  airportByName(name: String!, page: Int, limit: Int): AirportResponse!
+  airportById(id: String!): AirportResponse!
+  airportByName(name: String!): AirportResponse!
   allAirports(page: Int, limit: Int): AirportsResponse!
   getEmployeeById(id: String!): EmployeeResponse!
   getEmployeeByEmail(email: String!): EmployeeResponse!
   getEmployeeByphone(phone: String!): EmployeeResponse!
-  deleteEmployee: EmployeeResponse!
   employeesInAirport(airportId: String!, page: Int, limit: Int): EmployeesResponse!
   terminalById(id: String!): TerminalResponse!
   terminalByData(findTerminalDto: FindTerminalDto!): TerminalResponse!
@@ -214,6 +207,7 @@ type Mutation {
   updateAirport(id: String!, updateAirportDto: UpdateAirportDto!): AirportResponse!
   deleteAirport(id: String!): AirportResponse!
   createEmployee(userId: String!, airportId: String!, role: String!): EmployeeResponse!
+  deleteEmployee: EmployeeResponse!
   UpdateEmployeeRoleToAdmin(id: String!): EmployeeResponse!
   UpdateEmployeeRoleInairport(id: String!, role: String!): EmployeeResponse!
   createTerminal(createTerminalDto: CreateTerminalDto!): TerminalResponse!
@@ -273,7 +267,6 @@ input CreateAirportDto {
   icaoCode: String!
   city: String!
   country: String!
-  timezone: String!
 }
 
 input UpdateAirportDto {
@@ -282,7 +275,6 @@ input UpdateAirportDto {
   icaoCode: String
   city: String
   country: String
-  timezone: String
 }
 
 input CreateTerminalDto {

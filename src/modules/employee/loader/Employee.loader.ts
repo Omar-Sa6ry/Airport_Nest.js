@@ -73,15 +73,14 @@ export class EmployeeLoader {
             }
 
             return {
-              ...emp.dataValues,
-              ...user.dataValues,
+              ...emp?.dataValues,
+              ...user?.dataValues,
             }
           })
 
           const p: EmployeeInput = {
-            ...employee.dataValues,
-            ...user.dataValues,
-            airport: { airport, employees: employeesInAirportWithUser },
+            ...employee?.dataValues,
+            ...user?.dataValues,
           }
 
           return p

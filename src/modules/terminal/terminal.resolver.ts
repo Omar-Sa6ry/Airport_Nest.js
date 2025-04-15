@@ -1,4 +1,12 @@
-import { Args, Int, Mutation, Query, Resolver } from '@nestjs/graphql'
+import {
+  Args,
+  Int,
+  Mutation,
+  Parent,
+  Query,
+  ResolveField,
+  Resolver,
+} from '@nestjs/graphql'
 import { Auth } from 'src/common/decerator/auth.decerator'
 import { Role } from 'src/common/constant/enum.constant'
 import { RedisService } from 'src/common/redis/redis.service'
@@ -8,12 +16,16 @@ import { TerminalResponse, TerminalsResponse } from './dtos/Terminal.response'
 import { CreateTerminalDto } from './dtos/CreateTerminal.dto'
 import { UpdateTerminalDto } from './dtos/UpdateTerminal.dto'
 import { FindTerminalDto } from './dtos/FindTerminal.dto copy'
+import { Airport } from '../airport/entity/airport.model'
+import { AirportInputResponse } from '../airport/input/Airport.input'
+import { AirportService } from '../airport/airport.service'
 
 @Resolver(of => Terminal)
 export class TerminalResolver {
   constructor (
     private readonly redisService: RedisService,
-    private readonly terminalService: TerminalService,
+    private terminalService: TerminalService,
+    private airportService: AirportService,
   ) {}
 
   @Mutation(() => TerminalResponse)
@@ -64,5 +76,18 @@ export class TerminalResolver {
     @Args('limit', { type: () => Int, nullable: true }) limit?: number,
   ): Promise<TerminalsResponse> {
     return this.terminalService.findTerminalsInAirport(airportId, page, limit)
+  }
+
+  @ResolveField(() => Airport)
+  async airport (@Parent() terminal: Terminal): Promise<Airport> {
+    const cacheKey = `airport:${terminal.airportId}`
+
+    const cachedAirport = await this.redisService.get(cacheKey)
+    if (cachedAirport instanceof AirportInputResponse) {
+      return cachedAirport?.data?.airport
+    }
+
+    const airport = await this.airportService.findById(terminal.airportId)
+    return airport?.data?.airport
   }
 }

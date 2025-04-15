@@ -65,7 +65,7 @@ export class EmployeeResolver {
     return await this.employeeService.findByPhone(phone)
   }
 
-  @Query(returns => EmployeeResponse)
+  @Mutation(returns => EmployeeResponse)
   @Auth(Role.ADMIN, Role.MANAGER)
   async deleteEmployee (
     @CurrentUser() user: CurrentUserDto,
@@ -79,26 +79,19 @@ export class EmployeeResolver {
     @Args('page', { type: () => Int, nullable: true }) page?: number,
     @Args('limit', { type: () => Int, nullable: true }) limit?: number,
   ): Promise<EmployeesResponse> {
-    const airportCacheKey = `employee-from-airportId:${airportId}`
-    const cachedAirport = await this.redisService.get(airportCacheKey)
-
-    if (cachedAirport instanceof EmployeesResponse) {
-      return { ...cachedAirport }
-    }
-
     return this.employeeService.findEmployeeInAirport(airportId, page, limit)
   }
 
   @Mutation(returns => EmployeeResponse)
-  @Auth(Role.MANAGER)
+  @Auth(Role.ADMIN)
   async UpdateEmployeeRoleToAdmin (
     @Args('id') id: string,
   ): Promise<EmployeeResponse> {
-    return await this.employeeService.editUserRoleToAdmin(id)
+    return await this.employeeService.editUserRoleToManager(id)
   }
 
   @Mutation(returns => EmployeeResponse)
-  @Auth(Role.ADMIN)
+  @Auth(Role.MANAGER)
   async UpdateEmployeeRoleInairport (
     @Args('id') id: string,
     @Args('role') role: Role,

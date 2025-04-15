@@ -1,21 +1,24 @@
 import { Field, InputType } from '@nestjs/graphql'
-import { IsOptional, IsString } from 'class-validator'
+import { IsOptional, IsString, MaxLength } from 'class-validator'
 
 @InputType()
 export class UpdateAirportDto {
   @IsOptional()
   @Field(() => String, { nullable: true })
   @IsString()
+  @MaxLength(50)
   name?: string
 
   @IsOptional()
   @Field(() => String, { nullable: true })
   @IsString()
+  @MaxLength(3)
   iataCode?: string
 
   @IsOptional()
   @Field(() => String, { nullable: true })
   @IsString()
+  @MaxLength(4)
   icaoCode?: string
 
   @IsOptional()
@@ -27,9 +30,4 @@ export class UpdateAirportDto {
   @Field(() => String, { nullable: true })
   @IsString()
   country?: string
-
-  @IsOptional()
-  @Field(() => String, { nullable: true })
-  @IsString()
-  timezone?: string
 }

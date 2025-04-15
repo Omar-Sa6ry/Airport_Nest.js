@@ -1,9 +1,10 @@
+import { ObjectType, Field, ID } from '@nestjs/graphql'
 import { Passenger } from './passenger.model'
 import { Employee } from '../../employee/entity/employee.model'
 import { Role } from 'src/common/constant/enum.constant'
-import { ObjectType, Field } from '@nestjs/graphql'
 import { Exclude } from 'class-transformer'
-import { BaseEntity } from 'src/common/bases/BaseEntity'
+import { ulid } from 'ulid'
+import { Model } from 'sequelize-typescript'
 import {
   Column,
   Table,
@@ -16,7 +17,15 @@ import {
 
 @ObjectType()
 @Table({ tableName: 'user', timestamps: true })
-export class User extends BaseEntity<User> {
+export class User extends Model<User> {
+  @Field(() => ID)
+  @Column({
+    type: DataType.STRING(26),
+    primaryKey: true,
+    defaultValue: () => ulid(),
+  })
+  id: string
+
   @Field(() => String)
   @Column({ type: DataType.STRING, allowNull: false })
   firstName: string
@@ -64,7 +73,7 @@ export class User extends BaseEntity<User> {
   resetTokenExpiry?: Date
 
   @Exclude()
-  @Column({ type: DataType.STRING, allowNull: true })
+  @Column({ type: DataType.STRING(255), allowNull: true })
   fcmToken?: string
 
   @HasOne(() => Passenger, { foreignKey: 'userId', onDelete: 'SET NULL' })

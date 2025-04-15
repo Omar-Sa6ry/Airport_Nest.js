@@ -1,3 +1,4 @@
+import { Sequelize } from 'sequelize-typescript'
 import { NestFactory, Reflector } from '@nestjs/core'
 import { AppModule } from './app.module'
 import { ClassSerializerInterceptor, ValidationPipe } from '@nestjs/common'
@@ -11,6 +12,9 @@ async function bootstrap () {
   app.useGlobalInterceptors(new GeneralResponseInterceptor())
   app.use(graphqlUploadExpress({ maxFileSize: 1000000, maxFiles: 2 }))
   app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)))
+
+  const sequelize = app.get(Sequelize)
+  await sequelize.sync({ alter: true })
 
   await app.listen(process.env.PORT)
 }
