@@ -19,6 +19,8 @@ import { FindTerminalDto } from './dtos/FindTerminal.dto copy'
 import { Airport } from '../airport/entity/airport.model'
 import { AirportInputResponse } from '../airport/input/Airport.input'
 import { AirportService } from '../airport/airport.service'
+import { GateService } from '../gate/gate.service'
+import { Gate } from '../gate/entity/gate.model'
 
 @Resolver(of => Terminal)
 export class TerminalResolver {
@@ -26,6 +28,7 @@ export class TerminalResolver {
     private readonly redisService: RedisService,
     private terminalService: TerminalService,
     private airportService: AirportService,
+    private gateService: GateService,
   ) {}
 
   @Mutation(() => TerminalResponse)
@@ -89,5 +92,19 @@ export class TerminalResolver {
 
     const airport = await this.airportService.findById(terminal.airportId)
     return airport?.data?.airport
+  }
+
+  @ResolveField(() => [Gate])
+  async gates (
+    @Parent() terminal: Terminal,
+    @Args('page', { type: () => Int, nullable: true }) page?: number,
+    @Args('limit', { type: () => Int, nullable: true }) limit?: number,
+  ): Promise<Gate[]> {
+    const gates = await this.gateService.findGatesInTerminal(
+      terminal.id,
+      page,
+      limit,
+    )
+    return gates.items.gates
   }
 }

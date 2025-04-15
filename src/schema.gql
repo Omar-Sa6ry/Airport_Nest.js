@@ -2,6 +2,19 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
+type Gate {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  gateNumber: String!
+  terminalId: String!
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
 type Terminal {
   id: ID!
   createdAt: DateTime!
@@ -9,12 +22,8 @@ type Terminal {
   name: String!
   airportId: Airport!
   airport: Airport!
+  gates(page: Int, limit: Int): [Gate!]!
 }
-
-"""
-A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
-"""
-scalar DateTime
 
 type Airport {
   id: ID!
@@ -172,6 +181,34 @@ type TerminalsResponse {
   pagination: PaginationInfo
 }
 
+type GateOutput {
+  id: String!
+  gateNumber: String!
+  terminal: Terminal!
+}
+
+type GateResponse {
+  message: String
+  success: Boolean
+  timeStamp: String
+  statusCode: Float
+  data: GateOutput
+}
+
+type GateOutputs {
+  gates: [Gate!]!
+  terminal: Terminal!
+}
+
+type GatesResponse {
+  message: String
+  success: Boolean
+  timeStamp: String
+  statusCode: Float
+  items: GateOutputs
+  pagination: PaginationInfo
+}
+
 type Query {
   sayHello: String!
   getUserById(id: String!): UserResponse!
@@ -188,6 +225,8 @@ type Query {
   terminalById(id: String!): TerminalResponse!
   terminalByData(findTerminalDto: FindTerminalDto!): TerminalResponse!
   allTerminalsInAirport(airportId: String!, page: Int, limit: Int): TerminalsResponse!
+  gateById(id: String!): GateResponse!
+  gatesByTerminal(terminalId: String!, page: Int, limit: Int): GatesResponse!
 }
 
 input FindTerminalDto {
@@ -213,6 +252,9 @@ type Mutation {
   createTerminal(createTerminalDto: CreateTerminalDto!): TerminalResponse!
   updateTerminal(updateTerminalDto: UpdateTerminalDto!): TerminalResponse!
   deleteTerminal(id: String!): TerminalResponse!
+  createGate(createGateDto: CreateGateDto!): GateResponse!
+  updateGate(id: String!, gateNumber: String!): GateResponse!
+  deleteGate(id: String!): GateResponse!
 }
 
 input CreateUserDto {
@@ -286,4 +328,9 @@ input UpdateTerminalDto {
   name: String
   airportId: String
   id: String!
+}
+
+input CreateGateDto {
+  gateNumber: String!
+  terminalId: String!
 }

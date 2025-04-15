@@ -11,6 +11,7 @@ import { UserModule } from './modules/users/users.module'
 import { AirportModule } from './modules/airport/airport.module'
 import { EmployeeModule } from './modules/employee/employee.module'
 import { TerminalModule } from './modules/terminal/terminal.module'
+import { GateModule } from './modules/gate/gate.module'
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { TerminalModule } from './modules/terminal/terminal.module'
     EmployeeModule,
     AirportModule,
     TerminalModule,
+    GateModule,
   ],
 
   providers: [AppService, AppResolver],

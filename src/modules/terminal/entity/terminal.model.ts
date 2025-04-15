@@ -7,7 +7,9 @@ import {
   BelongsTo,
   ForeignKey,
   DataType,
+  HasMany,
 } from 'sequelize-typescript'
+import { Gate } from 'src/modules/gate/entity/gate.model'
 
 @ObjectType()
 @Table({
@@ -32,4 +34,7 @@ export class Terminal extends BaseEntity<Terminal> {
 
   @BelongsTo(() => Airport)
   airport: Airport
+
+  @HasMany(() => Gate, { foreignKey: 'terminalId', onDelete: 'SET NULL' })
+  gates: Gate
 }

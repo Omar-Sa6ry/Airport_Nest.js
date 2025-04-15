@@ -9,10 +9,12 @@ import { Terminal } from './entity/terminal.model'
 import { Airport } from '../airport/entity/airport.model'
 import { AirportService } from '../airport/airport.service'
 import { EmployeeLoader } from '../employee/loader/Employee.loader'
+import { GateService } from '../gate/gate.service'
+import { Gate } from '../gate/entity/gate.model'
 
 @Module({
   imports: [
-    SequelizeModule.forFeature([Airport, Terminal]),
+    SequelizeModule.forFeature([Airport, Gate, Terminal]),
     UserModule,
     WebSocketModule,
     RedisModule,
@@ -21,6 +23,7 @@ import { EmployeeLoader } from '../employee/loader/Employee.loader'
     TerminalResolver,
     TerminalService,
     AirportService,
+    GateService,
     EmployeeLoader,
   ],
 })
