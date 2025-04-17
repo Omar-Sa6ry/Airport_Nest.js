@@ -3,6 +3,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config'
 import { SequelizeModule, SequelizeModuleOptions } from '@nestjs/sequelize'
 import { Airport } from 'src/modules/airport/entity/airport.model'
 import { Employee } from 'src/modules/employee/entity/employee.model'
+import { Flight } from 'src/modules/flight/entity/flight.model'
 import { Gate } from 'src/modules/gate/entity/gate.model'
 import { Terminal } from 'src/modules/terminal/entity/terminal.model'
 import { Passenger } from 'src/modules/users/entities/passenger.model'
@@ -19,7 +20,7 @@ import { User } from 'src/modules/users/entities/user.entity'
         username: configService.get<string>('DB_USERNAME'),
         password: configService.get<string>('DB_PASSWORD'),
         database: configService.get<string>('DB_NAME'),
-        models: [User, Passenger, Employee, Airport, Terminal, Gate],
+        models: [User, Passenger, Employee, Airport, Terminal, Gate, Flight],
         autoLoadModels: true,
         synchronize: true,
         logging: false,

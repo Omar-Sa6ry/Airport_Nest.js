@@ -10,8 +10,16 @@ export enum Role {
   GROUND_STAFF = 'ground_staff',
   FLIGHT_ATTENDANT = 'flight_attendant',
 }
-
 registerEnumType(Role, {
   name: 'Role',
   description: 'User roles in the system',
 })
+
+export enum FlightStatus {
+  SCHEDULED = 'scheduled',
+  DELAYED = 'delayed',
+  CANCELLED = 'cancelled',
+  IN_AIR = 'in_air',
+  LANDED = 'landed',
+}
+registerEnumType(FlightStatus, { name: 'FlightStatus' })
