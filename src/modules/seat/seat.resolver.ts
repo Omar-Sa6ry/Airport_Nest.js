@@ -1,0 +1,99 @@
+import { SeatService } from './seat.service'
+import { Seat } from './entity/seat.model'
+import { CreateSeatInput } from './inputs/CreateSeat.input'
+import { UpdateSeatInput } from './inputs/UpdateSeat.input'
+import { FindSeatInput } from './inputs/FindSeat.input'
+import { SeatResponse, SeatsResponse } from './dto/Seat.response'
+import { RedisService } from 'src/common/redis/redis.service'
+import { FlightResponse } from '../flight/dtos/Flight.response'
+import { Auth } from 'src/common/decerator/auth.decerator'
+import { Role } from 'src/common/constant/enum.constant'
+import { Flight } from '../flight/entity/flight.model'
+import { FlightService } from '../flight/flight.service'
+import {
+  Resolver,
+  Query,
+  Mutation,
+  Args,
+  ID,
+  Int,
+  ResolveField,
+  Parent,
+} from '@nestjs/graphql'
+
+@Resolver(() => Seat)
+export class SeatResolver {
+  constructor (
+    private readonly redisService: RedisService,
+    private readonly seatService: SeatService,
+    private readonly flightService: FlightService,
+  ) {}
+
+  @Mutation(() => SeatResponse)
+  @Auth(Role.AIRLINE_MANAGER)
+  async createSeat (
+    @Args('createSeatInput') createSeatInput: CreateSeatInput,
+  ): Promise<SeatResponse> {
+    return this.seatService.create(createSeatInput)
+  }
+
+  @Query(() => SeatResponse)
+  async findSeatById (
+    @Args('id', { type: () => ID }) id: string,
+  ): Promise<SeatResponse> {
+    const cachedSeat = await this.redisService.get(`seat:${id}`)
+
+    if (cachedSeat instanceof SeatResponse) {
+      return cachedSeat
+    }
+
+    return this.seatService.findById(id)
+  }
+
+  @Query(() => SeatsResponse)
+  async findAllAvailableSeatsInFlight (
+    @Args('findSeatInput') findSeatInput: FindSeatInput,
+    @Args('page', { type: () => Int, nullable: true }) page?: number,
+    @Args('limit', { type: () => Int, nullable: true }) limit?: number,
+  ): Promise<SeatsResponse> {
+    return this.seatService.findAllAvaliableInFlight(findSeatInput, page, limit)
+  }
+
+  @Mutation(() => SeatResponse)
+  @Auth(Role.PASSENGER)
+  async bookSeat (
+    @Args('id', { type: () => ID }) id: string,
+  ): Promise<SeatResponse> {
+    return this.seatService.bookSeat(id)
+  }
+
+  @Mutation(() => SeatResponse)
+  @Auth(Role.PASSENGER)
+  async unBookSeat (
+    @Args('id', { type: () => ID }) id: string,
+  ): Promise<SeatResponse> {
+    return this.seatService.unBookSeat(id)
+  }
+
+  @Mutation(() => SeatResponse)
+  @Auth(Role.AIRLINE_MANAGER)
+  async updateSeat (
+    @Args('id', { type: () => ID }) id: string,
+    @Args('updateSeatInput') updateSeatInput: UpdateSeatInput,
+  ): Promise<SeatResponse> {
+    return this.seatService.update(id, updateSeatInput)
+  }
+
+  @Mutation(() => SeatResponse)
+  @Auth(Role.AIRLINE_MANAGER)
+  async deleteSeat (
+    @Args('id', { type: () => ID }) id: string,
+  ): Promise<SeatResponse> {
+    return this.seatService.delete(id)
+  }
+
+  @ResolveField(() => FlightResponse)
+  async flight (@Parent() seat: Seat): Promise<FlightResponse> {
+    return await this.flightService.findById(seat.flightId)
+  }
+}

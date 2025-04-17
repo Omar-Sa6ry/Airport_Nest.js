@@ -96,6 +96,7 @@ enum Role {
   PASSENGER
   SECURITY
   GROUND_STAFF
+  AIRLINE_MANAGER
   FLIGHT_ATTENDANT
 }
 
@@ -290,6 +291,40 @@ type FlightsToAirportResponse {
   pagination: PaginationInfo
 }
 
+type Seat {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  flightId: String!
+  seatNumber: Int!
+  class: TicketClass!
+  isAvailable: Boolean!
+  flight: FlightResponse!
+}
+
+enum TicketClass {
+  ECONOMY
+  BUSINESS
+  FIRST
+}
+
+type SeatResponse {
+  message: String
+  success: Boolean
+  timeStamp: String
+  statusCode: Float
+  data: Seat
+}
+
+type SeatsResponse {
+  message: String
+  success: Boolean
+  timeStamp: String
+  statusCode: Float
+  items: [Seat!]
+  pagination: PaginationInfo
+}
+
 type Query {
   sayHello: String!
   getUserById(id: String!): UserResponse!
@@ -312,6 +347,8 @@ type Query {
   getFlightByData(findOptions: FlightOptinalInput!): FlightResponse!
   getAllFlightsToAitport(id: String!): FlightsToAirportResponse!
   getAllFlightsFromAitport(id: String!): FlightsFromAirportResponse!
+  findSeatById(id: ID!): SeatResponse!
+  findAllAvailableSeatsInFlight(findSeatInput: FindSeatInput!, page: Int, limit: Int): SeatsResponse!
 }
 
 input FindTerminalDto {
@@ -324,6 +361,11 @@ input FlightOptinalInput {
   status: FlightStatus
   leaveAt: DateTime
   arriveAt: DateTime
+}
+
+input FindSeatInput {
+  flightId: String!
+  class: TicketClass
 }
 
 type Mutation {
@@ -353,6 +395,11 @@ type Mutation {
   changeFlightGate(flightId: String!, gateId: String!): FlightResponse!
   cancelFlight(id: String!): FlightResponse!
   delayFlight(id: String!, delayTime: Float!): FlightResponse!
+  createSeat(createSeatInput: CreateSeatInput!): SeatResponse!
+  bookSeat(id: ID!): SeatResponse!
+  unBookSeat(id: ID!): SeatResponse!
+  updateSeat(id: ID!, updateSeatInput: UpdateSeatInput!): SeatResponse!
+  deleteSeat(id: ID!): SeatResponse!
 }
 
 input CreateUserDto {
@@ -440,4 +487,16 @@ input CreateFlightInput {
   gateId: String!
   leaveAt: DateTime!
   arriveAt: DateTime!
+}
+
+input CreateSeatInput {
+  flightId: String!
+  seatNumber: Int!
+  class: TicketClass!
+}
+
+input UpdateSeatInput {
+  seatNumber: Int
+  class: TicketClass
+  isAvailable: Boolean
 }

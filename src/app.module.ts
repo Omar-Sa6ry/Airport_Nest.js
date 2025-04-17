@@ -13,6 +13,7 @@ import { EmployeeModule } from './modules/employee/employee.module'
 import { TerminalModule } from './modules/terminal/terminal.module'
 import { GateModule } from './modules/gate/gate.module'
 import { FlightModule } from './modules/flight/flight.module'
+import { SeatModule } from './modules/seat/seat.module'
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { FlightModule } from './modules/flight/flight.module'
     TerminalModule,
     GateModule,
     FlightModule,
+    SeatModule,
   ],
 
   providers: [AppService, AppResolver],

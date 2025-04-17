@@ -1,5 +1,6 @@
 import { Field, ObjectType } from '@nestjs/graphql'
 import { BaseEntity } from 'src/common/bases/BaseEntity'
+import { Seat } from 'src/modules/seat/entity/Seat.model'
 import { FlightStatus } from 'src/common/constant/enum.constant'
 import { Airport } from 'src/modules/airport/entity/airport.model'
 import { Gate } from 'src/modules/gate/entity/gate.model'
@@ -9,6 +10,7 @@ import {
   DataType,
   ForeignKey,
   BelongsTo,
+  HasMany,
 } from 'sequelize-typescript'
 
 @ObjectType()
@@ -53,6 +55,9 @@ export class Flight extends BaseEntity<Flight> {
     defaultValue: FlightStatus.SCHEDULED,
   })
   status: FlightStatus
+
+  @HasMany(() => Seat, { onDelete: 'SET NULL' })
+  seats: Seat[]
 
   @Field(() => Gate)
   @BelongsTo(() => Gate, 'gateId')
