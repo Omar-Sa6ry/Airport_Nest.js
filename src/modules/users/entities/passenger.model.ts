@@ -1,5 +1,6 @@
 import { ObjectType, Field, Int } from '@nestjs/graphql'
 import { User } from './user.entity'
+import { Ticket } from 'src/modules/ticket/entity/ticket.model'
 import { BaseEntity } from 'src/common/bases/BaseEntity'
 import {
   Column,
@@ -8,6 +9,7 @@ import {
   BelongsTo,
   ForeignKey,
   DataType,
+  HasMany,
 } from 'sequelize-typescript'
 
 @ObjectType()
@@ -34,4 +36,7 @@ export class Passenger extends BaseEntity<Passenger> {
 
   @BelongsTo(() => User)
   user: User
+
+  @HasMany(() => Ticket, { onDelete: 'SET NULL' })
+  tickets: Ticket[]
 }

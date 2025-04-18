@@ -1,3 +1,4 @@
+import { Op } from 'sequelize'
 import { Injectable, NotFoundException } from '@nestjs/common'
 import { InjectModel } from '@nestjs/sequelize'
 import { I18nService } from 'nestjs-i18n'
@@ -81,7 +82,7 @@ export class GateService {
       throw new NotFoundException(await this.i18n.t('terminal.NOT_FOUND'))
 
     const gateInputResponse: GateInputResponse = {
-      data: { ...gate.dataValues, terminal },
+      data: { ...gate.dataValues, terminal: terminal.dataValues },
     }
 
     this.redisService.set(`gate:${gate.id}`, gateInputResponse)
@@ -94,17 +95,15 @@ export class GateService {
     page: number = Page,
     limit: number = Limit,
   ): Promise<GateInputsResponse> {
-    const terminal = await this.terminalRepo.findOne({
-      where: { id: terminalId },
-      order: [['createdAt', 'DESC']],
-      offset: (page - 1) * limit,
-      limit,
-    })
+    const terminal = await this.terminalRepo.findOne({})
     if (!terminal)
       throw new NotFoundException(await this.i18n.t('terminal.NOT_FOUND'))
 
     const { rows: gates, count: total } = await this.gateRepo.findAndCountAll({
       where: { terminalId },
+      order: [['createdAt', 'DESC']],
+      offset: (page - 1) * limit,
+      limit,
     })
     if (!gates.length)
       throw new NotFoundException(await this.i18n.t('gate.NOT_FOUNDS'))
@@ -119,6 +118,17 @@ export class GateService {
     }
 
     return gatesInputResponse
+  }
+
+  async findAll (keys: string[]): Promise<Gate[]> {
+    const gates = await this.gateRepo.findAll({
+      where: { id: { [Op.in]: keys } },
+      order: [['createdAt', 'DESC']],
+    })
+    if (!gates.length)
+      throw new NotFoundException(await this.i18n.t('gate.NOT_FOUNDS'))
+
+    return gates
   }
 
   async update (id: string, gateNumber: string): Promise<GateInputResponse> {

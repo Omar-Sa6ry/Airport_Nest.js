@@ -7,12 +7,11 @@ import { UploadService } from '../../common/upload/upload.service'
 import { EmailModule } from 'src/common/queues/email/email.module'
 import { SequelizeModule } from '@nestjs/sequelize'
 import { WebSocketModule } from 'src/common/websocket/websocket.module'
-import { Employee } from '../employee/entity/employee.model'
 import { Passenger } from './entities/passenger.model'
 
 @Module({
   imports: [
-    SequelizeModule.forFeature([User, Employee, Passenger]),
+    SequelizeModule.forFeature([User, Passenger]),
     EmailModule,
     WebSocketModule,
     RedisModule,

@@ -11,10 +11,11 @@ import { AirportService } from '../airport/airport.service'
 import { EmployeeLoader } from '../employee/loader/Employee.loader'
 import { GateService } from '../gate/gate.service'
 import { Gate } from '../gate/entity/gate.model'
+import { Employee } from '../employee/entity/employee.model'
 
 @Module({
   imports: [
-    SequelizeModule.forFeature([Airport, Gate, Terminal]),
+    SequelizeModule.forFeature([Airport, Gate, Employee, Terminal]),
     UserModule,
     WebSocketModule,
     RedisModule,

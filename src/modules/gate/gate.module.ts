@@ -16,5 +16,6 @@ import { GateService } from './gate.service'
     RedisModule,
   ],
   providers: [GateResolver, GateService],
+  exports: [GateService, SequelizeModule],
 })
 export class GateModule {}

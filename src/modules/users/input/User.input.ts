@@ -1,10 +1,13 @@
-import { Field, InputType, Int, ObjectType } from '@nestjs/graphql'
+import { Field, InputType, Int } from '@nestjs/graphql'
 import { BaseResponse } from 'src/common/bases/BaseResponse'
 
 @InputType()
 export class UserInput {
   @Field(() => String)
   id: string
+
+  @Field(() => String)
+  passengerId: string
 
   @Field(() => String)
   firstName: string
@@ -14,6 +17,9 @@ export class UserInput {
 
   @Field(() => String)
   fullName: string
+
+  @Field(() => String)
+  fcmToken: string
 
   @Field(() => String)
   phone: string

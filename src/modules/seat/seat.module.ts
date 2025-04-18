@@ -27,5 +27,6 @@ import { FlightToAirportLoader } from '../flight/loaders/flight.ToAirportloader'
     FlightToAirportLoader,
     FlightService,
   ],
+  exports: [SeatService, SequelizeModule],
 })
 export class SeatModule {}

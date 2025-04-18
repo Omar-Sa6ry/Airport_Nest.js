@@ -7,6 +7,9 @@ export class UserOutput {
   id: string
 
   @Field(() => String)
+  passengerId: string
+
+  @Field(() => String)
   firstName: string
 
   @Field(() => String)
@@ -14,6 +17,9 @@ export class UserOutput {
 
   @Field(() => String)
   fullName: string
+
+  @Field(() => String)
+  fcmToken: string
 
   @Field(() => String)
   phone: string

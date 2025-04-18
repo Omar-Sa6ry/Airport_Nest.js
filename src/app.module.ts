@@ -14,6 +14,8 @@ import { TerminalModule } from './modules/terminal/terminal.module'
 import { GateModule } from './modules/gate/gate.module'
 import { FlightModule } from './modules/flight/flight.module'
 import { SeatModule } from './modules/seat/seat.module'
+import { TicketModule } from './modules/ticket/ticket.module'
+import { CheckInModule } from './modules/checkIn/checkIn.module'
 
 @Module({
   imports: [
@@ -31,6 +33,8 @@ import { SeatModule } from './modules/seat/seat.module'
     GateModule,
     FlightModule,
     SeatModule,
+    TicketModule,
+    CheckInModule,
   ],
 
   providers: [AppService, AppResolver],

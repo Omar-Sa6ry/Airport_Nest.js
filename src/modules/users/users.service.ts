@@ -1,18 +1,11 @@
 import { User } from './entities/user.entity'
 import { UpdateUserDto } from './dtos/UpdateUser.dto'
 import { RedisService } from 'src/common/redis/redis.service'
-import { Employee } from '../employee/entity/employee.model'
 import { Passenger } from './entities/passenger.model'
 import { UserInput, UserInputResponse } from './input/User.input'
-import {
-  EmployeeInput,
-  EmployeeInputResponse,
-} from '../employee/input/Employee.input'
-import { WebSocketMessageGateway } from 'src/common/websocket/websocket.gateway'
 import { UploadService } from '../../common/upload/upload.service'
 import { InjectModel } from '@nestjs/sequelize'
 import { I18nService } from 'nestjs-i18n'
-import { Role } from 'src/common/constant/enum.constant'
 import {
   BadRequestException,
   Injectable,
@@ -25,10 +18,8 @@ export class UserService {
     private readonly i18n: I18nService,
     private uploadService: UploadService,
     private readonly redisService: RedisService,
-    private readonly websocketGateway: WebSocketMessageGateway,
     @InjectModel(User) private userRepo: typeof User,
     @InjectModel(Passenger) private passengerRepo: typeof Passenger,
-    @InjectModel(Employee) private employeeRepo: typeof Employee,
   ) {}
 
   async findById (id: string): Promise<UserInputResponse> {
@@ -47,6 +38,7 @@ export class UserService {
 
     const userWithPassenger: UserInput = {
       ...user.dataValues,
+      passengerId: passenger.dataValues.id,
       ...passenger.dataValues,
     }
     const userCacheKey = `user:${user.id}`
@@ -71,6 +63,7 @@ export class UserService {
 
     const userWithPassenger: UserInput = {
       ...user.dataValues,
+      passengerId: passenger.dataValues.id,
       ...passenger.dataValues,
     }
     const userCacheKey = `user:${user.id}`
@@ -95,6 +88,7 @@ export class UserService {
 
     const userWithPassenger: UserInput = {
       ...user.dataValues,
+      passengerId: passenger.dataValues.id,
       ...passenger.dataValues,
     }
     const userCacheKey = `user:${user.id}`
@@ -150,6 +144,7 @@ export class UserService {
 
       const userWithPassenger: UserInput = {
         ...user.dataValues,
+        passengerId: passenger.dataValues.id,
         ...passenger.dataValues,
       }
       const userCacheKey = `user:${user.id}`

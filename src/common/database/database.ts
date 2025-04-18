@@ -2,11 +2,13 @@ import { Module } from '@nestjs/common'
 import { ConfigModule, ConfigService } from '@nestjs/config'
 import { SequelizeModule, SequelizeModuleOptions } from '@nestjs/sequelize'
 import { Airport } from 'src/modules/airport/entity/airport.model'
+import { CheckIn } from 'src/modules/checkIn/entity/checkIn.entity'
 import { Employee } from 'src/modules/employee/entity/employee.model'
 import { Flight } from 'src/modules/flight/entity/flight.model'
 import { Gate } from 'src/modules/gate/entity/gate.model'
 import { Seat } from 'src/modules/seat/entity/Seat.model'
 import { Terminal } from 'src/modules/terminal/entity/terminal.model'
+import { Ticket } from 'src/modules/ticket/entity/ticket.model'
 import { Passenger } from 'src/modules/users/entities/passenger.model'
 import { User } from 'src/modules/users/entities/user.entity'
 
@@ -30,6 +32,8 @@ import { User } from 'src/modules/users/entities/user.entity'
           Gate,
           Flight,
           Seat,
+          Ticket,
+          CheckIn,
         ],
         autoLoadModels: true,
         synchronize: true,

@@ -1,29 +1,21 @@
 import { ObjectType, Field, ID, Int } from '@nestjs/graphql'
 import { Flight } from 'src/modules/flight/entity/flight.model'
+import { Ticket } from 'src/modules/ticket/entity/ticket.model'
+import { BaseEntity } from 'src/common/bases/BaseEntity'
 import { TicketClass } from 'src/common/constant/enum.constant'
 import {
   Column,
   DataType,
   ForeignKey,
-  Model,
   Table,
   Index,
   BelongsTo,
+  HasOne,
 } from 'sequelize-typescript'
-import { ulid } from 'ulid'
-import { BaseEntity } from 'src/common/bases/BaseEntity'
 
 @ObjectType()
 @Table({ tableName: 'seats', timestamps: true })
 export class Seat extends BaseEntity<Seat> {
-  // @Field(() => ID)
-  // @Column({
-  //   type: DataType.STRING(26),
-  //   primaryKey: true,
-  //   defaultValue: () => ulid(),
-  // })
-  // id: string
-
   @Field(() => String)
   @ForeignKey(() => Flight)
   @Index({ name: 'flight_seat_unique', unique: true })
@@ -46,11 +38,6 @@ export class Seat extends BaseEntity<Seat> {
   @BelongsTo(() => Flight, { onDelete: 'CASCADE' })
   flight: Flight
 
-  // @Field(() => Date)
-  // @Column({ type: DataType.DATE, defaultValue: DataType.NOW })
-  // createdAt: Date
-
-  // @Field(() => Date)
-  // @Column({ type: DataType.DATE, defaultValue: DataType.NOW })
-  // updatedAt: Date
+  @HasOne(() => Ticket, { onDelete: 'SET NULL' })
+  ticket: Ticket
 }

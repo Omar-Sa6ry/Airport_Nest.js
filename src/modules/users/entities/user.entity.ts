@@ -72,9 +72,9 @@ export class User extends Model<User> {
   @Column({ type: DataType.DATE, allowNull: true })
   resetTokenExpiry?: Date
 
-  @Exclude()
-  @Column({ type: DataType.STRING(255), allowNull: true })
-  fcmToken?: string
+  @Field()
+  @Column({ type: DataType.STRING(255) })
+  fcmToken: string
 
   @HasOne(() => Passenger, { foreignKey: 'userId', onDelete: 'SET NULL' })
   passenger: Passenger

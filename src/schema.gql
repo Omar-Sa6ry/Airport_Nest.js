@@ -2,12 +2,13 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
-type Gate {
+type CheckIn {
   id: ID!
   createdAt: DateTime!
   updatedAt: DateTime!
-  gateNumber: String!
-  terminalId: String!
+  ticketId: String!
+  gateId: String!
+  price: Int!
 }
 
 """
@@ -25,6 +26,39 @@ type Terminal {
   gates(page: Int, limit: Int): [Gate!]!
 }
 
+type Gate {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  gateNumber: String!
+  terminalId: String!
+}
+
+type Ticket {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  passengerId: String!
+  flightId: String!
+  seatId: String!
+  seatNumber: Int!
+  class: TicketClass!
+  price: Int!
+  status: TicketStatus!
+}
+
+enum TicketClass {
+  ECONOMY
+  BUSINESS
+  FIRST
+}
+
+enum TicketStatus {
+  BOOKED
+  CANCELED
+  USED
+}
+
 type Airport {
   id: ID!
   createdAt: DateTime!
@@ -40,9 +74,11 @@ type Airport {
 
 type UserOutput {
   id: String!
+  passengerId: String!
   firstName: String!
   lastName: String!
   fullName: String!
+  fcmToken: String!
   phone: String!
   email: String!
   passportNumber: Int!
@@ -302,12 +338,6 @@ type Seat {
   flight: FlightResponse!
 }
 
-enum TicketClass {
-  ECONOMY
-  BUSINESS
-  FIRST
-}
-
 type SeatResponse {
   message: String
   success: Boolean
@@ -323,6 +353,59 @@ type SeatsResponse {
   statusCode: Float
   items: [Seat!]
   pagination: PaginationInfo
+}
+
+type TicketResponse {
+  message: String
+  success: Boolean
+  timeStamp: String
+  statusCode: Float
+  data: Ticket
+}
+
+type TicketsResponse {
+  message: String
+  success: Boolean
+  timeStamp: String
+  statusCode: Float
+  items: [Ticket!]
+  pagination: PaginationInfo
+}
+
+type CheckinInput {
+  message: String
+  success: Boolean
+  timeStamp: String
+  statusCode: Float
+  id: String!
+  price: Int!
+  ticket: Ticket!
+  gate: Gate!
+}
+
+type CheckinResponse {
+  message: String
+  success: Boolean
+  timeStamp: String
+  statusCode: Float
+  data: CheckinInput
+}
+
+type CheckinsResponse {
+  message: String
+  success: Boolean
+  timeStamp: String
+  statusCode: Float
+  items: [CheckIn!]
+  pagination: PaginationInfo
+}
+
+type CreateCheckinResponse {
+  message: String
+  success: Boolean
+  timeStamp: String
+  statusCode: Float
+  data: String
 }
 
 type Query {
@@ -349,6 +432,10 @@ type Query {
   getAllFlightsFromAitport(id: String!): FlightsFromAirportResponse!
   findSeatById(id: ID!): SeatResponse!
   findAllAvailableSeatsInFlight(findSeatInput: FindSeatInput!, page: Int, limit: Int): SeatsResponse!
+  getTickets(flightId: String!, page: Float, limit: Float): TicketsResponse!
+  getTicketById(id: String!): TicketResponse!
+  getAllCheckIns(page: Float, limit: Float): CheckinsResponse!
+  getCheckInById(id: String!): CheckinResponse!
 }
 
 input FindTerminalDto {
@@ -400,6 +487,9 @@ type Mutation {
   unBookSeat(id: ID!): SeatResponse!
   updateSeat(id: ID!, updateSeatInput: UpdateSeatInput!): SeatResponse!
   deleteSeat(id: ID!): SeatResponse!
+  deleteTicket(id: String!): TicketResponse!
+  createCheckIn(createCheckInInput: CreateCheckInInput!, createTicketInput: CreateTicketInput!, currency: Currency!): CreateCheckinResponse!
+  deleteCheckIn(id: String!): CheckinResponse!
 }
 
 input CreateUserDto {
@@ -499,4 +589,176 @@ input UpdateSeatInput {
   seatNumber: Int
   class: TicketClass
   isAvailable: Boolean
+}
+
+input CreateCheckInInput {
+  price: Int!
+  gateId: String!
+}
+
+input CreateTicketInput {
+  flightId: String!
+  seatId: String!
+  class: TicketClass!
+}
+
+enum Currency {
+  AED
+  AFN
+  ALL
+  AMD
+  ANG
+  AOA
+  ARS
+  AUD
+  AWG
+  AZN
+  BAM
+  BBD
+  BDT
+  BGN
+  BHD
+  BIF
+  BMD
+  BND
+  BOB
+  BRL
+  BSD
+  BTN
+  BWP
+  BYN
+  BZD
+  CAD
+  CDF
+  CHF
+  CLP
+  CNY
+  COP
+  CRC
+  CUP
+  CVE
+  CZK
+  DJF
+  DKK
+  DOP
+  DZD
+  EGP
+  ERN
+  ETB
+  EUR
+  FJD
+  FKP
+  GBP
+  GEL
+  GGP
+  GHS
+  GIP
+  GMD
+  GNF
+  GTQ
+  GYD
+  HKD
+  HNL
+  HRK
+  HTG
+  HUF
+  IDR
+  ILS
+  IMP
+  INR
+  IQD
+  IRR
+  ISK
+  JEP
+  JMD
+  JOD
+  JPY
+  KES
+  KGS
+  KHR
+  KMF
+  KPW
+  KRW
+  KWD
+  KYD
+  KZT
+  LAK
+  LBP
+  LKR
+  LRD
+  LSL
+  LYD
+  MAD
+  MDL
+  MGA
+  MKD
+  MMK
+  MNT
+  MOP
+  MRU
+  MUR
+  MVR
+  MWK
+  MXN
+  MYR
+  MZN
+  NAD
+  NGN
+  NIO
+  NOK
+  NPR
+  NZD
+  OMR
+  PAB
+  PEN
+  PGK
+  PHP
+  PKR
+  PLN
+  PYG
+  QAR
+  RON
+  RSD
+  RUB
+  RWF
+  SAR
+  SBD
+  SCR
+  SDG
+  SEK
+  SGD
+  SHP
+  SLL
+  SOS
+  SRD
+  SSP
+  STN
+  SYP
+  SZL
+  THB
+  TJS
+  TMT
+  TND
+  TOP
+  TRY
+  TTD
+  TWD
+  TZS
+  UAH
+  UGX
+  USD
+  UYU
+  UZS
+  VES
+  VND
+  VUV
+  WST
+  XAF
+  XCD
+  XOF
+  XPF
+  YER
+  ZAR
+  ZMW
+  ZWL
 }

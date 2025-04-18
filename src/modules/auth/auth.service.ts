@@ -99,6 +99,7 @@ export class AuthService {
       const userWithPassenger: UserInput = {
         ...user.dataValues,
         ...passenger.dataValues,
+        passengerId: passenger.dataValues.id,
       }
       const result: AuthInputResponse = {
         data: { user: userWithPassenger, token },
@@ -157,6 +158,7 @@ export class AuthService {
     const userWithPassenger: UserInput = {
       ...user.dataValues,
       ...passenger.dataValues,
+      passengerId: passenger.dataValues.id,
     }
     const result: AuthInputResponse = {
       data: { user: userWithPassenger, token },
@@ -233,6 +235,7 @@ export class AuthService {
       const userWithPassenger: UserInput = {
         ...user.dataValues,
         ...passenger.dataValues,
+        passengerId: passenger.dataValues.id,
       }
 
       return {
@@ -281,6 +284,7 @@ export class AuthService {
       const userWithPassenger: UserInput = {
         ...user.dataValues,
         ...passenger.dataValues,
+        passengerId: passenger.dataValues.id,
       }
       await transaction.commit()
 

@@ -1,0 +1,7 @@
+{
+  "CREATED": "Checkin is created successfully",
+  "UPDATED": "Checkin is updated successfully",
+  "DELETED": "Checkin is deleted successfully",
+  "NOT_FOUND": "Checkin not found",
+  "NOT_FOUNDS": "Checkins not found"
+}
