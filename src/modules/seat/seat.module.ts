@@ -7,26 +7,19 @@ import { Seat } from './entity/Seat.model'
 import { Flight } from '../flight/entity/flight.model'
 import { SeatService } from './seat.service'
 import { SeatResolver } from './seat.resolver'
-import { FlightService } from '../flight/flight.service'
-import { FlightFromAirportLoader } from '../flight/loaders/flight.FromAirportloader'
 import { Gate } from '../gate/entity/gate.model'
 import { Airport } from '../airport/entity/airport.model'
-import { FlightToAirportLoader } from '../flight/loaders/flight.ToAirportloader'
+import { FlightModule } from '../flight/flight.module'
 
 @Module({
   imports: [
     SequelizeModule.forFeature([Flight, Gate, Airport, Seat]),
     UserModule,
+    FlightModule,
     WebSocketModule,
     RedisModule,
   ],
-  providers: [
-    SeatResolver,
-    SeatService,
-    FlightFromAirportLoader,
-    FlightToAirportLoader,
-    FlightService,
-  ],
-  exports: [SeatService, SequelizeModule],
+  providers: [SeatResolver, SeatService],
+  exports: [SeatService, FlightModule, SequelizeModule],
 })
 export class SeatModule {}

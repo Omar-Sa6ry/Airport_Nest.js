@@ -287,17 +287,12 @@ type FromAirportFlightOutput {
   updatedAt: DateTime!
 }
 
-type FromAirportFlights {
-  flights: [FromAirportFlightOutput!]!
-  fromAirport: Airport!
-}
-
 type FlightsFromAirportResponse {
   message: String
   success: Boolean
   timeStamp: String
   statusCode: Float
-  items: FromAirportFlights
+  items: [FromAirportFlightOutput!]
   pagination: PaginationInfo
 }
 
@@ -313,17 +308,12 @@ type ToAirportFlightOutput {
   updatedAt: DateTime!
 }
 
-type ToAirportFlights {
-  flights: [ToAirportFlightOutput!]!
-  toAirport: Airport!
-}
-
 type FlightsToAirportResponse {
   message: String
   success: Boolean
   timeStamp: String
   statusCode: Float
-  items: ToAirportFlights
+  items: [ToAirportFlightOutput!]
   pagination: PaginationInfo
 }
 

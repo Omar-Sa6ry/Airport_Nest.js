@@ -3,6 +3,7 @@
   "UPDATED": "Flight is updated successfully",
   "DELETED": "Flight is deleted successfully",
   "NOT_FOUND": "Flight not found",
+  "NOT_FOUNDS": "Flights not found",
   "SCHEDULED": "Flight is scheduled",
   "ARRIVAL": "Flight is arriving",
   "IN_FLIGHT": "Flight is in the air",

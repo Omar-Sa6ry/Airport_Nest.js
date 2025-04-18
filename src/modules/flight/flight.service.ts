@@ -1,3 +1,4 @@
+import { Op } from 'sequelize'
 import { Injectable, NotFoundException } from '@nestjs/common'
 import { InjectModel } from '@nestjs/sequelize'
 import { Flight } from './entity/flight.model'
@@ -5,33 +6,40 @@ import { RedisService } from 'src/common/redis/redis.service'
 import { I18nService } from 'nestjs-i18n'
 import { Gate } from '../gate/entity/gate.model'
 import { FlightFromAirportLoader } from './loaders/flight.FromAirportloader'
+import { ScheduleService } from 'src/common/queues/schedule/schedule.service'
 import { FlightToAirportLoader } from './loaders/flight.ToAirportloader'
 import { WebSocketMessageGateway } from 'src/common/websocket/websocket.gateway'
+import { FlightsFromAirportResponse } from './dtos/FlightsFromAirport.response'
+import { FlightResponse } from './dtos/Flight.response'
 import { Airport } from '../airport/entity/airport.model'
 import { CreateFlightInput } from './inputs/CreateFlight.input'
-import { FlightInputResponse } from './inputs/Flight.input'
 import { FlightOptinalInput } from './inputs/FlightOptinals.input'
 import { FlightStatus } from 'src/common/constant/enum.constant'
 import { Limit, Page } from 'src/common/constant/messages.constant'
-import { FlightsToAirportResponse } from './dtos/FlightsToAirport.response'
-import { FlightsFromAirportResponse } from './dtos/FlightsFromAirport.response'
+import { Ticket } from '../ticket/entity/ticket.model'
+import { UpdateFlightService } from 'src/common/queues/update flight/UpdateFlight.service'
+import {
+  FlightsToAirportResponse,
+  ToAirportFlightOutput,
+} from './dtos/FlightsToAirport.response'
 
 @Injectable()
 export class FlightService {
   constructor (
     private readonly i18n: I18nService,
     private readonly redisService: RedisService,
+    private readonly scheduleService: ScheduleService,
     private readonly flightFromAirportLoader: FlightFromAirportLoader,
     private readonly flightToAirportLoader: FlightToAirportLoader,
+    private readonly updateFlightService: UpdateFlightService,
     private readonly websocketGateway: WebSocketMessageGateway,
     @InjectModel(Gate) private readonly gateRepo: typeof Gate,
     @InjectModel(Airport) private readonly airportRepo: typeof Airport,
+    @InjectModel(Ticket) private readonly ticketModel: typeof Ticket,
     @InjectModel(Flight) private readonly flightModel: typeof Flight,
   ) {}
 
-  async create (
-    createFlightInput: CreateFlightInput,
-  ): Promise<FlightInputResponse> {
+  async create (createFlightInput: CreateFlightInput): Promise<FlightResponse> {
     if (createFlightInput.fromAirportId === createFlightInput.toAirportId)
       throw new NotFoundException(await this.i18n.t('flight.SAME_AIRPORT'))
 
@@ -54,12 +62,12 @@ export class FlightService {
     try {
       const flight = await this.flightModel.create(createFlightInput)
 
-      const flightInput: FlightInputResponse = {
+      const flightInput: FlightResponse = {
         data: {
           ...flight.dataValues,
-          gate,
-          fromAirport,
-          toAirport,
+          gate: gate.dataValues,
+          fromAirport: fromAirport.dataValues,
+          toAirport: toAirport.dataValues,
         },
       }
 
@@ -67,6 +75,8 @@ export class FlightService {
       this.websocketGateway.broadcast('flightCreate', {
         flightId: flight.id,
       })
+
+      this.scheduleService.sendNotify(flight.leaveAt, flight.id)
 
       await transaction.commit()
       return {
@@ -80,7 +90,7 @@ export class FlightService {
     }
   }
 
-  async delete (id: string): Promise<FlightInputResponse> {
+  async delete (id: string): Promise<FlightResponse> {
     const flight = await this.flightModel.findByPk(id)
     if (!flight) {
       throw new NotFoundException(await this.i18n.t('flight.NOT_FOUND'))
@@ -90,7 +100,7 @@ export class FlightService {
     return { data: null, message: await this.i18n.t('flight.DELETED') }
   }
 
-  async findById (id: string): Promise<FlightInputResponse> {
+  async findById (id: string): Promise<FlightResponse> {
     const flight = await this.flightModel.findByPk(id, {
       include: ['fromAirport', 'toAirport', 'gate'],
     })
@@ -98,7 +108,7 @@ export class FlightService {
       throw new NotFoundException(await this.i18n.t('flight.NOT_FOUND'))
     }
 
-    const flightInput: FlightInputResponse = {
+    const flightInput: FlightResponse = {
       data: {
         ...flight.dataValues,
         gate: flight.gate.dataValues,
@@ -111,9 +121,7 @@ export class FlightService {
     return flightInput
   }
 
-  async findByData (
-    findOptions: FlightOptinalInput,
-  ): Promise<FlightInputResponse> {
+  async findByData (findOptions: FlightOptinalInput): Promise<FlightResponse> {
     const flight = await this.flightModel.findOne({
       where: { ...findOptions },
       include: ['fromAirport', 'toAirport', 'gate'],
@@ -123,7 +131,7 @@ export class FlightService {
       throw new NotFoundException(await this.i18n.t('flight.NOT_FOUND'))
     }
 
-    const flightInput: FlightInputResponse = {
+    const flightInput: FlightResponse = {
       data: {
         ...flight.dataValues,
         gate: flight.gate.dataValues,
@@ -172,7 +180,7 @@ export class FlightService {
     })
 
     const result = {
-      items: { fromAirport, flights: items },
+      items,
       pagination: {
         totalItems: total,
         currentPage: page,
@@ -188,9 +196,7 @@ export class FlightService {
     page: number = Page,
     limit: number = Limit,
   ): Promise<FlightsToAirportResponse> {
-    const toAirport = await (
-      await this.airportRepo.findByPk(toAirportId)
-    )?.dataValues
+    const toAirport = await this.airportRepo.findByPk(toAirportId)
     if (!toAirport)
       throw new NotFoundException(await this.i18n.t('airport.NOT_FOUND'))
 
@@ -211,7 +217,7 @@ export class FlightService {
       data.map(flight => flight.id),
     )
 
-    const items = data.map((m, index) => {
+    const items: ToAirportFlightOutput[] = data.map((m, index) => {
       const flight = flights[index]
       if (!flight) throw new NotFoundException(this.i18n.t('flight.NOT_FOUND'))
 
@@ -219,7 +225,7 @@ export class FlightService {
     })
 
     const result: FlightsToAirportResponse = {
-      items: { toAirport, flights: items },
+      items,
       pagination: {
         totalItems: total,
         currentPage: page,
@@ -233,10 +239,10 @@ export class FlightService {
   async update (
     id: string,
     updateFlightInput: FlightOptinalInput,
-  ): Promise<FlightInputResponse> {
+  ): Promise<FlightResponse> {
     let flight
     const cachedFlight = await this.redisService.get(`flight:${id}`)
-    if (cachedFlight instanceof FlightInputResponse) {
+    if (cachedFlight instanceof FlightResponse) {
       flight = cachedFlight.data
     } else {
       flight = await this.flightModel.findByPk(id, {
@@ -249,9 +255,22 @@ export class FlightService {
 
     const update = await flight.update(updateFlightInput)
 
-    const flightInput: FlightInputResponse = {
+    const flightInput: FlightResponse = {
       data: update,
     }
+
+    const tickets = await this.ticketModel.findAll({
+      where: {
+        flightId: id,
+        createdAt: {
+          [Op.gt]: flight.createdAt,
+        },
+      },
+    })
+    this.updateFlightService.notifyTicketUsers(
+      tickets.map(t => t.dataValues.id),
+      JSON.stringify(updateFlightInput),
+    )
 
     this.redisService.set(`flight:${flight.id}`, flightInput)
     this.websocketGateway.broadcast('flightUpdated', {
@@ -264,10 +283,7 @@ export class FlightService {
     }
   }
 
-  async changwGate (
-    flightId: string,
-    gateId: string,
-  ): Promise<FlightInputResponse> {
+  async changwGate (flightId: string, gateId: string): Promise<FlightResponse> {
     const gate = await this.gateRepo.findByPk(gateId)
     if (!gate) {
       throw new NotFoundException(await this.i18n.t('gate.NOT_FOUND'))
@@ -286,11 +302,26 @@ export class FlightService {
       flight.gate = gate
       flight.save()
 
-      const flightInput: FlightInputResponse = {
+      const flightInput: FlightResponse = {
         data: {
           ...flight.dataValues,
         },
       }
+
+      const tickets = await this.ticketModel.findAll({
+        where: {
+          flightId: flight.id,
+          createdAt: {
+            [Op.gt]: flight.createdAt,
+          },
+        },
+      })
+
+      this.updateFlightService.notifyTicketUsers(
+        tickets.map(t => t?.dataValues?.id),
+        `Gate changed to ${gate.dataValues.gateNumber}`,
+      )
+
       this.redisService.set(`flight:${flight.id}`, flightInput)
       this.websocketGateway.broadcast('flightGateUpdated', {
         flightId: flight.id,
@@ -308,7 +339,7 @@ export class FlightService {
     }
   }
 
-  async cancleFlight (id: string): Promise<FlightInputResponse> {
+  async cancleFlight (id: string): Promise<FlightResponse> {
     const flight = await this.flightModel.findByPk(id, {
       include: ['fromAirport', 'toAirport', 'gate'],
     })
@@ -319,11 +350,25 @@ export class FlightService {
     flight.status = FlightStatus.CANCELLED
     flight.save()
 
-    const flightInput: FlightInputResponse = {
+    const flightInput: FlightResponse = {
       data: {
         ...flight.dataValues,
       },
     }
+
+    const tickets = await this.ticketModel.findAll({
+      where: {
+        flightId: id,
+        createdAt: {
+          [Op.gt]: flight.createdAt,
+        },
+      },
+    })
+    this.updateFlightService.notifyTicketUsers(
+      tickets.map(t => t?.dataValues?.id),
+      `Flight is cancelled ,we will return your money`,
+    )
+
     this.redisService.set(`flight:${flight.id}`, flightInput)
     this.websocketGateway.broadcast('flightCanceled', {
       flightId: flight.id,
@@ -335,10 +380,7 @@ export class FlightService {
     }
   }
 
-  async delayFlight (
-    id: string,
-    delayTime: number,
-  ): Promise<FlightInputResponse> {
+  async delayFlight (id: string, delayTime: number): Promise<FlightResponse> {
     const flight = await this.flightModel.findByPk(id, {
       include: ['fromAirport', 'toAirport', 'gate'],
     })
@@ -353,11 +395,25 @@ export class FlightService {
       flight.status = FlightStatus.DELAYED
       flight.save()
 
-      const flightInput: FlightInputResponse = {
+      const flightInput: FlightResponse = {
         data: {
           ...flight.dataValues,
         },
       }
+
+      const tickets = await this.ticketModel.findAll({
+        where: {
+          flightId: id,
+          createdAt: {
+            [Op.gt]: flight.createdAt,
+          },
+        },
+      })
+      this.updateFlightService.notifyTicketUsers(
+        tickets.map(t => t?.dataValues?.id),
+        `Flight is delayed for ${delayTime} minutes`,
+      )
+
       this.redisService.set(`flight:${flight.id}`, flightInput)
       this.websocketGateway.broadcast('flightDelayed', {
         flightId: flight.id,

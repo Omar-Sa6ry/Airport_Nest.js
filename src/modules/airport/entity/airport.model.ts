@@ -3,6 +3,7 @@ import { ObjectType, Field } from '@nestjs/graphql'
 import { BaseEntity } from 'src/common/bases/BaseEntity'
 import { Employee } from 'src/modules/employee/entity/employee.model'
 import { Terminal } from 'src/modules/terminal/entity/terminal.model'
+import { Flight } from 'src/modules/flight/entity/flight.model'
 
 @ObjectType()
 @Table({
@@ -41,4 +42,7 @@ export class Airport extends BaseEntity<Airport> {
 
   @HasMany(() => Terminal, { onDelete: 'SET NULL' })
   terminals: Terminal[]
+
+  @HasMany(() => Flight, { onDelete: 'SET NULL' })
+  flights: Flight[]
 }

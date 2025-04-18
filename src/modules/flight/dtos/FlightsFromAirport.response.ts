@@ -47,8 +47,8 @@ export class FromAirportFlights {
 
 @ObjectType()
 export class FlightsFromAirportResponse extends BaseResponse {
-  @Field(() => FromAirportFlights, { nullable: true })
-  items: FromAirportFlights
+  @Field(() => [FromAirportFlightOutput], { nullable: true })
+  items: FromAirportFlightOutput[]
 
   @IsOptional()
   @Field(() => PaginationInfo, { nullable: true })

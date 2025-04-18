@@ -7,7 +7,7 @@ import { Airport } from 'src/modules/airport/entity/airport.model'
 import { Gate } from 'src/modules/gate/entity/gate.model'
 
 @ObjectType()
- class ToAirportFlightOutput {
+export class ToAirportFlightOutput {
   @Field(() => String)
   id: string
 
@@ -47,8 +47,8 @@ export class ToAirportFlights {
 
 @ObjectType()
 export class FlightsToAirportResponse extends BaseResponse {
-  @Field(() => ToAirportFlights, { nullable: true })
-  items: ToAirportFlights
+  @Field(() => [ToAirportFlightOutput], { nullable: true })
+  items: ToAirportFlightOutput[]
 
   @IsOptional()
   @Field(() => PaginationInfo, { nullable: true })

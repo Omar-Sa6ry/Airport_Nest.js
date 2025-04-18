@@ -6,11 +6,11 @@ import { I18nService } from 'nestjs-i18n'
 import { Airport } from 'src/modules/airport/entity/airport.model'
 import { Gate } from 'src/modules/gate/entity/gate.model'
 import { Flight } from '../entity/flight.model'
-import { ToAirportFlightInput } from '../inputs/FlightsToAirport.response'
+import { ToAirportFlightOutput } from '../dtos/FlightsToAirport.response'
 
 @Injectable()
 export class FlightToAirportLoader {
-  private loader: DataLoader<string, ToAirportFlightInput>
+  private loader: DataLoader<string, ToAirportFlightOutput>
 
   constructor (
     @InjectModel(Flight) private flightRepo: typeof Flight,
@@ -18,7 +18,7 @@ export class FlightToAirportLoader {
     @InjectModel(Airport) private airportRepo: typeof Airport,
     private readonly i18n: I18nService,
   ) {
-    this.loader = new DataLoader<string, ToAirportFlightInput>(
+    this.loader = new DataLoader<string, ToAirportFlightOutput>(
       async (keys: string[]) => {
         const flights = await this.flightRepo.findAll({
           where: { id: { [Op.in]: keys } },
@@ -41,32 +41,36 @@ export class FlightToAirportLoader {
         )
 
         return keys.map(key => {
-          const flight = flights.find(c => c.id === key)?.dataValues
+          const flight = flights.find(c => c.id === key)
           if (!flight)
-            throw new NotFoundException(this.i18n.t('airport.NOT_FOUND'))
+            throw new NotFoundException(this.i18n.t('flight.NOT_FOUND'))
 
-          const fromAirport = airportMap.get(flight.fromAirportId)?.dataValues
+          const fromAirport = airportMap.get(flight.fromAirportId)
           if (!fromAirport)
             throw new NotFoundException(this.i18n.t('airport.NOT_FOUND'))
 
-          const gate = gateMap.get(flight.gateId)?.dataValues
+          const gate = gateMap.get(flight.gateId)
           if (!gate) throw new NotFoundException(this.i18n.t('gate.NOT_FOUND'))
 
-          return { ...flight, fromAirport, gate }
+          return {
+            ...flight.dataValues,
+            fromAirport: fromAirport.dataValues,
+            gate: gate.dataValues,
+          }
         })
       },
     )
   }
 
-  load (id: string): Promise<ToAirportFlightInput> {
+  load (id: string): Promise<ToAirportFlightOutput> {
     return this.loader.load(id)
   }
 
-  async loadMany (ids: string[]): Promise<ToAirportFlightInput[]> {
+  async loadMany (ids: string[]): Promise<ToAirportFlightOutput[]> {
     const results = await this.loader.loadMany(ids)
 
     return results.filter(
       result => !(result instanceof Error),
-    ) as ToAirportFlightInput[]
+    ) as ToAirportFlightOutput[]
   }
 }

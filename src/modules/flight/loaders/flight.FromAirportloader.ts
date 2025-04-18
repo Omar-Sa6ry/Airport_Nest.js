@@ -6,11 +6,11 @@ import { I18nService } from 'nestjs-i18n'
 import { Airport } from 'src/modules/airport/entity/airport.model'
 import { Gate } from 'src/modules/gate/entity/gate.model'
 import { Flight } from '../entity/flight.model'
-import { FromAirportFlightInput } from '../inputs/FlightsFromAirport.input'
+import { FromAirportFlightOutput } from '../dtos/FlightsFromAirport.response'
 
 @Injectable()
 export class FlightFromAirportLoader {
-  private loader: DataLoader<string, FromAirportFlightInput>
+  private loader: DataLoader<string, FromAirportFlightOutput>
 
   constructor (
     @InjectModel(Flight) private flightRepo: typeof Flight,
@@ -18,7 +18,7 @@ export class FlightFromAirportLoader {
     @InjectModel(Airport) private airportRepo: typeof Airport,
     private readonly i18n: I18nService,
   ) {
-    this.loader = new DataLoader<string, FromAirportFlightInput>(
+    this.loader = new DataLoader<string, FromAirportFlightOutput>(
       async (keys: string[]) => {
         const flights = await this.flightRepo.findAll({
           where: { id: { [Op.in]: keys } },
@@ -58,15 +58,15 @@ export class FlightFromAirportLoader {
     )
   }
 
-  load (id: string): Promise<FromAirportFlightInput> {
+  load (id: string): Promise<FromAirportFlightOutput> {
     return this.loader.load(id)
   }
 
-  async loadMany (ids: string[]): Promise<FromAirportFlightInput[]> {
+  async loadMany (ids: string[]): Promise<FromAirportFlightOutput[]> {
     const results = await this.loader.loadMany(ids)
 
     return results.filter(
       result => !(result instanceof Error),
-    ) as FromAirportFlightInput[]
+    ) as FromAirportFlightOutput[]
   }
 }
