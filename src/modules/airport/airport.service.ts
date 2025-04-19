@@ -3,6 +3,8 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common'
+import { CreateLocationInput } from '../location/inputs/CreateLocation.input'
+import { LocationService } from '../location/location.service'
 import { InjectModel } from '@nestjs/sequelize'
 import { I18nService } from 'nestjs-i18n'
 import { RedisService } from 'src/common/redis/redis.service'
@@ -23,12 +25,14 @@ export class AirportService {
     private readonly i18n: I18nService,
     private readonly redisService: RedisService,
     // private readonly airportLoader: AirportLoader,
+    private readonly locationService: LocationService,
     private readonly websocketGateway: WebSocketMessageGateway,
     @InjectModel(Airport) private airportRepo: typeof Airport,
   ) {}
 
   async create (
     createAirportDto: CreateAirportDto,
+    createLocationInput: CreateLocationInput,
   ): Promise<AirportInputResponse> {
     const existingAirport = await this.airportRepo.findOne({
       where: { name: createAirportDto.name },
@@ -44,6 +48,11 @@ export class AirportService {
     try {
       const airport = await this.airportRepo.create(createAirportDto, {
         transaction,
+      })
+
+      this.locationService.create({
+        ...createLocationInput,
+        airportId: airport.id,
       })
 
       const result: AirportInputResponse = {

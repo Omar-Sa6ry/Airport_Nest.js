@@ -1,9 +1,17 @@
-import { Table, Column, DataType, HasMany } from 'sequelize-typescript'
+import {
+  Table,
+  Column,
+  DataType,
+  HasMany,
+  HasOne,
+  ForeignKey,
+} from 'sequelize-typescript'
 import { ObjectType, Field } from '@nestjs/graphql'
 import { BaseEntity } from 'src/common/bases/BaseEntity'
 import { Employee } from 'src/modules/employee/entity/employee.model'
 import { Terminal } from 'src/modules/terminal/entity/terminal.model'
 import { Flight } from 'src/modules/flight/entity/flight.model'
+import { Location } from 'src/modules/location/entity/location.model'
 
 @ObjectType()
 @Table({
@@ -29,13 +37,8 @@ export class Airport extends BaseEntity<Airport> {
   @Column({ type: DataType.STRING(4), allowNull: false })
   icaoCode: string
 
-  @Field()
-  @Column({ type: DataType.STRING, allowNull: false })
-  city: string
-
-  @Field()
-  @Column({ type: DataType.STRING, allowNull: false })
-  country: string
+  @HasOne(() => Location, { onDelete: 'SET NULL' })
+  location: Location
 
   @HasMany(() => Employee, { onDelete: 'SET NULL' })
   employees: Employee[]

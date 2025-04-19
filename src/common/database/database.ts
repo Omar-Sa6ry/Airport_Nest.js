@@ -6,6 +6,7 @@ import { CheckIn } from 'src/modules/checkIn/entity/checkIn.entity'
 import { Employee } from 'src/modules/employee/entity/employee.model'
 import { Flight } from 'src/modules/flight/entity/flight.model'
 import { Gate } from 'src/modules/gate/entity/gate.model'
+import { Location } from 'src/modules/location/entity/location.model'
 import { Seat } from 'src/modules/seat/entity/Seat.model'
 import { Terminal } from 'src/modules/terminal/entity/terminal.model'
 import { Ticket } from 'src/modules/ticket/entity/ticket.model'
@@ -25,6 +26,7 @@ import { User } from 'src/modules/users/entities/user.entity'
         database: configService.get<string>('DB_NAME'),
         models: [
           User,
+          Location,
           Passenger,
           Employee,
           Airport,

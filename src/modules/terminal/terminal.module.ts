@@ -12,11 +12,13 @@ import { EmployeeLoader } from '../employee/loader/Employee.loader'
 import { GateService } from '../gate/gate.service'
 import { Gate } from '../gate/entity/gate.model'
 import { Employee } from '../employee/entity/employee.model'
+import { LocationModule } from '../location/location.module'
 
 @Module({
   imports: [
     SequelizeModule.forFeature([Airport, Gate, Employee, Terminal]),
     UserModule,
+    LocationModule,
     WebSocketModule,
     RedisModule,
   ],

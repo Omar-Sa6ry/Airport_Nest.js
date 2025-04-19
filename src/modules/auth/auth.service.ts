@@ -17,6 +17,7 @@ import { CreateUserDto } from './dtos/CreateUserData.dto'
 import { EmployeeInput } from '../employee/input/Employee.input'
 import { AuthEmployeeInputResponse } from './input/AuthEmployee'
 import { AirportService } from '../airport/airport.service'
+import { LocationService } from '../location/location.service'
 import { Role } from 'src/common/constant/enum.constant'
 import { UploadService } from '../../common/upload/upload.service'
 import { AuthInputResponse } from './input/Auth.input'
@@ -29,12 +30,14 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common'
+import { CreateLocationInput } from '../location/inputs/CreateLocation.input'
 
 @Injectable()
 export class AuthService {
   constructor (
     private readonly i18n: I18nService,
     private readonly generateToken: GenerateToken,
+    private readonly locationService: LocationService,
     private readonly airportService: AirportService,
     private readonly redisService: RedisService,
     private readonly uploadService: UploadService,
@@ -49,6 +52,7 @@ export class AuthService {
     fcmToken: string,
     createUserDto: CreateUserDto,
     createPassengerDto: CreatePassengerDto,
+    createLocationInput: CreateLocationInput,
     avatar?: CreateImagDto,
   ): Promise<AuthInputResponse> {
     const { email } = createUserDto
@@ -58,13 +62,15 @@ export class AuthService {
 
     const transaction = await this.userRepo.sequelize.transaction()
     try {
-      const user = await this.userRepo.create(
+     console.log('ijigj')
+ const user = await this.userRepo.create(
         {
           ...createUserDto,
           password,
         },
         { transaction },
       )
+console.log('ijigj')
 
       if (avatar) {
         const filename = await this.uploadService.uploadImage(avatar)
@@ -84,6 +90,13 @@ export class AuthService {
         },
         { transaction },
       )
+
+      console.log('ijigj')
+      this.locationService.create({
+        ...createLocationInput,
+        userId: user?.id,
+      })
+      console.log('ijigj')
 
       // first user is admin automatic
       const users = await this.userRepo.findAll({

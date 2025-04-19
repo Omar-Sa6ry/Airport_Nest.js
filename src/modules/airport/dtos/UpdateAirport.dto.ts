@@ -20,14 +20,4 @@ export class UpdateAirportDto {
   @IsString()
   @MaxLength(4)
   icaoCode?: string
-
-  @IsOptional()
-  @Field(() => String, { nullable: true })
-  @IsString()
-  city?: string
-
-  @IsOptional()
-  @Field(() => String, { nullable: true })
-  @IsString()
-  country?: string
 }

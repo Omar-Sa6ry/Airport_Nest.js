@@ -59,6 +59,178 @@ enum TicketStatus {
   USED
 }
 
+type Location {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  userId: String
+  airportId: String
+  city: String!
+  country: String!
+  currency: Currency!
+}
+
+enum Currency {
+  AED
+  AFN
+  ALL
+  AMD
+  ANG
+  AOA
+  ARS
+  AUD
+  AWG
+  AZN
+  BAM
+  BBD
+  BDT
+  BGN
+  BHD
+  BIF
+  BMD
+  BND
+  BOB
+  BRL
+  BSD
+  BTN
+  BWP
+  BYN
+  BZD
+  CAD
+  CDF
+  CHF
+  CLP
+  CNY
+  COP
+  CRC
+  CUP
+  CVE
+  CZK
+  DJF
+  DKK
+  DOP
+  DZD
+  EGP
+  ERN
+  ETB
+  EUR
+  FJD
+  FKP
+  GBP
+  GEL
+  GGP
+  GHS
+  GIP
+  GMD
+  GNF
+  GTQ
+  GYD
+  HKD
+  HNL
+  HRK
+  HTG
+  HUF
+  IDR
+  ILS
+  IMP
+  INR
+  IQD
+  IRR
+  ISK
+  JEP
+  JMD
+  JOD
+  JPY
+  KES
+  KGS
+  KHR
+  KMF
+  KPW
+  KRW
+  KWD
+  KYD
+  KZT
+  LAK
+  LBP
+  LKR
+  LRD
+  LSL
+  LYD
+  MAD
+  MDL
+  MGA
+  MKD
+  MMK
+  MNT
+  MOP
+  MRU
+  MUR
+  MVR
+  MWK
+  MXN
+  MYR
+  MZN
+  NAD
+  NGN
+  NIO
+  NOK
+  NPR
+  NZD
+  OMR
+  PAB
+  PEN
+  PGK
+  PHP
+  PKR
+  PLN
+  PYG
+  QAR
+  RON
+  RSD
+  RUB
+  RWF
+  SAR
+  SBD
+  SCR
+  SDG
+  SEK
+  SGD
+  SHP
+  SLL
+  SOS
+  SRD
+  SSP
+  STN
+  SYP
+  SZL
+  THB
+  TJS
+  TMT
+  TND
+  TOP
+  TRY
+  TTD
+  TWD
+  TZS
+  UAH
+  UGX
+  USD
+  UYU
+  UZS
+  VES
+  VND
+  VUV
+  WST
+  XAF
+  XCD
+  XOF
+  XPF
+  YER
+  ZAR
+  ZMW
+  ZWL
+}
+
 type Airport {
   id: ID!
   createdAt: DateTime!
@@ -66,8 +238,6 @@ type Airport {
   name: String!
   iataCode: String!
   icaoCode: String!
-  city: String!
-  country: String!
   employees(page: Int, limit: Int): EmployeesResponse!
   terminals(page: Int, limit: Int): [Terminal!]!
 }
@@ -199,6 +369,31 @@ type AirportResponse {
   timeStamp: String
   statusCode: Float
   data: AirportOutput
+}
+
+type LocationResponse {
+  message: String
+  success: Boolean
+  timeStamp: String
+  statusCode: Float
+  data: Location
+}
+
+type AirportLocation {
+  id: String!
+  country: String!
+  city: String!
+  currency: Currency!
+  airport: Airport!
+}
+
+type AirportLocationsResponse {
+  message: String
+  success: Boolean
+  timeStamp: String
+  statusCode: Float
+  items: [AirportLocation!]
+  pagination: PaginationInfo
 }
 
 type TerminalResponse {
@@ -404,6 +599,8 @@ type Query {
   getUserByEmail(email: String!): UserResponse!
   getUserByphone(phone: String!): UserResponse!
   deleteUser: UserResponse!
+  findLocationById(id: String!): LocationResponse!
+  findAirportLocations(page: Int, limit: Int): AirportLocationsResponse!
   airportById(id: String!): AirportResponse!
   airportByName(name: String!): AirportResponse!
   allAirports(page: Int, limit: Int): AirportsResponse!
@@ -446,14 +643,16 @@ input FindSeatInput {
 }
 
 type Mutation {
-  register(fcmToken: String!, createUserDto: CreateUserDto!, createPassengerDto: CreatePassengerDto!, avatar: CreateImagDto): AuthResponse!
+  register(fcmToken: String!, createUserDto: CreateUserDto!, createPassengerDto: CreatePassengerDto!, createLocationInput: CreateLocationInput!, avatar: CreateImagDto): AuthResponse!
   login(fcmToken: String!, loginDto: LoginDto!): AuthResponse!
   forgotPassword: AuthResponse!
   resetPassword(resetPasswordDto: ResetPasswordDto!): UserResponse!
   changePassword(changePasswordDto: ChangePasswordDto!): UserResponse!
   adminLogin(fcmToken: String!, loginDto: LoginDto!): AdminAuthResponse!
   updateUser(updateUserDto: UpdateUserDto!): UserResponse!
-  createAirport(createAirportDto: CreateAirportDto!): AirportResponse!
+  updateLocationForUser(updateLocationInput: UpdateLocationInput!): LocationResponse!
+  updateLocationForAirport(airportId: String!, updateLocationInput: UpdateLocationInput!): LocationResponse!
+  createAirport(createAirportDto: CreateAirportDto!, createLocationInput: CreateLocationInput!): AirportResponse!
   updateAirport(id: String!, updateAirportDto: UpdateAirportDto!): AirportResponse!
   deleteAirport(id: String!): AirportResponse!
   createEmployee(userId: String!, airportId: String!, role: String!): EmployeeResponse!
@@ -496,6 +695,14 @@ input CreatePassengerDto {
   dateOfBirth: DateTime!
 }
 
+input CreateLocationInput {
+  userId: String
+  airportId: String
+  country: String!
+  city: String!
+  currency: Currency!
+}
+
 input CreateImagDto {
   name: String
   breed: String
@@ -528,20 +735,22 @@ input UpdateUserDto {
   phone: String
 }
 
+input UpdateLocationInput {
+  country: String
+  city: String
+  currency: Currency
+}
+
 input CreateAirportDto {
   name: String!
   iataCode: String!
   icaoCode: String!
-  city: String!
-  country: String!
 }
 
 input UpdateAirportDto {
   name: String
   iataCode: String
   icaoCode: String
-  city: String
-  country: String
 }
 
 input CreateTerminalDto {
@@ -590,165 +799,4 @@ input CreateTicketInput {
   flightId: String!
   seatId: String!
   class: TicketClass!
-}
-
-enum Currency {
-  AED
-  AFN
-  ALL
-  AMD
-  ANG
-  AOA
-  ARS
-  AUD
-  AWG
-  AZN
-  BAM
-  BBD
-  BDT
-  BGN
-  BHD
-  BIF
-  BMD
-  BND
-  BOB
-  BRL
-  BSD
-  BTN
-  BWP
-  BYN
-  BZD
-  CAD
-  CDF
-  CHF
-  CLP
-  CNY
-  COP
-  CRC
-  CUP
-  CVE
-  CZK
-  DJF
-  DKK
-  DOP
-  DZD
-  EGP
-  ERN
-  ETB
-  EUR
-  FJD
-  FKP
-  GBP
-  GEL
-  GGP
-  GHS
-  GIP
-  GMD
-  GNF
-  GTQ
-  GYD
-  HKD
-  HNL
-  HRK
-  HTG
-  HUF
-  IDR
-  ILS
-  IMP
-  INR
-  IQD
-  IRR
-  ISK
-  JEP
-  JMD
-  JOD
-  JPY
-  KES
-  KGS
-  KHR
-  KMF
-  KPW
-  KRW
-  KWD
-  KYD
-  KZT
-  LAK
-  LBP
-  LKR
-  LRD
-  LSL
-  LYD
-  MAD
-  MDL
-  MGA
-  MKD
-  MMK
-  MNT
-  MOP
-  MRU
-  MUR
-  MVR
-  MWK
-  MXN
-  MYR
-  MZN
-  NAD
-  NGN
-  NIO
-  NOK
-  NPR
-  NZD
-  OMR
-  PAB
-  PEN
-  PGK
-  PHP
-  PKR
-  PLN
-  PYG
-  QAR
-  RON
-  RSD
-  RUB
-  RWF
-  SAR
-  SBD
-  SCR
-  SDG
-  SEK
-  SGD
-  SHP
-  SLL
-  SOS
-  SRD
-  SSP
-  STN
-  SYP
-  SZL
-  THB
-  TJS
-  TMT
-  TND
-  TOP
-  TRY
-  TTD
-  TWD
-  TZS
-  UAH
-  UGX
-  USD
-  UYU
-  UZS
-  VES
-  VND
-  VUV
-  WST
-  XAF
-  XCD
-  XOF
-  XPF
-  YER
-  ZAR
-  ZMW
-  ZWL
 }

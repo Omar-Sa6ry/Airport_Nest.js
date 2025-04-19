@@ -2,9 +2,10 @@ import { ObjectType, Field, ID } from '@nestjs/graphql'
 import { Passenger } from './passenger.model'
 import { Employee } from '../../employee/entity/employee.model'
 import { Role } from 'src/common/constant/enum.constant'
+import { Location } from 'src/modules/location/entity/location.model'
 import { Exclude } from 'class-transformer'
 import { ulid } from 'ulid'
-import { Model } from 'sequelize-typescript'
+import {  Model } from 'sequelize-typescript'
 import {
   Column,
   Table,
@@ -75,6 +76,9 @@ export class User extends Model<User> {
   @Field()
   @Column({ type: DataType.STRING(255) })
   fcmToken: string
+
+  @HasOne(() => Location, { onDelete: 'SET NULL' })
+  location: Location
 
   @HasOne(() => Passenger, { foreignKey: 'userId', onDelete: 'SET NULL' })
   passenger: Passenger

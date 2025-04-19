@@ -1,4 +1,4 @@
-import { Args, Mutation, Parent, ResolveField, Resolver } from '@nestjs/graphql'
+import { Args, Mutation, Resolver } from '@nestjs/graphql'
 import { AuthService } from './auth.service'
 import { User } from '../users/entities/user.entity'
 import { AuthResponse } from './dtos/AuthRes.dto'
@@ -15,16 +15,13 @@ import { CreatePassengerDto } from './dtos/CreatePassengerData.dto'
 import { UserResponse } from '../users/dtos/UserResponse.dto'
 import { Auth } from 'src/common/decerator/auth.decerator'
 import { AdminAuthResponse } from './dtos/AdminAuthRes.dto'
-// import { Airport } from '../airport/entity/airport.model'
-// import { AirportService } from '../airport/airport.service'
-// import { Employee } from '../employee/entity/employee.model'
+import { CreateLocationInput } from '../location/inputs/CreateLocation.input'
 
 @Resolver(of => User)
 export class AuthResolver {
   constructor (
     private readonly redisService: RedisService,
     private authService: AuthService,
-    // private airportService: AirportService,
   ) {}
 
   @Mutation(returns => AuthResponse)
@@ -32,12 +29,14 @@ export class AuthResolver {
     @Args('fcmToken') fcmToken: string,
     @Args('createUserDto') createUserDto: CreateUserDto,
     @Args('createPassengerDto') createPassengerDto: CreatePassengerDto,
+    @Args('createLocationInput') createLocationInput: CreateLocationInput,
     @Args('avatar', { nullable: true }) avatar?: CreateImagDto,
   ): Promise<AuthResponse> {
     return await this.authService.register(
       fcmToken,
       createUserDto,
       createPassengerDto,
+      createLocationInput,
       avatar,
     )
   }

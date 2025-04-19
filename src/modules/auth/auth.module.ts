@@ -14,14 +14,15 @@ import { JwtModule } from './jwt/jwt.module'
 import { Employee } from '../employee/entity/employee.model'
 import { Passenger } from '../users/entities/passenger.model'
 import { AirportModule } from '../airport/airport.module'
+import { LocationModule } from '../location/location.module'
 
 @Module({
   imports: [
     SequelizeModule.forFeature([User, Employee, Passenger]),
     UserModule,
-    // AirportModule,
     RedisModule,
     UploadModule,
+    LocationModule,
     AirportModule,
     EmailModule,
     WebSocketModule,

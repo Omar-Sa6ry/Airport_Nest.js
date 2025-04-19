@@ -16,6 +16,7 @@ import { FlightModule } from './modules/flight/flight.module'
 import { SeatModule } from './modules/seat/seat.module'
 import { TicketModule } from './modules/ticket/ticket.module'
 import { CheckInModule } from './modules/checkIn/checkIn.module'
+import { LocationModule } from './modules/location/location.module'
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { CheckInModule } from './modules/checkIn/checkIn.module'
 
     AuthModule,
     UserModule,
+    LocationModule,
     EmployeeModule,
     AirportModule,
     TerminalModule,

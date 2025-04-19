@@ -17,12 +17,4 @@ export class CreateAirportDto {
   @IsString()
   @MaxLength(4)
   icaoCode: string
-
-  @Field(() => String)
-  @IsString()
-  city: string
-
-  @Field(() => String)
-  @IsString()
-  country: string
 }

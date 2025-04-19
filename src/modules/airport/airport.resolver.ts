@@ -4,6 +4,7 @@ import { AirportService } from './airport.service'
 import { Airport } from './entity/airport.model'
 import { Terminal } from '../terminal/entity/terminal.model'
 import { Auth } from 'src/common/decerator/auth.decerator'
+import { CreateLocationInput } from '../location/inputs/CreateLocation.input'
 import { Role } from 'src/common/constant/enum.constant'
 import { RedisService } from 'src/common/redis/redis.service'
 import { AirportResponse, AirportsResponse } from './dtos/airport.response'
@@ -33,8 +34,9 @@ export class AirportResolver {
   @Auth(Role.ADMIN, Role.MANAGER)
   async createAirport (
     @Args('createAirportDto') createAirportDto: CreateAirportDto,
+    @Args('createLocationInput') createLocationInput: CreateLocationInput,
   ): Promise<AirportResponse> {
-    return this.airportService.create(createAirportDto)
+    return this.airportService.create(createAirportDto, createLocationInput)
   }
 
   @Mutation(() => AirportResponse)
