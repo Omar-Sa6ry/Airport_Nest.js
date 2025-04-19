@@ -1,8 +1,7 @@
-import { Field, ObjectType,  } from '@nestjs/graphql'
-import { IsOptional } from 'class-validator'
+import { Field, ObjectType } from '@nestjs/graphql'
 import { BaseResponse } from 'src/common/bases/BaseResponse'
 import { FlightStatus } from 'src/common/constant/enum.constant'
-import { PaginationInfo } from 'src/common/dtos/pagintion'
+import { Airline } from 'src/modules/airline/entity/airline.model'
 import { Airport } from 'src/modules/airport/entity/airport.model'
 import { Gate } from 'src/modules/gate/entity/gate.model'
 
@@ -19,6 +18,9 @@ export class FlightOutput {
 
   @Field(() => Airport)
   toAirport: Airport
+
+  @Field(() => Airline)
+  airline: Airline
 
   @Field(() => Gate)
   gate: Gate
@@ -44,4 +46,3 @@ export class FlightResponse extends BaseResponse {
   @Field(() => FlightOutput, { nullable: true })
   data: FlightOutput
 }
-

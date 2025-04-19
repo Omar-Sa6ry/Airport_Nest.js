@@ -5,7 +5,7 @@ import { Op } from 'sequelize'
 import { I18nService } from 'nestjs-i18n'
 import { Airport } from 'src/modules/airport/entity/airport.model'
 import { Location } from '../entity/location.model'
-import { AirportLocation } from '../dtos/Locations.response'
+import { AirportLocation } from '../dtos/LocationsAirport.response'
 
 @Injectable()
 export class AirportLocationLoader {

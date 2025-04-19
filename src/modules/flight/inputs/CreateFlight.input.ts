@@ -6,6 +6,9 @@ export class CreateFlightInput {
   flightNumber: string
 
   @Field(() => String)
+  airlineId: string
+
+  @Field(() => String)
   toAirportId: string
 
   @Field(() => String)

@@ -5,7 +5,7 @@ import { Role } from 'src/common/constant/enum.constant'
 import { Location } from 'src/modules/location/entity/location.model'
 import { Exclude } from 'class-transformer'
 import { ulid } from 'ulid'
-import {  Model } from 'sequelize-typescript'
+import { Model } from 'sequelize-typescript'
 import {
   Column,
   Table,
@@ -15,6 +15,7 @@ import {
   DataType,
   HasOne,
 } from 'sequelize-typescript'
+import { Airline } from 'src/modules/airline/entity/airline.model'
 
 @ObjectType()
 @Table({ tableName: 'user', timestamps: true })
@@ -85,6 +86,9 @@ export class User extends Model<User> {
 
   @HasOne(() => Employee, { foreignKey: 'userId', onDelete: 'SET NULL' })
   employee: Employee
+
+  @HasOne(() => Airline, { foreignKey: 'userId', onDelete: 'SET NULL' })
+  airline: Airline
 
   @BeforeCreate
   @BeforeUpdate

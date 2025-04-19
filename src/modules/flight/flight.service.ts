@@ -10,6 +10,7 @@ import { ScheduleService } from 'src/common/queues/schedule/schedule.service'
 import { FlightToAirportLoader } from './loaders/flight.ToAirportloader'
 import { WebSocketMessageGateway } from 'src/common/websocket/websocket.gateway'
 import { FlightsFromAirportResponse } from './dtos/FlightsFromAirport.response'
+import { Airline } from '../airline/entity/airline.model'
 import { FlightResponse } from './dtos/Flight.response'
 import { Airport } from '../airport/entity/airport.model'
 import { CreateFlightInput } from './inputs/CreateFlight.input'
@@ -37,6 +38,7 @@ export class FlightService {
     @InjectModel(Airport) private readonly airportRepo: typeof Airport,
     @InjectModel(Ticket) private readonly ticketModel: typeof Ticket,
     @InjectModel(Flight) private readonly flightModel: typeof Flight,
+    @InjectModel(Airline) private readonly airlineModel: typeof Airline,
   ) {}
 
   async create (createFlightInput: CreateFlightInput): Promise<FlightResponse> {
@@ -49,6 +51,12 @@ export class FlightService {
     if (!fromAirport)
       throw new NotFoundException(await this.i18n.t('airport.NOT_FOUND'))
 
+    const airline = await this.airlineModel.findByPk(
+      createFlightInput.airlineId,
+    )
+    if (!airline)
+      throw new NotFoundException(await this.i18n.t('airline.NOT_FOUND'))
+
     const gate = await this.gateRepo.findByPk(createFlightInput.gateId)
     if (!gate) throw new NotFoundException(await this.i18n.t('gate.NOT_FOUND'))
 
@@ -60,14 +68,18 @@ export class FlightService {
 
     const transaction = await this.flightModel.sequelize.transaction()
     try {
-      const flight = await this.flightModel.create(createFlightInput)
+      const flight = await this.flightModel.create(createFlightInput, {
+        transaction,
+      })
 
+      console.log('mkjivr')
       const flightInput: FlightResponse = {
         data: {
           ...flight.dataValues,
           gate: gate.dataValues,
           fromAirport: fromAirport.dataValues,
           toAirport: toAirport.dataValues,
+          airline: airline.dataValues,
         },
       }
 
@@ -102,7 +114,7 @@ export class FlightService {
 
   async findById (id: string): Promise<FlightResponse> {
     const flight = await this.flightModel.findByPk(id, {
-      include: ['fromAirport', 'toAirport', 'gate'],
+      include: ['fromAirport', 'toAirport', 'airline', 'gate'],
     })
     if (!flight) {
       throw new NotFoundException(await this.i18n.t('flight.NOT_FOUND'))
@@ -114,6 +126,7 @@ export class FlightService {
         gate: flight.gate.dataValues,
         fromAirport: flight.fromAirport.dataValues,
         toAirport: flight.toAirport.dataValues,
+        airline: flight.airline.dataValues,
       },
     }
     this.redisService.set(`flight:${flight.id}`, flightInput)
@@ -124,7 +137,7 @@ export class FlightService {
   async findByData (findOptions: FlightOptinalInput): Promise<FlightResponse> {
     const flight = await this.flightModel.findOne({
       where: { ...findOptions },
-      include: ['fromAirport', 'toAirport', 'gate'],
+      include: ['fromAirport', 'toAirport', 'airline', 'gate'],
     })
 
     if (!flight) {
@@ -137,6 +150,7 @@ export class FlightService {
         gate: flight.gate.dataValues,
         fromAirport: flight.fromAirport.dataValues,
         toAirport: flight.toAirport.dataValues,
+        airline: flight.airline.dataValues,
       },
     }
     this.redisService.set(`flight:${flight.id}`, flightInput)

@@ -2,11 +2,12 @@ import { Resolver, Query, Mutation, Args, Int } from '@nestjs/graphql'
 import { LocationService } from './location.service'
 import { LocationResponse } from './dtos/location.response'
 import { UpdateLocationInput } from './inputs/UpdateLocation.input copy'
-import { AirportLocationsResponse } from './dtos/Locations.response'
+import { AirportLocationsResponse } from './dtos/LocationsAirport.response'
 import { CurrentUser } from 'src/common/decerator/currentUser.decerator'
 import { CurrentUserDto } from 'src/common/dtos/currentUser.dto'
 import { Role } from 'src/common/constant/enum.constant'
 import { Auth } from 'src/common/decerator/auth.decerator'
+import { AirlineLocationsResponse } from './dtos/LocationsAirline.response'
 
 @Resolver()
 export class LocationResolver {
@@ -27,6 +28,14 @@ export class LocationResolver {
     return this.locationService.findAllAirportsLocation(page, limit)
   }
 
+  @Query(() => AirlineLocationsResponse)
+  async findAirlineLocations (
+    @Args('page', { type: () => Int, nullable: true }) page?: number,
+    @Args('limit', { type: () => Int, nullable: true }) limit?: number,
+  ): Promise<AirlineLocationsResponse> {
+    return this.locationService.findAllAilinesLocation(page, limit)
+  }
+
   @Mutation(() => LocationResponse)
   @Auth(
     Role.MANAGER,
@@ -43,6 +52,15 @@ export class LocationResolver {
     @Args('updateLocationInput') updateLocationInput: UpdateLocationInput,
   ): Promise<LocationResponse> {
     return this.locationService.updateForUser(user.id, updateLocationInput)
+  }
+
+  @Mutation(() => LocationResponse)
+  @Auth(Role.ADMIN)
+  async updateLocationForAirline (
+    @Args('airlineId', { type: () => String }) airlineId: string,
+    @Args('updateLocationInput') updateLocationInput: UpdateLocationInput,
+  ): Promise<LocationResponse> {
+    return this.locationService.updateForAirport(airlineId, updateLocationInput)
   }
 
   @Mutation(() => LocationResponse)

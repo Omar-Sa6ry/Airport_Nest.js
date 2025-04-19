@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common'
 import { ConfigModule, ConfigService } from '@nestjs/config'
 import { SequelizeModule, SequelizeModuleOptions } from '@nestjs/sequelize'
+import { Airline } from 'src/modules/airline/entity/airline.model'
 import { Airport } from 'src/modules/airport/entity/airport.model'
 import { CheckIn } from 'src/modules/checkIn/entity/checkIn.entity'
 import { Employee } from 'src/modules/employee/entity/employee.model'
@@ -29,6 +30,7 @@ import { User } from 'src/modules/users/entities/user.entity'
           Location,
           Passenger,
           Employee,
+          Airline,
           Airport,
           Terminal,
           Gate,

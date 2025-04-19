@@ -22,6 +22,7 @@ import { Role } from 'src/common/constant/enum.constant'
 import { UploadService } from '../../common/upload/upload.service'
 import { AuthInputResponse } from './input/Auth.input'
 import { InjectModel } from '@nestjs/sequelize'
+import { CreateLocationInput } from '../location/inputs/CreateLocation.input'
 import { I18nService } from 'nestjs-i18n'
 import { WebSocketMessageGateway } from 'src/common/websocket/websocket.gateway'
 import { UserInput, UserInputResponse } from '../users/input/User.input'
@@ -30,7 +31,6 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common'
-import { CreateLocationInput } from '../location/inputs/CreateLocation.input'
 
 @Injectable()
 export class AuthService {
@@ -62,15 +62,13 @@ export class AuthService {
 
     const transaction = await this.userRepo.sequelize.transaction()
     try {
-     console.log('ijigj')
- const user = await this.userRepo.create(
+      const user = await this.userRepo.create(
         {
           ...createUserDto,
           password,
         },
         { transaction },
       )
-console.log('ijigj')
 
       if (avatar) {
         const filename = await this.uploadService.uploadImage(avatar)

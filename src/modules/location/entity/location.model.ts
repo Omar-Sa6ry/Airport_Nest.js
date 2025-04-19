@@ -1,6 +1,7 @@
 import { ObjectType, Field, ID } from '@nestjs/graphql'
 import { BaseEntity } from 'src/common/bases/BaseEntity'
 import { Currency } from 'src/common/constant/enum.constant'
+import { Airline } from 'src/modules/airline/entity/airline.model'
 import { Airport } from 'src/modules/airport/entity/airport.model'
 import { User } from 'src/modules/users/entities/user.entity'
 import {
@@ -24,10 +25,10 @@ export class Location extends BaseEntity<Location> {
   @Column({ type: DataType.STRING(26), allowNull: true })
   airportId?: string | null
 
-  //   @Field(() => String, { nullable: true })
-  //   @ForeignKey(() => Airline)
-  //   @Column({ type: DataType.STRING(26), allowNull: true })
-  //   airlineId: string
+  @Field(() => String, { nullable: true })
+  @ForeignKey(() => Airline)
+  @Column({ type: DataType.STRING(26), allowNull: true })
+  airlineId?: string | null
 
   @Field()
   @Column({ type: DataType.STRING, allowNull: false })
@@ -47,6 +48,6 @@ export class Location extends BaseEntity<Location> {
   @BelongsTo(() => Airport, { onDelete: 'SET NULL' })
   airport: Airport
 
-  //   @BelongsTo(() => Airline)
-  //   airline: Airline
+  @BelongsTo(() => Airline)
+  airline: Airline
 }

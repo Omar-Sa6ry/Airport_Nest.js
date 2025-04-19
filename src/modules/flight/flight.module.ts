@@ -9,16 +9,17 @@ import { Airport } from '../airport/entity/airport.model'
 import { FlightResolver } from './flight.resolver'
 import { FlightService } from './flight.service'
 import { FlightFromAirportLoader } from './loaders/flight.FromAirportloader'
-import { FlightToAirportLoader } from './loaders/flight.ToAirportloader'
 import { UpdateFlightService } from 'src/common/queues/update flight/UpdateFlight.service'
 import { UpdateFlightModule } from 'src/common/queues/update flight/UpdateFlight.module'
 import { NotificationModule } from 'src/common/queues/notification/notification.module'
 import { scheduleQueueModule } from 'src/common/queues/schedule/scheduleQueue.module'
 import { ScheduleService } from 'src/common/queues/schedule/schedule.service'
+import { Airline } from '../airline/entity/airline.model'
+import { FlightToAirportLoader } from './loaders/flight.ToAirportloader'
 
 @Module({
   imports: [
-    SequelizeModule.forFeature([Gate, Flight, Airport]),
+    SequelizeModule.forFeature([Gate, Flight, Airline, Airport]),
     scheduleQueueModule,
     UpdateFlightModule,
     NotificationModule,

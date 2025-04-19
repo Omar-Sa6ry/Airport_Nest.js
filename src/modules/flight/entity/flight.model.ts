@@ -1,5 +1,6 @@
 import { Field, ObjectType } from '@nestjs/graphql'
 import { BaseEntity } from 'src/common/bases/BaseEntity'
+import { Airline } from 'src/modules/airline/entity/airline.model'
 import { Seat } from 'src/modules/seat/entity/Seat.model'
 import { FlightStatus } from 'src/common/constant/enum.constant'
 import { Airport } from 'src/modules/airport/entity/airport.model'
@@ -15,7 +16,7 @@ import {
 
 @ObjectType()
 @Table({
-  tableName: 'flights',
+  tableName: 'flight',
   indexes: [
     { name: 'idx_flight_number', fields: ['flightNumber'] },
     { name: 'idx_from_airport', fields: ['fromAirportId'] },
@@ -28,6 +29,11 @@ export class Flight extends BaseEntity<Flight> {
   @Field()
   @Column({ type: DataType.STRING(20), allowNull: false })
   flightNumber: string
+
+  @Field()
+  @ForeignKey(() => Airline)
+  @Column({ type: DataType.STRING(26), allowNull: false })
+  airlineId: string
 
   @ForeignKey(() => Airport)
   @Column({ type: DataType.STRING(26), allowNull: false })
@@ -66,6 +72,9 @@ export class Flight extends BaseEntity<Flight> {
   @Field(() => Airport)
   @BelongsTo(() => Airport, 'fromAirportId')
   fromAirport: Airport
+
+  @BelongsTo(() => Airline, 'airlineId')
+  airline: Airline
 
   @Field(() => Airport)
   @BelongsTo(() => Airport, 'toAirportId')

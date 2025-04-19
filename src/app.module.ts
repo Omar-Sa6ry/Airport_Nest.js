@@ -17,6 +17,7 @@ import { SeatModule } from './modules/seat/seat.module'
 import { TicketModule } from './modules/ticket/ticket.module'
 import { CheckInModule } from './modules/checkIn/checkIn.module'
 import { LocationModule } from './modules/location/location.module'
+import { AirlineModule } from './modules/airline/airline.module'
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { LocationModule } from './modules/location/location.module'
     UserModule,
     LocationModule,
     EmployeeModule,
+    AirlineModule,
     AirportModule,
     TerminalModule,
     GateModule,

@@ -16,6 +16,14 @@ A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date
 """
 scalar DateTime
 
+type Gate {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  gateNumber: String!
+  terminalId: String!
+}
+
 type Terminal {
   id: ID!
   createdAt: DateTime!
@@ -26,45 +34,13 @@ type Terminal {
   gates(page: Int, limit: Int): [Gate!]!
 }
 
-type Gate {
-  id: ID!
-  createdAt: DateTime!
-  updatedAt: DateTime!
-  gateNumber: String!
-  terminalId: String!
-}
-
-type Ticket {
-  id: ID!
-  createdAt: DateTime!
-  updatedAt: DateTime!
-  passengerId: String!
-  flightId: String!
-  seatId: String!
-  seatNumber: Int!
-  class: TicketClass!
-  price: Int!
-  status: TicketStatus!
-}
-
-enum TicketClass {
-  ECONOMY
-  BUSINESS
-  FIRST
-}
-
-enum TicketStatus {
-  BOOKED
-  CANCELED
-  USED
-}
-
 type Location {
   id: ID!
   createdAt: DateTime!
   updatedAt: DateTime!
   userId: String
   airportId: String
+  airlineId: String
   city: String!
   country: String!
   currency: Currency!
@@ -242,6 +218,86 @@ type Airport {
   terminals(page: Int, limit: Int): [Terminal!]!
 }
 
+type Flight {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  flightNumber: String!
+  airlineId: String!
+  leaveAt: DateTime!
+  arriveAt: DateTime!
+  status: FlightStatus!
+  gate: Gate!
+  fromAirport: Airport!
+  toAirport: Airport!
+}
+
+enum FlightStatus {
+  SCHEDULED
+  DELAYED
+  CANCELLED
+  IN_AIR
+  LANDED
+}
+
+type Ticket {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  passengerId: String!
+  flightId: String!
+  seatId: String!
+  seatNumber: Int!
+  class: TicketClass!
+  price: Int!
+  status: TicketStatus!
+}
+
+enum TicketClass {
+  ECONOMY
+  BUSINESS
+  FIRST
+}
+
+enum TicketStatus {
+  BOOKED
+  CANCELED
+  USED
+}
+
+type User {
+  id: ID!
+  firstName: String!
+  lastName: String!
+  fullName: String
+  avatar: String
+  phone: String!
+  email: String!
+  role: Role!
+  fcmToken: String!
+}
+
+"""User roles in the system"""
+enum Role {
+  CREW
+  PILOT
+  ADMIN
+  MANAGER
+  PASSENGER
+  SECURITY
+  GROUND_STAFF
+  AIRLINE_MANAGER
+  FLIGHT_ATTENDANT
+}
+
+type airline {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  name: String!
+  user: User!
+}
+
 type UserOutput {
   id: String!
   passengerId: String!
@@ -291,19 +347,6 @@ type EmployeeOutput {
   phone: String!
   email: String!
   role: Role!
-}
-
-"""User roles in the system"""
-enum Role {
-  CREW
-  PILOT
-  ADMIN
-  MANAGER
-  PASSENGER
-  SECURITY
-  GROUND_STAFF
-  AIRLINE_MANAGER
-  FLIGHT_ATTENDANT
 }
 
 type EmployeeWithAirportInput {
@@ -396,6 +439,23 @@ type AirportLocationsResponse {
   pagination: PaginationInfo
 }
 
+type AirlineLocation {
+  id: String!
+  country: String!
+  city: String!
+  currency: Currency!
+  airline: airline!
+}
+
+type AirlineLocationsResponse {
+  message: String
+  success: Boolean
+  timeStamp: String
+  statusCode: Float
+  items: [AirlineLocation!]
+  pagination: PaginationInfo
+}
+
 type TerminalResponse {
   message: String
   success: Boolean
@@ -446,20 +506,13 @@ type FlightOutput {
   flightNumber: String!
   fromAirport: Airport!
   toAirport: Airport!
+  airline: airline!
   gate: Gate!
   status: FlightStatus!
   leaveAt: DateTime!
   arriveAt: DateTime!
   createdAt: DateTime!
   updatedAt: DateTime!
-}
-
-enum FlightStatus {
-  SCHEDULED
-  DELAYED
-  CANCELLED
-  IN_AIR
-  LANDED
 }
 
 type FlightResponse {
@@ -593,6 +646,32 @@ type CreateCheckinResponse {
   data: String
 }
 
+type AirlineResponse {
+  message: String
+  success: Boolean
+  timeStamp: String
+  statusCode: Float
+  data: airline
+}
+
+type AirlinesResponse {
+  message: String
+  success: Boolean
+  timeStamp: String
+  statusCode: Float
+  items: [airline!]
+  pagination: PaginationInfo
+}
+
+type FlightsInAirlinesResponse {
+  message: String
+  success: Boolean
+  timeStamp: String
+  statusCode: Float
+  items: [Flight!]
+  pagination: PaginationInfo
+}
+
 type Query {
   sayHello: String!
   getUserById(id: String!): UserResponse!
@@ -601,6 +680,7 @@ type Query {
   deleteUser: UserResponse!
   findLocationById(id: String!): LocationResponse!
   findAirportLocations(page: Int, limit: Int): AirportLocationsResponse!
+  findAirlineLocations(page: Int, limit: Int): AirlineLocationsResponse!
   airportById(id: String!): AirportResponse!
   airportByName(name: String!): AirportResponse!
   allAirports(page: Int, limit: Int): AirportsResponse!
@@ -608,6 +688,10 @@ type Query {
   getEmployeeByEmail(email: String!): EmployeeResponse!
   getEmployeeByphone(phone: String!): EmployeeResponse!
   employeesInAirport(airportId: String!, page: Int, limit: Int): EmployeesResponse!
+  findAirlineById(id: String!): AirlineResponse!
+  findAirlineByName(name: String!): AirlineResponse!
+  findAllAirlines(page: Int, limit: Int): AirlinesResponse!
+  findAllFlightsInAirline(airlineId: String!, page: Int, limit: Int): FlightsInAirlinesResponse!
   terminalById(id: String!): TerminalResponse!
   terminalByData(findTerminalDto: FindTerminalDto!): TerminalResponse!
   allTerminalsInAirport(airportId: String!, page: Int, limit: Int): TerminalsResponse!
@@ -651,6 +735,7 @@ type Mutation {
   adminLogin(fcmToken: String!, loginDto: LoginDto!): AdminAuthResponse!
   updateUser(updateUserDto: UpdateUserDto!): UserResponse!
   updateLocationForUser(updateLocationInput: UpdateLocationInput!): LocationResponse!
+  updateLocationForAirline(airlineId: String!, updateLocationInput: UpdateLocationInput!): LocationResponse!
   updateLocationForAirport(airportId: String!, updateLocationInput: UpdateLocationInput!): LocationResponse!
   createAirport(createAirportDto: CreateAirportDto!, createLocationInput: CreateLocationInput!): AirportResponse!
   updateAirport(id: String!, updateAirportDto: UpdateAirportDto!): AirportResponse!
@@ -659,6 +744,9 @@ type Mutation {
   deleteEmployee: EmployeeResponse!
   UpdateEmployeeRoleToAdmin(id: String!): EmployeeResponse!
   UpdateEmployeeRoleInairport(id: String!, role: String!): EmployeeResponse!
+  createAirline(name: String!, createLocationInput: CreateLocationInput!): AirlineResponse!
+  updateAirline(id: String!, name: String!): AirlineResponse!
+  deleteAirline(id: String!): AirlineResponse!
   createTerminal(createTerminalDto: CreateTerminalDto!): TerminalResponse!
   updateTerminal(updateTerminalDto: UpdateTerminalDto!): TerminalResponse!
   deleteTerminal(id: String!): TerminalResponse!
@@ -698,6 +786,7 @@ input CreatePassengerDto {
 input CreateLocationInput {
   userId: String
   airportId: String
+  airlineId: String
   country: String!
   city: String!
   currency: Currency!
@@ -771,6 +860,7 @@ input CreateGateDto {
 
 input CreateFlightInput {
   flightNumber: String!
+  airlineId: String!
   toAirportId: String!
   fromAirportId: String!
   gateId: String!

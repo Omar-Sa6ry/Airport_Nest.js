@@ -12,9 +12,9 @@ export class CreateLocationInput {
   @Field({ nullable: true })
   airportId?: string
 
-  //   @IsOptional()
-  //   @Field({ nullable: true })
-  //   airlineId?: string
+  @IsOptional()
+  @Field({ nullable: true })
+  airlineId?: string
 
   @Field()
   country: string
