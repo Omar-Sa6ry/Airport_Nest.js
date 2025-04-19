@@ -89,12 +89,10 @@ export class AuthService {
         { transaction },
       )
 
-      console.log('ijigj')
-      this.locationService.create({
+     this.locationService.create({
         ...createLocationInput,
         userId: user?.id,
       })
-      console.log('ijigj')
 
       // first user is admin automatic
       const users = await this.userRepo.findAll({

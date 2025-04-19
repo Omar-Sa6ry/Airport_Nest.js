@@ -72,7 +72,6 @@ export class FlightService {
         transaction,
       })
 
-      console.log('mkjivr')
       const flightInput: FlightResponse = {
         data: {
           ...flight.dataValues,

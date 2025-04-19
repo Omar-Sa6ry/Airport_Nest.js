@@ -6,6 +6,7 @@ import { Airport } from 'src/modules/airport/entity/airport.model'
 import { CheckIn } from 'src/modules/checkIn/entity/checkIn.entity'
 import { Employee } from 'src/modules/employee/entity/employee.model'
 import { Flight } from 'src/modules/flight/entity/flight.model'
+import { FlightCrew } from 'src/modules/flightCrew/entity/flightCrew.model'
 import { Gate } from 'src/modules/gate/entity/gate.model'
 import { Location } from 'src/modules/location/entity/location.model'
 import { Seat } from 'src/modules/seat/entity/Seat.model'
@@ -32,6 +33,7 @@ import { User } from 'src/modules/users/entities/user.entity'
           Employee,
           Airline,
           Airport,
+          FlightCrew,
           Terminal,
           Gate,
           Flight,

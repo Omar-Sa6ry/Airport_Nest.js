@@ -218,6 +218,14 @@ type Airport {
   terminals(page: Int, limit: Int): [Terminal!]!
 }
 
+type Employee {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  userId: String!
+  airportId: Airport!
+}
+
 type Flight {
   id: ID!
   createdAt: DateTime!
@@ -672,6 +680,43 @@ type FlightsInAirlinesResponse {
   pagination: PaginationInfo
 }
 
+type FlightCrewData {
+  id: String!
+  flight: Flight!
+  user: User!
+  role: CrewRole!
+}
+
+enum CrewRole {
+  CREW
+  PILOT
+  SECURITY
+  FLIGHT_ATTENDANT
+}
+
+type FlightCrewResponse {
+  message: String
+  success: Boolean
+  timeStamp: String
+  statusCode: Float
+  data: FlightCrewData
+}
+
+type FllghtCrewsData {
+  id: String!
+  user: User!
+  role: CrewRole!
+}
+
+type FllghtCrewsResponse {
+  message: String
+  success: Boolean
+  timeStamp: String
+  statusCode: Float
+  items: [FllghtCrewsData!]
+  pagination: PaginationInfo
+}
+
 type Query {
   sayHello: String!
   getUserById(id: String!): UserResponse!
@@ -703,6 +748,8 @@ type Query {
   getAllFlightsFromAitport(id: String!): FlightsFromAirportResponse!
   findSeatById(id: ID!): SeatResponse!
   findAllAvailableSeatsInFlight(findSeatInput: FindSeatInput!, page: Int, limit: Int): SeatsResponse!
+  findFlightCrewById(id: String!): FlightCrewResponse!
+  findFlightCrewsForFlight(flightId: String!, page: Int, limit: Int): FllghtCrewsResponse!
   getTickets(flightId: String!, page: Float, limit: Float): TicketsResponse!
   getTicketById(id: String!): TicketResponse!
   getAllCheckIns(page: Float, limit: Float): CheckinsResponse!
@@ -764,6 +811,8 @@ type Mutation {
   unBookSeat(id: ID!): SeatResponse!
   updateSeat(id: ID!, updateSeatInput: UpdateSeatInput!): SeatResponse!
   deleteSeat(id: ID!): SeatResponse!
+  createFlightCrew(createFlightCrewInput: CreateFlightCrewInput!): FlightCrewResponse!
+  deleteFlightCrew(flightCrewId: String!): FlightCrewResponse!
   deleteTicket(id: String!): TicketResponse!
   createCheckIn(createCheckInInput: CreateCheckInInput!, createTicketInput: CreateTicketInput!, currency: Currency!): CreateCheckinResponse!
   deleteCheckIn(id: String!): CheckinResponse!
@@ -878,6 +927,12 @@ input UpdateSeatInput {
   seatNumber: Int
   class: TicketClass
   isAvailable: Boolean
+}
+
+input CreateFlightCrewInput {
+  flightId: String!
+  employeeId: String!
+  role: CrewRole!
 }
 
 input CreateCheckInInput {

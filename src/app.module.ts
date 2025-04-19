@@ -18,6 +18,7 @@ import { TicketModule } from './modules/ticket/ticket.module'
 import { CheckInModule } from './modules/checkIn/checkIn.module'
 import { LocationModule } from './modules/location/location.module'
 import { AirlineModule } from './modules/airline/airline.module'
+import { FlightCrewModule } from './modules/flightCrew/flightCrew.module'
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { AirlineModule } from './modules/airline/airline.module'
     GateModule,
     FlightModule,
     SeatModule,
+    FlightCrewModule,
     TicketModule,
     CheckInModule,
   ],
