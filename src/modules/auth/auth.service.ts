@@ -89,7 +89,7 @@ export class AuthService {
         { transaction },
       )
 
-     this.locationService.create({
+      this.locationService.create({
         ...createLocationInput,
         userId: user?.id,
       })
@@ -189,7 +189,7 @@ export class AuthService {
       where: { email: lowerEmail },
     })
 
-    if (!(user instanceof User))
+    if (!user)
       throw new NotFoundException(await this.i18n.t('user.EMAIL_WRONG'))
 
     const token = randomBytes(32).toString('hex')
@@ -229,7 +229,7 @@ export class AuthService {
       await user.save({ transaction })
 
       const relationCacheKey = `user:${user.id}`
-      await this.redisService.set(relationCacheKey, user)
+      this.redisService.set(relationCacheKey, user)
 
       await transaction.commit()
 
@@ -263,7 +263,7 @@ export class AuthService {
   ): Promise<UserInputResponse> {
     const { password, newPassword } = changePassword
     if (password === newPassword)
-      throw new BadRequestException(await this.i18n.t('user.LOGISANE_PASSWORD'))
+      throw new BadRequestException(await this.i18n.t('user.SANE_PASSWORD'))
 
     const transaction = await this.userRepo.sequelize.transaction()
     try {
@@ -295,7 +295,6 @@ export class AuthService {
         ...passenger.dataValues,
         passengerId: passenger.dataValues.id,
       }
-      await transaction.commit()
 
       return {
         message: await this.i18n.t('user.UPDATE_PASSWORD'),
@@ -326,7 +325,7 @@ export class AuthService {
     await ComparePassword(password, user?.password)
     const token = await this.generateToken.jwt(user?.email, user?.id)
     const userCacheKey = `user:${email}`
-    await this.redisService.set(userCacheKey, { user, token })
+    this.redisService.set(userCacheKey, { user, token })
     user.fcmToken = fcmToken
     await user.save()
 

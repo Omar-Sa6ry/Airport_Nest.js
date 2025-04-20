@@ -10,6 +10,7 @@ export enum Role {
   AIRLINE_MANAGER = 'airline_manager',
   FLIGHT_ATTENDANT = 'flight_attendant',
 }
+export const AllRoles: Role[] = Object.values(Role)
 
 registerEnumType(Role, {
   name: 'Role',

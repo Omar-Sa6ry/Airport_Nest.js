@@ -9,7 +9,7 @@ import { join } from 'path'
       driver: ApolloDriver,
       autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
       context: ({ req }) => ({
-        req,
+        request: req,
         language: req.headers['accept-language'] || 'en',
       }),
       playground: true,

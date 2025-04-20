@@ -16,5 +16,6 @@
   "INVALID_TOKEN": "Invalid token",
   "INVALID_TOKEN_PAYLOAD": "Invalid token payload",
   "OLD_IS_EQUAL_NEW": "old password is equal to new password",
-  "ROLE": "you arenot partner"
+  "ROLE": "you arenot partner",
+  "INSUFFICIENT_PERMISSIONS": "Insuffuent permission"
 }

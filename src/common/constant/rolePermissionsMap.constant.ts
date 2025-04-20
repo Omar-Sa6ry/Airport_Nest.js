@@ -1,6 +1,18 @@
 import { Permission, Role } from './enum.constant'
 
 export const rolePermissionsMap: Record<Role, Permission[]> = {
+  [Role.PASSENGER]: [
+    Permission.SEAT_BOOK,
+    Permission.ACCOUNT_RESET_PASSWORD,
+    Permission.SEAT_UNBOOK,
+    Permission.CHECKIN_CREATE,
+    Permission.CHECKIN_READ_OWN,
+    Permission.LOCATION_UPDATE_SELF,
+    Permission.BAGGAGE_READ,
+    Permission.BAGGAGE_UPDATE,
+    Permission.BAGGAGE_DELETE,
+    Permission.ACCOUNT_CHANGE_PASSWORD,
+  ],
   [Role.ADMIN]: [
     Permission.AIRLINE_CREATE,
     Permission.AIRLINE_UPDATE,
@@ -35,6 +47,7 @@ export const rolePermissionsMap: Record<Role, Permission[]> = {
     Permission.TICKET_VIEW,
     Permission.LOCATION_UPDATE_AIRLINE,
     Permission.LOCATION_UPDATE_AIRPORT,
+    Permission.ACCOUNT_CHANGE_PASSWORD,
   ],
   [Role.AIRLINE_MANAGER]: [
     Permission.AIRLINE_MANAGE_FLIGHTS,
@@ -52,6 +65,7 @@ export const rolePermissionsMap: Record<Role, Permission[]> = {
     Permission.USER_UPDATE,
     Permission.TICKET_VIEW,
     Permission.LOCATION_UPDATE_SELF,
+    Permission.ACCOUNT_CHANGE_PASSWORD,
   ],
   [Role.MANAGER]: [
     Permission.EMPLOYEE_READ_ALL,
@@ -67,31 +81,28 @@ export const rolePermissionsMap: Record<Role, Permission[]> = {
     Permission.USER_DELETE,
     Permission.USER_VIEW,
     Permission.LOCATION_UPDATE_SELF,
+    Permission.ACCOUNT_CHANGE_PASSWORD,
   ],
-  [Role.PILOT]: [Permission.LOCATION_UPDATE_SELF],
+  [Role.PILOT]: [
+    Permission.ACCOUNT_CHANGE_PASSWORD,
+    Permission.LOCATION_UPDATE_SELF,
+  ],
   [Role.SECURITY]: [
     Permission.EMPLOYEE_READ,
     Permission.BAGGAGE_READ,
     Permission.BAGGAGE_READ_ALL,
     Permission.TICKET_VIEW,
+    Permission.ACCOUNT_CHANGE_PASSWORD,
     Permission.LOCATION_UPDATE_SELF,
   ],
   [Role.GROUND_STAFF]: [
     Permission.TICKET_VIEW,
     Permission.LOCATION_UPDATE_SELF,
+    Permission.ACCOUNT_CHANGE_PASSWORD,
   ],
   [Role.FLIGHT_ATTENDANT]: [
     Permission.TICKET_VIEW,
+    Permission.ACCOUNT_CHANGE_PASSWORD,
     Permission.LOCATION_UPDATE_SELF,
-  ],
-  [Role.PASSENGER]: [
-    Permission.SEAT_BOOK,
-    Permission.SEAT_UNBOOK,
-    Permission.CHECKIN_CREATE,
-    Permission.CHECKIN_READ_OWN,
-    Permission.LOCATION_UPDATE_SELF,
-    Permission.BAGGAGE_READ,
-    Permission.BAGGAGE_UPDATE,
-    Permission.BAGGAGE_DELETE,
   ],
 }

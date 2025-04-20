@@ -9,7 +9,7 @@ import { ChangePasswordDto } from './dtos/ChangePassword.dto'
 import { CreateImagDto } from '../../common/upload/dtos/createImage.dto'
 import { CurrentUser } from 'src/common/decerator/currentUser.decerator'
 import { CurrentUserDto } from 'src/common/dtos/currentUser.dto'
-import { Role, Permission } from 'src/common/constant/enum.constant'
+import { Permission, AllRoles } from 'src/common/constant/enum.constant'
 import { RedisService } from 'src/common/redis/redis.service'
 import { CreatePassengerDto } from './dtos/CreatePassengerData.dto'
 import { UserResponse } from '../users/dtos/UserResponse.dto'
@@ -56,7 +56,7 @@ export class AuthResolver {
   }
 
   @Mutation(() => AuthResponse)
-  @Auth([], [Permission.ACCOUNT_RESET_PASSWORD])
+  @Auth(AllRoles, [Permission.ACCOUNT_RESET_PASSWORD])
   async forgotPassword (
     @CurrentUser() user: CurrentUserDto,
   ): Promise<AuthResponse> {
@@ -64,7 +64,7 @@ export class AuthResolver {
   }
 
   @Mutation(() => UserResponse)
-  @Auth([], [Permission.ACCOUNT_RESET_PASSWORD])
+  @Auth(AllRoles, [Permission.ACCOUNT_RESET_PASSWORD])
   async resetPassword (
     @Args('resetPasswordDto') resetPasswordDto: ResetPasswordDto,
   ): Promise<UserResponse> {
@@ -72,7 +72,7 @@ export class AuthResolver {
   }
 
   @Mutation(() => UserResponse)
-  @Auth([], [Permission.ACCOUNT_CHANGE_PASSWORD])
+  @Auth(AllRoles, [Permission.ACCOUNT_CHANGE_PASSWORD])
   async changePassword (
     @CurrentUser() user: CurrentUserDto,
     @Args('changePasswordDto') changePasswordDto: ChangePasswordDto,
@@ -81,7 +81,6 @@ export class AuthResolver {
   }
 
   @Mutation(() => AdminAuthResponse)
-  @Auth([Role.ADMIN], [Permission.ADMIN_ACCESS])
   async adminLogin (
     @Args('fcmToken') fcmToken: string,
     @Args('loginDto') loginDto: LoginDto,
