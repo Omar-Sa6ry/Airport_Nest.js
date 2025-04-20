@@ -1,10 +1,9 @@
 import { Resolver, Mutation, Args, Query, Int } from '@nestjs/graphql'
 import { BaggageService } from './baggage.service'
 import { UpdateBaggageInput } from './inputs/UpdateBaggage.input'
-import { BaggageResponse } from './dto/Baggage.response'
-import { BaggagesResponse } from './dto/Baggage.response'
+import { BaggageResponse, BaggagesResponse } from './dto/Baggage.response'
 import { Auth } from 'src/common/decerator/auth.decerator'
-import { Role } from 'src/common/constant/enum.constant'
+import { Role, Permission } from 'src/common/constant/enum.constant'
 import { CurrentUser } from 'src/common/decerator/currentUser.decerator'
 import { CurrentUserDto } from 'src/common/dtos/currentUser.dto'
 
@@ -13,7 +12,7 @@ export class BaggageResolver {
   constructor (private readonly baggageService: BaggageService) {}
 
   @Query(() => BaggageResponse)
-  @Auth(Role.MANAGER, Role.PASSENGER)
+  @Auth([Role.SECURITY, Role.PASSENGER], [Permission.BAGGAGE_READ])
   async findBaggageById (
     @Args('id', { type: () => String }) id: string,
   ): Promise<BaggageResponse> {
@@ -21,7 +20,7 @@ export class BaggageResolver {
   }
 
   @Query(() => BaggagesResponse)
-  @Auth(Role.MANAGER)
+  @Auth([Role.SECURITY], [Permission.BAGGAGE_READ_ALL])
   async findAllBaggageOnFlight (
     @Args('flightId', { type: () => String }) flightId: string,
     @Args('page', { type: () => Int, nullable: true }) page?: number,
@@ -31,7 +30,7 @@ export class BaggageResolver {
   }
 
   @Mutation(() => BaggageResponse)
-  @Auth(Role.PASSENGER)
+  @Auth([Role.PASSENGER], [Permission.BAGGAGE_UPDATE])
   async updateBaggage (
     @CurrentUser() user: CurrentUserDto,
     @Args('id', { type: () => String }) id: string,
@@ -41,7 +40,7 @@ export class BaggageResolver {
   }
 
   @Mutation(() => BaggageResponse)
-  @Auth(Role.MANAGER)
+  @Auth([Role.MANAGER, Role.PASSENGER], [Permission.BAGGAGE_DELETE])
   async deleteBaggage (
     @Args('id', { type: () => String }) id: string,
   ): Promise<BaggageResponse> {

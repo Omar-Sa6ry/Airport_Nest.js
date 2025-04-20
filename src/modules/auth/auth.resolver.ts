@@ -9,7 +9,7 @@ import { ChangePasswordDto } from './dtos/ChangePassword.dto'
 import { CreateImagDto } from '../../common/upload/dtos/createImage.dto'
 import { CurrentUser } from 'src/common/decerator/currentUser.decerator'
 import { CurrentUserDto } from 'src/common/dtos/currentUser.dto'
-import { Role } from 'src/common/constant/enum.constant'
+import { Role, Permission } from 'src/common/constant/enum.constant'
 import { RedisService } from 'src/common/redis/redis.service'
 import { CreatePassengerDto } from './dtos/CreatePassengerData.dto'
 import { UserResponse } from '../users/dtos/UserResponse.dto'
@@ -17,14 +17,14 @@ import { Auth } from 'src/common/decerator/auth.decerator'
 import { AdminAuthResponse } from './dtos/AdminAuthRes.dto'
 import { CreateLocationInput } from '../location/inputs/CreateLocation.input'
 
-@Resolver(of => User)
+@Resolver(() => User)
 export class AuthResolver {
   constructor (
     private readonly redisService: RedisService,
     private authService: AuthService,
   ) {}
 
-  @Mutation(returns => AuthResponse)
+  @Mutation(() => AuthResponse)
   async register (
     @Args('fcmToken') fcmToken: string,
     @Args('createUserDto') createUserDto: CreateUserDto,
@@ -41,13 +41,12 @@ export class AuthResolver {
     )
   }
 
-  @Mutation(returns => AuthResponse)
+  @Mutation(() => AuthResponse)
   async login (
     @Args('fcmToken') fcmToken: string,
     @Args('loginDto') loginDto: LoginDto,
   ): Promise<AuthResponse> {
-    const userCacheKey = `auth:${loginDto.email}`
-    const cachedUser = await this.redisService.get(userCacheKey)
+    const cachedUser = await this.redisService.get(`auth:${loginDto.email}`)
 
     if (cachedUser instanceof AuthResponse) {
       return { ...cachedUser }
@@ -56,24 +55,24 @@ export class AuthResolver {
     return await this.authService.login(fcmToken, loginDto)
   }
 
-  @Mutation(returns => AuthResponse)
-  @Auth(Role.PILOT, Role.CREW, Role.ADMIN, Role.MANAGER)
+  @Mutation(() => AuthResponse)
+  @Auth([], [Permission.ACCOUNT_RESET_PASSWORD])
   async forgotPassword (
     @CurrentUser() user: CurrentUserDto,
   ): Promise<AuthResponse> {
     return await this.authService.forgotPassword(user.email)
   }
 
-  @Mutation(returns => UserResponse)
-  @Auth(Role.PILOT, Role.CREW, Role.ADMIN, Role.MANAGER)
+  @Mutation(() => UserResponse)
+  @Auth([], [Permission.ACCOUNT_RESET_PASSWORD])
   async resetPassword (
     @Args('resetPasswordDto') resetPasswordDto: ResetPasswordDto,
   ): Promise<UserResponse> {
     return await this.authService.resetPassword(resetPasswordDto)
   }
 
-  @Mutation(returns => UserResponse)
-  @Auth(Role.PILOT, Role.CREW, Role.ADMIN, Role.MANAGER)
+  @Mutation(() => UserResponse)
+  @Auth([], [Permission.ACCOUNT_CHANGE_PASSWORD])
   async changePassword (
     @CurrentUser() user: CurrentUserDto,
     @Args('changePasswordDto') changePasswordDto: ChangePasswordDto,
@@ -81,24 +80,12 @@ export class AuthResolver {
     return await this.authService.changePassword(user?.id, changePasswordDto)
   }
 
-  @Mutation(returns => AdminAuthResponse)
+  @Mutation(() => AdminAuthResponse)
+  @Auth([Role.ADMIN], [Permission.ADMIN_ACCESS])
   async adminLogin (
     @Args('fcmToken') fcmToken: string,
     @Args('loginDto') loginDto: LoginDto,
   ): Promise<AdminAuthResponse> {
-    const userCacheKey = `auth:${loginDto.email}`
-    const cachedUser = await this.redisService.get(userCacheKey)
-
-    if (cachedUser instanceof AdminAuthResponse) {
-      return { ...cachedUser }
-    }
-
     return await this.authService.roleLogin(fcmToken, loginDto)
   }
-
-  // @ResolveField(() => Airport)
-  // async airport (@Parent() employee: Employee): Promise<Airport> {
-  //   const airport = await this.airportService.findById(employee.airportId)
-  //   return airport?.data?.airport
-  // }
 }

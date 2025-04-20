@@ -4,7 +4,7 @@ import { FlightCrewData, FlightCrewResponse } from './dtos/FlightCrew.response'
 import { FllghtCrewsResponse } from './dtos/FlightCrews.response'
 import { FlightCrewService } from './flightCrew.service'
 import { Auth } from 'src/common/decerator/auth.decerator'
-import { Role } from 'src/common/constant/enum.constant'
+import { Role, Permission } from 'src/common/constant/enum.constant'
 import { RedisService } from 'src/common/redis/redis.service'
 
 @Resolver()
@@ -15,7 +15,7 @@ export class FlightCrewResolver {
   ) {}
 
   @Mutation(() => FlightCrewResponse)
-  @Auth(Role.MANAGER)
+  @Auth([Role.MANAGER], [Permission.FLIGHT_CREW_CREATE])
   async createFlightCrew (
     @Args('createFlightCrewInput') createFlightCrewInput: CreateFlightCrewInput,
   ): Promise<FlightCrewResponse> {
@@ -44,7 +44,7 @@ export class FlightCrewResolver {
   }
 
   @Mutation(() => FlightCrewResponse)
-  @Auth(Role.MANAGER)
+  @Auth([Role.MANAGER], [Permission.FLIGHT_CREW_DELETE])
   async deleteFlightCrew (
     @Args('flightCrewId') flightCrewId: string,
   ): Promise<FlightCrewResponse> {

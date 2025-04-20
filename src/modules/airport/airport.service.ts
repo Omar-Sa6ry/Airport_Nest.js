@@ -106,9 +106,6 @@ export class AirportService {
       data: { airport },
     }
 
-    const relationCacheKey = `airport:${airport.id}`
-    this.redisService.set(relationCacheKey, airportWithEmployees)
-
     return airportWithEmployees
   }
 

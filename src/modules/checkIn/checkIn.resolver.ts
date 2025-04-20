@@ -3,7 +3,7 @@ import { CheckInService } from './checkin.service'
 import { CreateCheckInInput } from './inputs/CreateCheckIn.input'
 import { CreateTicketInput } from '../ticket/inputs/CreateTicket.input'
 import { CheckinResponse, CheckinsResponse } from './dtos/CheckIn.response'
-import { Currency, Role } from 'src/common/constant/enum.constant'
+import { Currency, Role, Permission } from 'src/common/constant/enum.constant'
 import { CurrentUser } from 'src/common/decerator/currentUser.decerator'
 import { CurrentUserDto } from 'src/common/dtos/currentUser.dto'
 import { Auth } from 'src/common/decerator/auth.decerator'
@@ -15,16 +15,7 @@ export class CheckInResolver {
   constructor (private readonly checkInService: CheckInService) {}
 
   @Mutation(() => CreateCheckinResponse)
-  @Auth(
-    Role.MANAGER,
-    Role.ADMIN,
-    Role.AIRLINE_MANAGER,
-    Role.CREW,
-    Role.FLIGHT_ATTENDANT,
-    Role.GROUND_STAFF,
-    Role.PASSENGER,
-    Role.SECURITY,
-  )
+  @Auth([Role.PASSENGER], [Permission.CHECKIN_CREATE])
   async createCheckIn (
     @CurrentUser() user: CurrentUserDto,
     @Args('createCheckInInput') createCheckInInput: CreateCheckInInput,
@@ -43,7 +34,7 @@ export class CheckInResolver {
   }
 
   @Query(() => CheckinsResponse)
-  @Auth(Role.MANAGER, Role.ADMIN)
+  @Auth([Role.MANAGER, Role.ADMIN], [Permission.CHECKIN_READ])
   async getAllCheckIns (
     @Args('page', { type: () => Number, nullable: true }) page?: number,
     @Args('limit', { type: () => Number, nullable: true }) limit?: number,
@@ -52,13 +43,21 @@ export class CheckInResolver {
   }
 
   @Query(() => CheckinResponse)
-  @Auth(Role.MANAGER, Role.ADMIN, Role.PASSENGER)
+  @Auth([Role.PASSENGER], [Permission.CHECKIN_READ_OWN])
+  async getCheckInForUser (
+    @CurrentUser() user: CurrentUserDto,
+  ): Promise<CheckinResponse> {
+    return this.checkInService.findById(user.id)
+  }
+
+  @Query(() => CheckinResponse)
+  @Auth([Role.MANAGER, Role.ADMIN], [Permission.CHECKIN_READ])
   async getCheckInById (@Args('id') id: string): Promise<CheckinResponse> {
     return this.checkInService.findById(id)
   }
 
   @Mutation(() => CheckinResponse)
-  @Auth(Role.MANAGER, Role.ADMIN)
+  @Auth([Role.MANAGER, Role.ADMIN], [Permission.CHECKIN_DELETE])
   async deleteCheckIn (@Args('id') id: string): Promise<CheckinResponse> {
     return this.checkInService.delete(id)
   }

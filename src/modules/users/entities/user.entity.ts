@@ -90,6 +90,7 @@ export class User extends Model<User> {
   @HasOne(() => Airline, { foreignKey: 'userId', onDelete: 'SET NULL' })
   airline: Airline
 
+  
   @BeforeCreate
   @BeforeUpdate
   static fullNameValue (instance: User) {

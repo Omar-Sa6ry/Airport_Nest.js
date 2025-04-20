@@ -2,16 +2,15 @@ import { Resolver, Query, Mutation, Args } from '@nestjs/graphql'
 import { TicketService } from './ticket.service'
 import { TicketResponse, TicketsResponse } from './dto/ticket.response'
 import { Auth } from 'src/common/decerator/auth.decerator'
-import { Role } from 'src/common/constant/enum.constant'
+import { Role, Permission } from 'src/common/constant/enum.constant'
 import { Ticket } from './entity/ticket.model'
-// import { UpdateTicketInput } from './inputs/UpdateTicket.input'
 
 @Resolver(of => Ticket)
 export class TicketResolver {
   constructor (private readonly ticketService: TicketService) {}
 
   @Query(() => TicketsResponse)
-  @Auth(Role.MANAGER)
+  @Auth([Role.MANAGER], [Permission.TICKET_ALL_VIEW])
   async getTickets (
     @Args('flightId') flightId: string,
     @Args('page', { nullable: true }) page?: number,
@@ -22,39 +21,32 @@ export class TicketResolver {
 
   @Query(() => TicketResponse)
   @Auth(
-    Role.MANAGER,
-    Role.ADMIN,
-    Role.AIRLINE_MANAGER,
-    Role.CREW,
-    Role.FLIGHT_ATTENDANT,
-    Role.GROUND_STAFF,
-    Role.PASSENGER,
-    Role.SECURITY,
+    [
+      Role.MANAGER,
+      Role.ADMIN,
+      Role.AIRLINE_MANAGER,
+      Role.FLIGHT_ATTENDANT,
+      Role.GROUND_STAFF,
+      Role.PASSENGER,
+      Role.SECURITY,
+    ],
+    [Permission.TICKET_VIEW],
   )
   async getTicketById (@Args('id') id: string): Promise<TicketResponse> {
     return this.ticketService.findOne(id)
   }
 
   // @Mutation(() => TicketResponse)
-  // @Auth(Role.MANAGER)
+  // @Auth([Role.MANAGER], [Permission.TICKET_UPDATE])
   // async updateTicket (
   //   @Args('id') id: string,
-  //   @Args('updateTicketInput') updateTicketInput: UpdateTicketInput,
-  //   @Args('terminal') terminal: string,
-  //   @Args('gate') gate: string,
-  //   @CurrentUser('id') user: CurrentUserDto,
+  //   @Args('ticketInput') ticketInput: UpdateTicketInput,
   // ): Promise<TicketResponse> {
-  //   return this.ticketService.update(
-  //     id,
-  //     updateTicketInput,
-  //     user.id,
-  //     terminal,
-  //     gate,
-  //   )
+  //   return this.ticketService.update(id, ticketInput)
   // }
 
   @Mutation(() => TicketResponse)
-  @Auth(Role.MANAGER)
+  @Auth([Role.MANAGER], [Permission.TICKET_DELETE])
   async deleteTicket (@Args('id') id: string): Promise<TicketResponse> {
     return this.ticketService.remove(id)
   }

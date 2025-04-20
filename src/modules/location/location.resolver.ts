@@ -5,7 +5,7 @@ import { UpdateLocationInput } from './inputs/UpdateLocation.input copy'
 import { AirportLocationsResponse } from './dtos/LocationsAirport.response'
 import { CurrentUser } from 'src/common/decerator/currentUser.decerator'
 import { CurrentUserDto } from 'src/common/dtos/currentUser.dto'
-import { Role } from 'src/common/constant/enum.constant'
+import { Role, Permission } from 'src/common/constant/enum.constant'
 import { Auth } from 'src/common/decerator/auth.decerator'
 import { AirlineLocationsResponse } from './dtos/LocationsAirline.response'
 
@@ -38,14 +38,16 @@ export class LocationResolver {
 
   @Mutation(() => LocationResponse)
   @Auth(
-    Role.MANAGER,
-    Role.ADMIN,
-    Role.AIRLINE_MANAGER,
-    Role.CREW,
-    Role.FLIGHT_ATTENDANT,
-    Role.GROUND_STAFF,
-    Role.PASSENGER,
-    Role.SECURITY,
+    [
+      Role.MANAGER,
+      Role.ADMIN,
+      Role.AIRLINE_MANAGER,
+      Role.FLIGHT_ATTENDANT,
+      Role.GROUND_STAFF,
+      Role.PASSENGER,
+      Role.SECURITY,
+    ],
+    [Permission.LOCATION_UPDATE_SELF],
   )
   async updateLocationForUser (
     @CurrentUser() user: CurrentUserDto,
@@ -55,16 +57,16 @@ export class LocationResolver {
   }
 
   @Mutation(() => LocationResponse)
-  @Auth(Role.ADMIN)
+  @Auth([Role.ADMIN], [Permission.LOCATION_UPDATE_AIRLINE])
   async updateLocationForAirline (
     @Args('airlineId', { type: () => String }) airlineId: string,
     @Args('updateLocationInput') updateLocationInput: UpdateLocationInput,
   ): Promise<LocationResponse> {
-    return this.locationService.updateForAirport(airlineId, updateLocationInput)
+    return this.locationService.updateForAirline(airlineId, updateLocationInput)
   }
 
   @Mutation(() => LocationResponse)
-  @Auth(Role.ADMIN)
+  @Auth([Role.ADMIN], [Permission.LOCATION_UPDATE_AIRPORT])
   async updateLocationForAirport (
     @Args('airportId', { type: () => String }) airportId: string,
     @Args('updateLocationInput') updateLocationInput: UpdateLocationInput,

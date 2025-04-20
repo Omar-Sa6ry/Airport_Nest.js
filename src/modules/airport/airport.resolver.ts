@@ -5,7 +5,7 @@ import { Airport } from './entity/airport.model'
 import { Terminal } from '../terminal/entity/terminal.model'
 import { Auth } from 'src/common/decerator/auth.decerator'
 import { CreateLocationInput } from '../location/inputs/CreateLocation.input'
-import { Role } from 'src/common/constant/enum.constant'
+import { Role, Permission } from 'src/common/constant/enum.constant'
 import { RedisService } from 'src/common/redis/redis.service'
 import { AirportResponse, AirportsResponse } from './dtos/airport.response'
 import { TerminalService } from '../terminal/terminal.service'
@@ -21,26 +21,30 @@ import {
   Resolver,
 } from '@nestjs/graphql'
 
-@Resolver(of => Airport)
+@Resolver(() => Airport)
 export class AirportResolver {
   constructor (
     private readonly redisService: RedisService,
     private airportService: AirportService,
     private employeeService: EmployeeService,
-    private termoinalService: TerminalService,
+    private terminalService: TerminalService,
   ) {}
 
   @Mutation(() => AirportResponse)
-  @Auth(Role.ADMIN, Role.MANAGER)
+  @Auth([Role.ADMIN], [Permission.AIRPORT_CREATE])
   async createAirport (
     @Args('createAirportDto') createAirportDto: CreateAirportDto,
     @Args('createLocationInput') createLocationInput: CreateLocationInput,
   ): Promise<AirportResponse> {
-    return this.airportService.create(createAirportDto, createLocationInput)
+    const airport = await this.airportService.create(
+      createAirportDto,
+      createLocationInput,
+    )
+    return airport
   }
 
   @Mutation(() => AirportResponse)
-  @Auth(Role.ADMIN, Role.MANAGER)
+  @Auth([Role.ADMIN], [Permission.AIRPORT_UPDATE])
   async updateAirport (
     @Args('id') id: string,
     @Args('updateAirportDto') updateAirportDto: UpdateAirportDto,
@@ -49,15 +53,15 @@ export class AirportResolver {
   }
 
   @Mutation(() => AirportResponse)
-  @Auth(Role.ADMIN, Role.MANAGER)
+  @Auth([Role.ADMIN], [Permission.AIRPORT_DELETE])
   async deleteAirport (@Args('id') id: string): Promise<AirportResponse> {
     return this.airportService.delete(id)
   }
 
   @Query(() => AirportResponse)
+  @Auth([], [Permission.AIRPORT_READ])
   async airportById (@Args('id') id: string): Promise<AirportResponse> {
-    const airportCacheKey = `airport:${id}`
-    const cachedAirport = await this.redisService.get(airportCacheKey)
+    const cachedAirport = await this.redisService.get(`airport:${id}`)
 
     if (cachedAirport instanceof AirportResponse) {
       return { ...cachedAirport }
@@ -67,18 +71,13 @@ export class AirportResolver {
   }
 
   @Query(() => AirportResponse)
+  @Auth([], [Permission.AIRPORT_READ])
   async airportByName (@Args('name') name: string): Promise<AirportResponse> {
-    const airportCacheKey = `airport-name:${name}`
-    const cachedAirport = await this.redisService.get(airportCacheKey)
-
-    if (cachedAirport instanceof AirportResponse) {
-      return { ...cachedAirport }
-    }
-
-    return this.airportService.findByName(name)
+    return await this.airportService.findByName(name)
   }
 
   @Query(() => AirportsResponse)
+  @Auth([], [Permission.AIRPORT_READ_ALL])
   async allAirports (
     @Args('page', { type: () => Int, nullable: true }) page?: number,
     @Args('limit', { type: () => Int, nullable: true }) limit?: number,
@@ -92,25 +91,21 @@ export class AirportResolver {
     @Args('page', { type: () => Int, nullable: true }) page?: number,
     @Args('limit', { type: () => Int, nullable: true }) limit?: number,
   ): Promise<EmployeesResponse> {
-    const employees = await this.employeeService.findEmployeeInAirport(
-      airport.id,
-      page,
-      limit,
-    )
-    return employees
+    return this.employeeService.findEmployeeInAirport(airport.id, page, limit)
   }
 
   @ResolveField(() => [Terminal])
+  @Auth([], [Permission.TERMINAL_READ])
   async terminals (
     @Parent() airport: Airport,
     @Args('page', { type: () => Int, nullable: true }) page?: number,
     @Args('limit', { type: () => Int, nullable: true }) limit?: number,
   ): Promise<Terminal[]> {
-    const terminals = await this.termoinalService.findTerminalsInAirport(
+    const terminals = await this.terminalService.findTerminalsInAirport(
       airport.id,
       page,
       limit,
     )
-    return terminals.items
+    return terminals?.items
   }
 }

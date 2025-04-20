@@ -1,19 +1,105 @@
 import { registerEnumType } from '@nestjs/graphql'
 
 export enum Role {
-  CREW = 'crew',
-  PILOT = 'pilot',
+  PASSENGER = 'passenger',
   ADMIN = 'admin',
   MANAGER = 'manager',
-  PASSENGER = 'passenger',
+  PILOT = 'pilot',
   SECURITY = 'security',
   GROUND_STAFF = 'ground_staff',
   AIRLINE_MANAGER = 'airline_manager',
   FLIGHT_ATTENDANT = 'flight_attendant',
 }
+
 registerEnumType(Role, {
   name: 'Role',
   description: 'User roles in the system',
+})
+
+export enum Permission {
+  AIRLINE_CREATE = 'airline:create',
+  AIRLINE_READ = 'airline:read',
+  AIRLINE_UPDATE = 'airline:update',
+  AIRLINE_DELETE = 'airline:delete',
+  AIRLINE_MANAGE_FLIGHTS = 'airline:manage_flights',
+
+  EMPLOYEE_CREATE = 'employee:create',
+  EMPLOYEE_READ = 'employee:read',
+  EMPLOYEE_READ_ALL = 'employee:read_all',
+  EMPLOYEE_DELETE = 'employee:delete',
+  EMPLOYEE_PROMOTE = 'employee:promote',
+  EMPLOYEE_UPDATE_ROLE = 'employee:update_role',
+
+  CHECKIN_CREATE = 'CHECKIN_CREATE',
+  CHECKIN_READ = 'CHECKIN_READ',
+  CHECKIN_READ_OWN = 'CHECKIN_READ_OWN',
+  CHECKIN_DELETE = 'CHECKIN_DELETE',
+
+  FLIGHT_CREATE = 'FLIGHT_CREATE',
+  FLIGHT_UPDATE = 'FLIGHT_UPDATE',
+  FLIGHT_DELETE = 'FLIGHT_DELETE',
+  FLIGHT_CANCEL = 'FLIGHT_CANCEL',
+  FLIGHT_DELAY = 'FLIGHT_DELAY',
+  FLIGHT_CHANGE_GATE = 'FLIGHT_CHANGE_GATE',
+
+  FLIGHT_CREW_CREATE = 'FLIGHT_CREW_CREATE',
+  FLIGHT_CREW_DELETE = 'FLIGHT_CREW_DELETE',
+
+  GATE_CREATE = 'GATE_CREATE',
+  GATE_UPDATE = 'GATE_UPDATE',
+  GATE_DELETE = 'GATE_DELETE',
+
+  TICKET_UPDATE = 'TICKET_UPDATE',
+  TICKET_DELETE = 'TICKET_DELETE',
+  TICKET_VIEW = 'TICKET_VIEW',
+  TICKET_ALL_VIEW = 'TICKET_VIEW',
+
+  USER_VIEW = 'USER_VIEW',
+  USER_CREATE = 'USER_CREATE',
+  USER_UPDATE = 'USER_UPDATE',
+  USER_DELETE = 'USER_DELETE',
+
+  LOCATION_UPDATE_SELF = 'LOCATION_UPDATE_SELF',
+  LOCATION_UPDATE_AIRLINE = 'LOCATION_UPDATE_AIRLINE',
+  LOCATION_UPDATE_AIRPORT = 'LOCATION_UPDATE_AIRPORT',
+
+  TERMINAL_VIEW = 'TERMINAL_VIEW',
+
+  SEAT_CREATE = 'SEAT_CREATE',
+  SEAT_UPDATE = 'SEAT_UPDATE',
+  SEAT_DELETE = 'SEAT_DELETE',
+  SEAT_BOOK = 'SEAT_BOOK',
+  SEAT_UNBOOK = 'SEAT_UNBOOK',
+
+  ACCOUNT_CHANGE_PASSWORD = 'account:change_password',
+  ACCOUNT_RESET_PASSWORD = 'account:reset_password',
+
+  ADMIN_ACCESS = 'admin:access',
+  ADMIN_MANAGE_USERS = 'admin:manage_users',
+
+  AUTH_LOGIN = 'auth:login',
+  AUTH_REGISTER = 'auth:register',
+
+  AIRPORT_CREATE = 'airport:create',
+  AIRPORT_READ = 'airport:read',
+  AIRPORT_READ_ALL = 'airport:read_all',
+  AIRPORT_UPDATE = 'airport:update',
+  AIRPORT_DELETE = 'airport:delete',
+
+  TERMINAL_CREATE = 'terminal:create',
+  TERMINAL_READ = 'terminal:read',
+  TERMINAL_UPDATE = 'terminal:update',
+  TERMINAL_DELETE = 'terminal:delete',
+
+  BAGGAGE_READ = 'baggage:read',
+  BAGGAGE_READ_ALL = 'baggage:read_all',
+  BAGGAGE_UPDATE = 'baggage:update',
+  BAGGAGE_DELETE = 'baggage:delete',
+}
+
+registerEnumType(Permission, {
+  name: 'Permission',
+  description: 'Detailed permissions in the system',
 })
 
 export enum CrewRole {
@@ -25,6 +111,19 @@ export enum CrewRole {
 
 registerEnumType(CrewRole, {
   name: 'CrewRole',
+})
+
+export enum Permission {
+  MANAGE_PASSENGERS = 'manage_passengers',
+  MANAGE_FLIGHTS = 'manage_flights',
+  MANAGE_STAFF = 'manage_staff',
+  CHECK_FLIGHT_DETAILS = 'check_flight_details',
+  BOOK_FLIGHT = 'book_flight',
+  ALLOCATE_SEATS = 'allocate_seats',
+}
+
+registerEnumType(Permission, {
+  name: 'Permission',
 })
 
 export enum FlightStatus {

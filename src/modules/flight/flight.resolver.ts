@@ -3,7 +3,7 @@ import { FlightService } from './flight.service'
 import { Flight } from './entity/flight.model'
 import { CreateFlightInput } from './inputs/CreateFlight.input'
 import { FlightOptinalInput } from './inputs/FlightOptinals.input'
-import { Role } from 'src/common/constant/enum.constant'
+import { Role, Permission } from 'src/common/constant/enum.constant'
 import { Auth } from 'src/common/decerator/auth.decerator'
 import { FlightResponse } from './dtos/Flight.response'
 import { FlightsFromAirportResponse } from './dtos/FlightsFromAirport.response'
@@ -18,7 +18,7 @@ export class FlightResolver {
   ) {}
 
   @Mutation(() => FlightResponse)
-  @Auth(Role.MANAGER)
+  @Auth([Role.AIRLINE_MANAGER], [Permission.FLIGHT_CREATE])
   async createFlight (
     @Args('createFlightInput') createFlightInput: CreateFlightInput,
   ): Promise<FlightResponse> {
@@ -26,7 +26,7 @@ export class FlightResolver {
   }
 
   @Mutation(() => FlightResponse)
-  @Auth(Role.MANAGER)
+  @Auth([Role.AIRLINE_MANAGER], [Permission.FLIGHT_DELETE])
   async deleteFlight (@Args('id') id: string): Promise<FlightResponse> {
     return this.flightService.delete(id)
   }
@@ -34,11 +34,7 @@ export class FlightResolver {
   @Query(() => FlightResponse)
   async getFlightById (@Args('id') id: string): Promise<FlightResponse> {
     const cachedFlight = await this.redisService.get(`flight:${id}`)
-
-    if (cachedFlight instanceof FlightResponse) {
-      return { ...cachedFlight }
-    }
-
+    if (cachedFlight instanceof FlightResponse) return { ...cachedFlight }
     return this.flightService.findById(id)
   }
 
@@ -53,7 +49,7 @@ export class FlightResolver {
   async getAllFlightsToAitport (
     @Args('id') id: string,
   ): Promise<FlightsToAirportResponse> {
-    return await this.flightService.findAllToAirport(id)
+    return this.flightService.findAllToAirport(id)
   }
 
   @Query(() => FlightsFromAirportResponse)
@@ -64,7 +60,7 @@ export class FlightResolver {
   }
 
   @Mutation(() => FlightResponse)
-  @Auth(Role.MANAGER)
+  @Auth([Role.AIRLINE_MANAGER], [Permission.FLIGHT_UPDATE])
   async updateFlight (
     @Args('id') id: string,
     @Args('updateFlightInput') updateFlightInput: FlightOptinalInput,
@@ -73,7 +69,7 @@ export class FlightResolver {
   }
 
   @Mutation(() => FlightResponse)
-  @Auth(Role.MANAGER)
+  @Auth([Role.AIRLINE_MANAGER], [Permission.FLIGHT_CHANGE_GATE])
   async changeFlightGate (
     @Args('flightId') flightId: string,
     @Args('gateId') gateId: string,
@@ -82,13 +78,13 @@ export class FlightResolver {
   }
 
   @Mutation(() => FlightResponse)
-  @Auth(Role.MANAGER)
+  @Auth([Role.AIRLINE_MANAGER], [Permission.FLIGHT_CANCEL])
   async cancelFlight (@Args('id') id: string): Promise<FlightResponse> {
     return this.flightService.cancleFlight(id)
   }
 
   @Mutation(() => FlightResponse)
-  @Auth(Role.MANAGER)
+  @Auth([Role.AIRLINE_MANAGER], [Permission.FLIGHT_DELAY])
   async delayFlight (
     @Args('id') id: string,
     @Args('delayTime') delayTime: number,

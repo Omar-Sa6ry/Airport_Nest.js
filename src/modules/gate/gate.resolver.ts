@@ -1,7 +1,7 @@
 import { Args, Int, Mutation, Query, Resolver } from '@nestjs/graphql'
 import { GateService } from './gate.service'
 import { Auth } from 'src/common/decerator/auth.decerator'
-import { Role } from 'src/common/constant/enum.constant'
+import { Role, Permission } from 'src/common/constant/enum.constant'
 import { CreateGateDto } from './dtos/createGate.dto'
 import { GateResponse, GatesResponse } from './dtos/Gate.response'
 import { GateInputResponse } from './input/Gate.input'
@@ -15,7 +15,7 @@ export class GateResolver {
   ) {}
 
   @Mutation(() => GateResponse)
-  @Auth(Role.ADMIN, Role.MANAGER)
+  @Auth([Role.ADMIN, Role.MANAGER], [Permission.GATE_CREATE])
   async createGate (
     @Args('createGateDto') createGateDto: CreateGateDto,
   ): Promise<GateResponse> {
@@ -24,9 +24,7 @@ export class GateResolver {
 
   @Query(() => GateResponse)
   async gateById (@Args('id') id: string): Promise<GateResponse> {
-    const cacheKey = `gate:${id}`
-
-    const cachedGate = await this.redisService.get(cacheKey)
+    const cachedGate = await this.redisService.get(`gate:${id}`)
     if (cachedGate instanceof GateInputResponse) {
       return cachedGate
     }
@@ -44,7 +42,7 @@ export class GateResolver {
   }
 
   @Mutation(() => GateResponse)
-  @Auth(Role.ADMIN, Role.MANAGER)
+  @Auth([Role.ADMIN, Role.MANAGER], [Permission.GATE_UPDATE])
   async updateGate (
     @Args('id') id: string,
     @Args('gateNumber') gateNumber: string,
@@ -53,7 +51,7 @@ export class GateResolver {
   }
 
   @Mutation(() => GateResponse)
-  @Auth(Role.ADMIN, Role.MANAGER)
+  @Auth([Role.ADMIN, Role.MANAGER], [Permission.GATE_DELETE])
   async deleteGate (@Args('id') id: string): Promise<GateResponse> {
     return this.gateService.delete(id)
   }

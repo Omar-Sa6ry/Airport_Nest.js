@@ -8,7 +8,7 @@ import {
   Resolver,
 } from '@nestjs/graphql'
 import { Auth } from 'src/common/decerator/auth.decerator'
-import { Role } from 'src/common/constant/enum.constant'
+import { Permission, Role } from 'src/common/constant/enum.constant'
 import { RedisService } from 'src/common/redis/redis.service'
 import { Terminal } from './entity/terminal.model'
 import { TerminalService } from './terminal.service'
@@ -32,7 +32,7 @@ export class TerminalResolver {
   ) {}
 
   @Mutation(() => TerminalResponse)
-  @Auth(Role.ADMIN, Role.MANAGER)
+  @Auth([Role.ADMIN, Role.MANAGER], [Permission.TERMINAL_CREATE])
   async createTerminal (
     @Args('createTerminalDto') createTerminalDto: CreateTerminalDto,
   ): Promise<TerminalResponse> {
@@ -40,7 +40,7 @@ export class TerminalResolver {
   }
 
   @Mutation(() => TerminalResponse)
-  @Auth(Role.ADMIN, Role.MANAGER)
+  @Auth([Role.ADMIN, Role.MANAGER], [Permission.TERMINAL_UPDATE])
   async updateTerminal (
     @Args('updateTerminalDto') updateTerminalDto: UpdateTerminalDto,
   ): Promise<TerminalResponse> {
@@ -48,12 +48,13 @@ export class TerminalResolver {
   }
 
   @Mutation(() => TerminalResponse)
-  @Auth(Role.ADMIN, Role.MANAGER)
+  @Auth([Role.ADMIN, Role.MANAGER], [Permission.TERMINAL_DELETE])
   async deleteTerminal (@Args('id') id: string): Promise<TerminalResponse> {
     return this.terminalService.delete(id)
   }
 
   @Query(() => TerminalResponse)
+  @Auth([], [Permission.TERMINAL_VIEW])
   async terminalById (@Args('id') id: string): Promise<TerminalResponse> {
     const terminalCacheKey = `terminal:${id}`
     const cachedTerminal = await this.redisService.get(terminalCacheKey)
@@ -66,6 +67,7 @@ export class TerminalResolver {
   }
 
   @Query(() => TerminalResponse)
+  @Auth([], [Permission.TERMINAL_VIEW])
   async terminalByData (
     @Args('findTerminalDto') findTerminalDto?: FindTerminalDto,
   ): Promise<TerminalResponse> {
@@ -73,6 +75,7 @@ export class TerminalResolver {
   }
 
   @Query(() => TerminalsResponse)
+  @Auth([], [Permission.TERMINAL_VIEW])
   async allTerminalsInAirport (
     @Args('airportId') airportId: string,
     @Args('page', { type: () => Int, nullable: true }) page?: number,

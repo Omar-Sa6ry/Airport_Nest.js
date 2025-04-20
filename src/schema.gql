@@ -287,11 +287,10 @@ type User {
 
 """User roles in the system"""
 enum Role {
-  CREW
-  PILOT
+  PASSENGER
   ADMIN
   MANAGER
-  PASSENGER
+  PILOT
   SECURITY
   GROUND_STAFF
   AIRLINE_MANAGER
@@ -745,8 +744,7 @@ type Query {
   sayHello: String!
   getUserById(id: String!): UserResponse!
   getUserByEmail(email: String!): UserResponse!
-  getUserByphone(phone: String!): UserResponse!
-  deleteUser: UserResponse!
+  getUserByPhone(phone: String!): UserResponse!
   findLocationById(id: String!): LocationResponse!
   findAirportLocations(page: Int, limit: Int): AirportLocationsResponse!
   findAirlineLocations(page: Int, limit: Int): AirlineLocationsResponse!
@@ -755,7 +753,7 @@ type Query {
   allAirports(page: Int, limit: Int): AirportsResponse!
   getEmployeeById(id: String!): EmployeeResponse!
   getEmployeeByEmail(email: String!): EmployeeResponse!
-  getEmployeeByphone(phone: String!): EmployeeResponse!
+  getEmployeeByPhone(phone: String!): EmployeeResponse!
   employeesInAirport(airportId: String!, page: Int, limit: Int): EmployeesResponse!
   findAirlineById(id: String!): AirlineResponse!
   findAirlineByName(name: String!): AirlineResponse!
@@ -777,6 +775,7 @@ type Query {
   getTickets(flightId: String!, page: Float, limit: Float): TicketsResponse!
   getTicketById(id: String!): TicketResponse!
   getAllCheckIns(page: Float, limit: Float): CheckinsResponse!
+  getCheckInForUser: CheckinResponse!
   getCheckInById(id: String!): CheckinResponse!
   findBaggageById(id: String!): BaggageResponse!
   findAllBaggageOnFlight(flightId: String!, page: Int, limit: Int): BaggagesResponse!
@@ -807,6 +806,7 @@ type Mutation {
   changePassword(changePasswordDto: ChangePasswordDto!): UserResponse!
   adminLogin(fcmToken: String!, loginDto: LoginDto!): AdminAuthResponse!
   updateUser(updateUserDto: UpdateUserDto!): UserResponse!
+  deleteUser: UserResponse!
   updateLocationForUser(updateLocationInput: UpdateLocationInput!): LocationResponse!
   updateLocationForAirline(airlineId: String!, updateLocationInput: UpdateLocationInput!): LocationResponse!
   updateLocationForAirport(airportId: String!, updateLocationInput: UpdateLocationInput!): LocationResponse!
@@ -814,9 +814,9 @@ type Mutation {
   updateAirport(id: String!, updateAirportDto: UpdateAirportDto!): AirportResponse!
   deleteAirport(id: String!): AirportResponse!
   createEmployee(userId: String!, airportId: String!, role: String!): EmployeeResponse!
-  deleteEmployee: EmployeeResponse!
-  UpdateEmployeeRoleToAdmin(id: String!): EmployeeResponse!
-  UpdateEmployeeRoleInairport(id: String!, role: String!): EmployeeResponse!
+  deleteEmployee(id: String!): EmployeeResponse!
+  editUserRoleToManager(id: String!): EmployeeResponse!
+  editUserRoleInAirport(id: String!, role: String!): EmployeeResponse!
   createAirline(name: String!, createLocationInput: CreateLocationInput!): AirlineResponse!
   updateAirline(id: String!, name: String!): AirlineResponse!
   deleteAirline(id: String!): AirlineResponse!

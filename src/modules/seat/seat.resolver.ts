@@ -7,8 +7,7 @@ import { SeatResponse, SeatsResponse } from './dto/Seat.response'
 import { RedisService } from 'src/common/redis/redis.service'
 import { FlightResponse } from '../flight/dtos/Flight.response'
 import { Auth } from 'src/common/decerator/auth.decerator'
-import { Role } from 'src/common/constant/enum.constant'
-import { Flight } from '../flight/entity/flight.model'
+import { Permission, Role } from 'src/common/constant/enum.constant'
 import { FlightService } from '../flight/flight.service'
 import {
   Resolver,
@@ -30,7 +29,7 @@ export class SeatResolver {
   ) {}
 
   @Mutation(() => SeatResponse)
-  @Auth(Role.AIRLINE_MANAGER)
+  @Auth([Role.AIRLINE_MANAGER], [Permission.SEAT_CREATE])
   async createSeat (
     @Args('createSeatInput') createSeatInput: CreateSeatInput,
   ): Promise<SeatResponse> {
@@ -60,7 +59,7 @@ export class SeatResolver {
   }
 
   @Mutation(() => SeatResponse)
-  @Auth(Role.PASSENGER)
+  @Auth([Role.PASSENGER], [Permission.SEAT_BOOK])
   async bookSeat (
     @Args('id', { type: () => ID }) id: string,
   ): Promise<SeatResponse> {
@@ -68,7 +67,7 @@ export class SeatResolver {
   }
 
   @Mutation(() => SeatResponse)
-  @Auth(Role.PASSENGER)
+  @Auth([Role.PASSENGER], [Permission.SEAT_UNBOOK])
   async unBookSeat (
     @Args('id', { type: () => ID }) id: string,
   ): Promise<SeatResponse> {
@@ -76,7 +75,7 @@ export class SeatResolver {
   }
 
   @Mutation(() => SeatResponse)
-  @Auth(Role.AIRLINE_MANAGER)
+  @Auth([Role.AIRLINE_MANAGER], [Permission.SEAT_UPDATE])
   async updateSeat (
     @Args('id', { type: () => ID }) id: string,
     @Args('updateSeatInput') updateSeatInput: UpdateSeatInput,
@@ -85,7 +84,7 @@ export class SeatResolver {
   }
 
   @Mutation(() => SeatResponse)
-  @Auth(Role.AIRLINE_MANAGER)
+  @Auth([Role.AIRLINE_MANAGER], [Permission.SEAT_DELETE])
   async deleteSeat (
     @Args('id', { type: () => ID }) id: string,
   ): Promise<SeatResponse> {
@@ -94,6 +93,6 @@ export class SeatResolver {
 
   @ResolveField(() => FlightResponse)
   async flight (@Parent() seat: Seat): Promise<FlightResponse> {
-    return await this.flightService.findById(seat.flightId)
+    return this.flightService.findById(seat.flightId)
   }
 }
