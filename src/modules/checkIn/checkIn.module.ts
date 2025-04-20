@@ -7,6 +7,7 @@ import { CheckIn } from './entity/checkIn.entity'
 import { GateModule } from '../gate/gate.module'
 import { CheckInService } from './checkin.service'
 import { SendTicketModule } from 'src/common/queues/ticket/SendTicket.module'
+import { BaggageModule } from '../baggage/baggage.module'
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { SendTicketModule } from 'src/common/queues/ticket/SendTicket.module'
     GateModule,
     SendTicketModule,
     GateModule,
+    BaggageModule,
   ],
   providers: [CheckInResolver, CheckInService, SendTicketService],
 })

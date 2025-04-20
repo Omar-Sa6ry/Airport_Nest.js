@@ -654,6 +654,30 @@ type CreateCheckinResponse {
   data: String
 }
 
+type BaggageData {
+  id: String!
+  limit: Int!
+  weight: Int!
+  ticket: Ticket!
+}
+
+type BaggageResponse {
+  message: String
+  success: Boolean
+  timeStamp: String
+  statusCode: Float
+  data: BaggageData
+}
+
+type BaggagesResponse {
+  message: String
+  success: Boolean
+  timeStamp: String
+  statusCode: Float
+  items: [BaggageData!]
+  pagination: PaginationInfo
+}
+
 type AirlineResponse {
   message: String
   success: Boolean
@@ -754,6 +778,8 @@ type Query {
   getTicketById(id: String!): TicketResponse!
   getAllCheckIns(page: Float, limit: Float): CheckinsResponse!
   getCheckInById(id: String!): CheckinResponse!
+  findBaggageById(id: String!): BaggageResponse!
+  findAllBaggageOnFlight(flightId: String!, page: Int, limit: Int): BaggagesResponse!
 }
 
 input FindTerminalDto {
@@ -814,8 +840,10 @@ type Mutation {
   createFlightCrew(createFlightCrewInput: CreateFlightCrewInput!): FlightCrewResponse!
   deleteFlightCrew(flightCrewId: String!): FlightCrewResponse!
   deleteTicket(id: String!): TicketResponse!
-  createCheckIn(createCheckInInput: CreateCheckInInput!, createTicketInput: CreateTicketInput!, currency: Currency!): CreateCheckinResponse!
+  createCheckIn(createCheckInInput: CreateCheckInInput!, createTicketInput: CreateTicketInput!, createBagInput: CreateBagInput!, currency: Currency!): CreateCheckinResponse!
   deleteCheckIn(id: String!): CheckinResponse!
+  updateBaggage(id: String!, updateBaggageInput: UpdateBaggageInput!): BaggageResponse!
+  deleteBaggage(id: String!): BaggageResponse!
 }
 
 input CreateUserDto {
@@ -944,4 +972,14 @@ input CreateTicketInput {
   flightId: String!
   seatId: String!
   class: TicketClass!
+}
+
+input CreateBagInput {
+  weight: Int!
+  limit: Int!
+}
+
+input UpdateBaggageInput {
+  weight: Int
+  limit: Int
 }

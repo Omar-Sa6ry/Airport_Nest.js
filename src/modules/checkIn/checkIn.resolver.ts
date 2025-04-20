@@ -1,6 +1,6 @@
 import { Resolver, Mutation, Args, Query } from '@nestjs/graphql'
 import { CheckInService } from './checkin.service'
-import { CreateCheckInInput } from './input/CreateCheckIn.input'
+import { CreateCheckInInput } from './inputs/CreateCheckIn.input'
 import { CreateTicketInput } from '../ticket/inputs/CreateTicket.input'
 import { CheckinResponse, CheckinsResponse } from './dtos/CheckIn.response'
 import { Currency, Role } from 'src/common/constant/enum.constant'
@@ -8,6 +8,7 @@ import { CurrentUser } from 'src/common/decerator/currentUser.decerator'
 import { CurrentUserDto } from 'src/common/dtos/currentUser.dto'
 import { Auth } from 'src/common/decerator/auth.decerator'
 import { CreateCheckinResponse } from './dtos/CreateCheckIn.respons'
+import { CreateBagInput } from './inputs/CreateBaggage.input'
 
 @Resolver()
 export class CheckInResolver {
@@ -28,11 +29,13 @@ export class CheckInResolver {
     @CurrentUser() user: CurrentUserDto,
     @Args('createCheckInInput') createCheckInInput: CreateCheckInInput,
     @Args('createTicketInput') createTicketInput: CreateTicketInput,
+    @Args('createBagInput') createBagInput: CreateBagInput,
     @Args('currency', { type: () => Currency }) currency: Currency,
   ): Promise<CreateCheckinResponse> {
     return this.checkInService.create(
       createCheckInInput,
       createTicketInput,
+      createBagInput,
       currency,
       user?.id,
       user?.email,

@@ -7,13 +7,15 @@ import { CheckIn } from './entity/checkIn.entity'
 import { I18nService } from 'nestjs-i18n'
 import { WebSocketMessageGateway } from 'src/common/websocket/websocket.gateway'
 import { SendTicketService } from 'src/common/queues/ticket/SendTicket.service'
-import { CreateCheckInInput } from './input/CreateCheckIn.input'
+import { CreateCheckInInput } from './inputs/CreateCheckIn.input'
 import { CreateTicketInput } from '../ticket/inputs/CreateTicket.input'
 import { GateService } from '../gate/gate.service'
 import { Currency } from 'src/common/constant/enum.constant'
 import { Limit, Page } from 'src/common/constant/messages.constant'
 import { CheckinResponse, CheckinsResponse } from './dtos/CheckIn.response'
 import { CreateCheckinResponse } from './dtos/CreateCheckIn.respons'
+import { BaggageService } from '../baggage/baggage.service'
+import { CreateBagInput } from './inputs/CreateBaggage.input'
 
 @Injectable()
 export class CheckInService {
@@ -21,6 +23,7 @@ export class CheckInService {
 
   constructor (
     private readonly i18n: I18nService,
+    private readonly baggageService: BaggageService,
     private readonly websocketGateway: WebSocketMessageGateway,
     private readonly sendTicketService: SendTicketService,
     private readonly gateService: GateService,
@@ -32,6 +35,7 @@ export class CheckInService {
   async create (
     createCheckInInput: CreateCheckInInput,
     createTicketInput: CreateTicketInput,
+    createBagInput: CreateBagInput,
     currency: Currency,
     userId: string,
     email: string,
@@ -49,6 +53,11 @@ export class CheckInService {
       )
       const checkin = await this.checkinModel.create({
         ...createCheckInInput,
+        ticketId: ticket?.data?.id,
+      })
+
+      this.baggageService.create({
+        ...createBagInput,
         ticketId: ticket?.data?.id,
       })
 

@@ -19,6 +19,7 @@ import { CheckInModule } from './modules/checkIn/checkIn.module'
 import { LocationModule } from './modules/location/location.module'
 import { AirlineModule } from './modules/airline/airline.module'
 import { FlightCrewModule } from './modules/flightCrew/flightCrew.module'
+import { BaggageModule } from './modules/baggage/baggage.module'
 
 @Module({
   imports: [
@@ -41,6 +42,7 @@ import { FlightCrewModule } from './modules/flightCrew/flightCrew.module'
     FlightCrewModule,
     TicketModule,
     CheckInModule,
+    BaggageModule,
   ],
 
   providers: [AppService, AppResolver],

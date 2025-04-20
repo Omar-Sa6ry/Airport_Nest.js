@@ -3,6 +3,7 @@ import { Flight } from 'src/modules/flight/entity/flight.model'
 import { Passenger } from 'src/modules/users/entities/passenger.model'
 import { TicketClass, TicketStatus } from 'src/common/constant/enum.constant'
 import { CheckIn } from 'src/modules/checkIn/entity/checkIn.entity'
+import { Baggage } from 'src/modules/baggage/entity/baggage.model'
 import { BaseEntity } from 'src/common/bases/BaseEntity'
 import { Seat } from 'src/modules/seat/entity/Seat.model'
 import {
@@ -11,6 +12,7 @@ import {
   DataType,
   ForeignKey,
   HasMany,
+  HasOne,
   Table,
 } from 'sequelize-typescript'
 
@@ -47,6 +49,9 @@ export class Ticket extends BaseEntity<Ticket> {
   @Field(() => TicketStatus)
   @Column(DataType.ENUM(...Object.values(TicketStatus)))
   status: TicketStatus
+
+  @HasOne(() => Baggage, { onDelete: 'SET NULL' })
+  baggage: Baggage
 
   @HasMany(() => CheckIn, { onDelete: 'CASCADE' })
   checkIns: CheckIn[]
