@@ -100,7 +100,7 @@ export class EmployeeResolver {
     return await this.employeeService.delete(id, user.id)
   }
 
-  @Query(() => EmployeesResponse)
+  @Query(() => EmployeesResponse, { nullable: true })
   @Auth(
     [Role.ADMIN, Role.MANAGER, Role.AIRLINE_MANAGER, Role.SECURITY],
     [Permission.EMPLOYEE_READ_ALL],
@@ -130,13 +130,13 @@ export class EmployeeResolver {
     return await this.employeeService.editUserRoleInAirport(id, role)
   }
 
-  @ResolveField(() => Location, { name: 'location' })
+  @ResolveField(() => Location, { nullable: true })
   async location (@Parent() employee: EmployeeOutput): Promise<Location> {
     const location = await this.locationService.findByUser(employee.userId)
     return location.data
   }
 
-  @ResolveField(() => Airport)
+  @ResolveField(() => Airport, { nullable: true })
   async airport (@Parent() employee: EmployeeOutput): Promise<Airport> {
     return (await this.airportService.findById(employee.airportId)).data
   }

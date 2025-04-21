@@ -321,30 +321,29 @@ export class EmployeeService {
         limit,
       })
 
-    if (data.length === 0)
-      throw new NotFoundException(await this.i18n.t('employee.NOT_FOUNDS'))
+    if (data.length !== 0) {
+      const employees = await this.employeeLoader.loadMany(
+        data.map(employee => employee.id),
+      )
 
-    const employees = await this.employeeLoader.loadMany(
-      data.map(employee => employee.id),
-    )
+      const items: EmployeeOutput[] = data.map((m, index) => {
+        const employee = employees[index]
+        if (!employee)
+          throw new NotFoundException(this.i18n.t('employee.NOT_FOUND'))
 
-    const items: EmployeeOutput[] = data.map((m, index) => {
-      const employee = employees[index]
-      if (!employee)
-        throw new NotFoundException(this.i18n.t('employee.NOT_FOUND'))
+        return employee
+      })
 
-      return employee
-    })
+      const result: EmployeesResponse = {
+        items,
+        pagination: {
+          totalItems: total,
+          currentPage: page,
+          totalPages: Math.ceil(total / limit),
+        },
+      }
 
-    const result: EmployeesResponse = {
-      items,
-      pagination: {
-        totalItems: total,
-        currentPage: page,
-        totalPages: Math.ceil(total / limit),
-      },
+      return result
     }
-
-    return result
   }
 }

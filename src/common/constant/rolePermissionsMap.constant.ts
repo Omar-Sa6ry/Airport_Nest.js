@@ -2,6 +2,7 @@ import { Permission, Role } from './enum.constant'
 
 export const rolePermissionsMap: Record<Role, Permission[]> = {
   [Role.PASSENGER]: [
+    Permission.AIRPORT_READ_ALL,
     Permission.SEAT_BOOK,
     Permission.ACCOUNT_RESET_PASSWORD,
     Permission.SEAT_UNBOOK,
@@ -15,6 +16,7 @@ export const rolePermissionsMap: Record<Role, Permission[]> = {
     Permission.AIRPORT_READ,
   ],
   [Role.ADMIN]: [
+    Permission.AIRPORT_READ_ALL,
     Permission.AIRLINE_CREATE,
     Permission.AIRLINE_UPDATE,
     Permission.AIRLINE_DELETE,
@@ -69,12 +71,14 @@ export const rolePermissionsMap: Record<Role, Permission[]> = {
     Permission.TERMINAL_VIEW,
     Permission.USER_UPDATE,
     Permission.TICKET_VIEW,
+    Permission.AIRPORT_READ_ALL,
     Permission.LOCATION_UPDATE_SELF,
     Permission.ACCOUNT_CHANGE_PASSWORD,
   ],
   [Role.MANAGER]: [
     Permission.TERMINAL_VIEW,
     Permission.EMPLOYEE_UPDATE_ROLE,
+    Permission.AIRPORT_READ_ALL,
     Permission.EMPLOYEE_CREATE,
     Permission.EMPLOYEE_READ,
     Permission.EMPLOYEE_READ_ALL,
@@ -96,6 +100,7 @@ export const rolePermissionsMap: Record<Role, Permission[]> = {
   [Role.PILOT]: [
     Permission.AIRPORT_READ,
     Permission.ACCOUNT_CHANGE_PASSWORD,
+    Permission.AIRPORT_READ_ALL,
     Permission.TERMINAL_VIEW,
     Permission.LOCATION_UPDATE_SELF,
   ],
@@ -104,6 +109,7 @@ export const rolePermissionsMap: Record<Role, Permission[]> = {
     Permission.BAGGAGE_READ,
     Permission.TERMINAL_VIEW,
     Permission.BAGGAGE_READ_ALL,
+    Permission.AIRPORT_READ_ALL,
     Permission.TICKET_VIEW,
     Permission.ACCOUNT_CHANGE_PASSWORD,
     Permission.AIRPORT_READ,
@@ -111,6 +117,7 @@ export const rolePermissionsMap: Record<Role, Permission[]> = {
   ],
   [Role.GROUND_STAFF]: [
     Permission.TICKET_VIEW,
+    Permission.AIRPORT_READ_ALL,
     Permission.TERMINAL_VIEW,
     Permission.LOCATION_UPDATE_SELF,
     Permission.AIRPORT_READ,
@@ -120,6 +127,7 @@ export const rolePermissionsMap: Record<Role, Permission[]> = {
     Permission.TERMINAL_VIEW,
     Permission.TICKET_VIEW,
     Permission.ACCOUNT_CHANGE_PASSWORD,
+    Permission.AIRPORT_READ_ALL,
     Permission.LOCATION_UPDATE_SELF,
     Permission.AIRPORT_READ,
   ],

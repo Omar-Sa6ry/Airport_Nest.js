@@ -88,9 +88,7 @@ export class AirportService {
   }
 
   async findByName (name: string): Promise<AirportResponse> {
-    const airport = await (
-      await this.airportRepo.findOne({ where: { name } })
-    )?.dataValues
+    const airport = await await this.airportRepo.findOne({ where: { name } })
     if (!airport) {
       throw new NotFoundException(await this.i18n.t('airport.NOT_FOUND'))
     }

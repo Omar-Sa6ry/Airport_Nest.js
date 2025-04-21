@@ -115,17 +115,15 @@ export class TerminalService {
         limit,
       })
 
-    if (terminals.length === 0) {
-      throw new NotFoundException(await this.i18n.t('terminal.NOT_FOUNDS'))
-    }
-
-    return {
-      items: terminals.map(t => t.dataValues),
-      pagination: {
-        totalItems: total,
-        currentPage: page,
-        totalPages: Math.ceil(total / limit),
-      },
+    if (terminals.length !== 0) {
+      return {
+        items: terminals.map(t => t.dataValues),
+        pagination: {
+          totalItems: total,
+          currentPage: page,
+          totalPages: Math.ceil(total / limit),
+        },
+      }
     }
   }
 

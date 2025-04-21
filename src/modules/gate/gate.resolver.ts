@@ -72,12 +72,12 @@ export class GateResolver {
     return this.gateService.delete(id)
   }
 
-  @ResolveField(() => Terminal)
+  @ResolveField(() => Terminal, { nullable: true })
   async terminal (@Parent() gate: Gate): Promise<Terminal> {
     return (await this.terminalService.findById(gate.terminalId)).data
   }
 
-  @ResolveField(() => Airport)
+  @ResolveField(() => Airport, { nullable: true })
   async airport (@Parent() gate: Gate): Promise<Airport> {
     return this.terminalService.findAirportByTerminal(gate.terminalId)
   }

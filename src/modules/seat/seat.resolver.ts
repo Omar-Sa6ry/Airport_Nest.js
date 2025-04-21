@@ -91,7 +91,7 @@ export class SeatResolver {
     return this.seatService.delete(id)
   }
 
-  @ResolveField(() => FlightResponse)
+  @ResolveField(() => FlightResponse, { nullable: true })
   async flight (@Parent() seat: Seat): Promise<FlightResponse> {
     return this.flightService.findById(seat.flightId)
   }

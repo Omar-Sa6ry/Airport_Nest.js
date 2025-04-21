@@ -91,7 +91,7 @@ export class AirportResolver {
     return this.airportService.findAll(page, limit)
   }
 
-  @ResolveField(() => EmployeesResponse)
+  @ResolveField(() => EmployeesResponse, { nullable: true })
   async employees (
     @Parent() airport: Airport,
     @Args('page', { type: () => Int, nullable: true }) page?: number,
@@ -100,7 +100,7 @@ export class AirportResolver {
     return this.employeeService.findEmployeeInAirport(airport.id, page, limit)
   }
 
-  @ResolveField(() => [Terminal])
+  @ResolveField(() => [Terminal], { nullable: true })
   async terminals (
     @Parent() airport: Airport,
     @Args('page', { type: () => Int, nullable: true }) page?: number,
@@ -114,7 +114,7 @@ export class AirportResolver {
     return terminals?.items
   }
 
-  @ResolveField(() => [GateData])
+  @ResolveField(() => [GateData], { nullable: true })
   async gates (@Parent() airport: Airport): Promise<GateData[]> {
     return this.gateService.findGatesInAirport(airport.id)
   }

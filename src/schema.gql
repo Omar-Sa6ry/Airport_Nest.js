@@ -23,8 +23,8 @@ type Gate {
   gateNumber: String!
   terminalId: String!
   terminals: Terminal!
-  terminal: Terminal!
-  airport: Airport!
+  terminal: Terminal
+  airport: Airport
 }
 
 type Terminal {
@@ -217,9 +217,9 @@ type Airport {
   name: String!
   iataCode: String!
   icaoCode: String!
-  employees(page: Int, limit: Int): EmployeesResponse!
-  terminals(page: Int, limit: Int): [Terminal!]!
-  gates: [GateData!]!
+  employees(page: Int, limit: Int): EmployeesResponse
+  terminals(page: Int, limit: Int): [Terminal!]
+  gates: [GateData!]
   location: Location!
 }
 
@@ -361,8 +361,8 @@ type EmployeeOutput {
   airportId: String!
   userId: String!
   role: Role!
-  location: Location!
-  airport: Airport!
+  location: Location
+  airport: Airport
 }
 
 type EmployeeResponse {
@@ -576,7 +576,7 @@ type Seat {
   seatNumber: Int!
   class: TicketClass!
   isAvailable: Boolean!
-  flight: FlightResponse!
+  flight: FlightResponse
 }
 
 type SeatResponse {
@@ -753,7 +753,7 @@ type Query {
   getEmployeeById(id: String!): EmployeeResponse!
   getEmployeeByEmail(email: String!): EmployeeResponse!
   getEmployeeByPhone(phone: String!): EmployeeResponse!
-  employeesInAirport(airportId: String!, page: Int, limit: Int): EmployeesResponse!
+  employeesInAirport(airportId: String!, page: Int, limit: Int): EmployeesResponse
   gateById(id: String!): GateDataResponse!
   gatesByTerminal(terminalId: String!, page: Int, limit: Int): GatesResponse!
   findAirlineById(id: String!): AirlineResponse!

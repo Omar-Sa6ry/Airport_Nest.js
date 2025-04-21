@@ -130,21 +130,20 @@ export class GateService {
       where: { airportId },
       order: [['createdAt', 'DESC']],
     })
-    if (data.length === 0)
-      throw new NotFoundException(await this.i18n.t('gate.NOT_FOUNDS'))
+    if (data.length !== 0) {
+      const gates = await this.gateLoader.loadMany(
+        data.map(terminal => terminal.id),
+      )
 
-    const gates = await this.gateLoader.loadMany(
-      data.map(terminal => terminal.id),
-    )
+      const items = data.map((m, index) => {
+        const gate = gates[index]
+        if (!gate) throw new NotFoundException(this.i18n.t('gate.NOT_FOUND'))
 
-    const items = data.map((m, index) => {
-      const gate = gates[index]
-      if (!gate) throw new NotFoundException(this.i18n.t('gate.NOT_FOUND'))
+        return gate
+      })
 
-      return gate
-    })
-
-    return items
+      return items
+    }
   }
 
   async findAll (keys: string[]): Promise<Gate[]> {
