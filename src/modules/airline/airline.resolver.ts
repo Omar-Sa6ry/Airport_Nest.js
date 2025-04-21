@@ -1,4 +1,3 @@
-import { Resolver, Query, Mutation, Args, Int } from '@nestjs/graphql'
 import { AirlineService } from './airline.service'
 import { AirlineResponse, AirlinesResponse } from './dtos/Airline.response'
 import { CreateLocationInput } from '../location/inputs/CreateLocation.input'
@@ -7,10 +6,28 @@ import { Role, Permission } from 'src/common/constant/enum.constant'
 import { CurrentUser } from 'src/common/decerator/currentUser.decerator'
 import { CurrentUserDto } from 'src/common/dtos/currentUser.dto'
 import { FlightsInAirlinesResponse } from './dtos/FlightsInAirline.dto'
+import { Location } from '../location/entity/location.model'
+import { Airline } from './entity/airline.model'
+import { LocationService } from '../location/location.service'
+import { FlightService } from '../flight/flight.service'
+import { Flight } from '../flight/entity/flight.model'
+import {
+  Resolver,
+  Query,
+  Mutation,
+  Args,
+  Int,
+  ResolveField,
+  Parent,
+} from '@nestjs/graphql'
 
-@Resolver()
+@Resolver(() => Airline)
 export class AirlineResolver {
-  constructor (private readonly airlineService: AirlineService) {}
+  constructor (
+    private readonly airlineService: AirlineService,
+    private readonly flightService: FlightService,
+    private readonly locationService: LocationService,
+  ) {}
 
   @Mutation(() => AirlineResponse)
   @Auth([Role.ADMIN], [Permission.AIRLINE_CREATE])
@@ -23,13 +40,11 @@ export class AirlineResolver {
   }
 
   @Query(() => AirlineResponse)
-  @Auth([], [Permission.AIRLINE_READ])
   async findAirlineById (@Args('id') id: string): Promise<AirlineResponse> {
     return this.airlineService.findById(id)
   }
 
   @Query(() => AirlineResponse)
-  @Auth([], [Permission.AIRLINE_READ])
   async findAirlineByName (
     @Args('name') name: string,
   ): Promise<AirlineResponse> {
@@ -37,7 +52,6 @@ export class AirlineResolver {
   }
 
   @Query(() => AirlinesResponse)
-  @Auth([], [Permission.AIRLINE_READ])
   async findAllAirlines (
     @Args('page', { type: () => Int, nullable: true }) page?: number,
     @Args('limit', { type: () => Int, nullable: true }) limit?: number,
@@ -72,5 +86,15 @@ export class AirlineResolver {
     @Args('id') id: string,
   ): Promise<AirlineResponse> {
     return this.airlineService.delete(id, user.id)
+  }
+
+  @ResolveField(() => [Flight])
+  async flights (@Parent() airline: Airline): Promise<Flight[]> {
+    return this.flightService.findAllFlightInAirline(airline.id)
+  }
+
+  @ResolveField(() => Location)
+  async location (@Parent() airline: Airline): Promise<Location> {
+    return this.locationService.findAirlineById(airline?.id)
   }
 }

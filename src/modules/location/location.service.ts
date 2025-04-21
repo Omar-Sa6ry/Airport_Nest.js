@@ -75,6 +75,14 @@ export class LocationService {
     return location.dataValues
   }
 
+  async findAirlineById (airlineId: string): Promise<Location> {
+    const location = await this.locationModel.findOne({ where: { airlineId } })
+    if (!location)
+      throw new NotFoundException(await this.i18n.t('location.NOT_FOUND'))
+
+    return location.dataValues
+  }
+
   async findAllAirportsLocation (
     page: number = Page,
     limit: number = Limit,

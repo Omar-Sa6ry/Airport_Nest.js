@@ -244,7 +244,7 @@ type Flight {
   status: FlightStatus!
   gate: Gate!
   fromAirport: Airport!
-  airline: airline!
+  airline: Airline!
   toAirport: Airport!
 }
 
@@ -305,11 +305,13 @@ enum Role {
   FLIGHT_ATTENDANT
 }
 
-type airline {
+type Airline {
   id: ID!
   createdAt: DateTime!
   updatedAt: DateTime!
   name: String!
+  location: Location!
+  flights: [Flight!]
   user: User!
 }
 
@@ -441,7 +443,7 @@ type FlightOutput {
   arriveAt: DateTime!
   createdAt: DateTime!
   updatedAt: DateTime!
-  airline: airline
+  airline: Airline
   fromAirport: Airport
   toAirport: Airport
   gate: GateData
@@ -459,7 +461,7 @@ type FromAirportFlightOutput {
   id: String!
   flightNumber: String!
   toAirport: Airport!
-  airline: airline!
+  airline: Airline!
   gate: Gate!
   status: FlightStatus!
   leaveAt: DateTime!
@@ -540,7 +542,7 @@ type AirlineLocation {
   country: String!
   city: String!
   currency: Currency!
-  airline: airline!
+  airline: Airline!
 }
 
 type AirlineLocationsResponse {
@@ -557,7 +559,7 @@ type ToAirportFlightOutput {
   flightNumber: String!
   fromAirport: Airport!
   gate: Gate!
-  airline: airline!
+  airline: Airline!
   status: FlightStatus!
   leaveAt: DateTime!
   arriveAt: DateTime!
@@ -571,6 +573,32 @@ type FlightsToAirportResponse {
   timeStamp: String
   statusCode: Float
   items: [ToAirportFlightOutput!]
+  pagination: PaginationInfo
+}
+
+type AirlineResponse {
+  message: String
+  success: Boolean
+  timeStamp: String
+  statusCode: Float
+  data: Airline
+}
+
+type AirlinesResponse {
+  message: String
+  success: Boolean
+  timeStamp: String
+  statusCode: Float
+  items: [Airline!]
+  pagination: PaginationInfo
+}
+
+type FlightsInAirlinesResponse {
+  message: String
+  success: Boolean
+  timeStamp: String
+  statusCode: Float
+  items: [Flight!]
   pagination: PaginationInfo
 }
 
@@ -676,32 +704,6 @@ type BaggagesResponse {
   timeStamp: String
   statusCode: Float
   items: [BaggageData!]
-  pagination: PaginationInfo
-}
-
-type AirlineResponse {
-  message: String
-  success: Boolean
-  timeStamp: String
-  statusCode: Float
-  data: airline
-}
-
-type AirlinesResponse {
-  message: String
-  success: Boolean
-  timeStamp: String
-  statusCode: Float
-  items: [airline!]
-  pagination: PaginationInfo
-}
-
-type FlightsInAirlinesResponse {
-  message: String
-  success: Boolean
-  timeStamp: String
-  statusCode: Float
-  items: [Flight!]
   pagination: PaginationInfo
 }
 

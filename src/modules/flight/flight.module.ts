@@ -21,11 +21,13 @@ import { AirportModule } from '../airport/airport.module'
 import { LocationModule } from '../location/location.module'
 import { GateModule } from '../gate/gate.module'
 import { TerminalModule } from '../terminal/terminal.module'
+import { AirlineModule } from '../airline/airline.module'
 
 @Module({
   imports: [
     SequelizeModule.forFeature([Gate, Flight, Airline, Airport]),
     forwardRef(() => AirportModule),
+    forwardRef(() => AirlineModule),
     scheduleQueueModule,
     UpdateFlightModule,
     NotificationModule,

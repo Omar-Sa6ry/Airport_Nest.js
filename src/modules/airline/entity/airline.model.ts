@@ -14,7 +14,7 @@ import {
 } from 'sequelize-typescript'
 
 @ObjectType()
-@Table({ tableName: 'airline', modelName: 'airline', timestamps: true })
+@Table({ tableName: 'airline', timestamps: true })
 export class Airline extends BaseEntity<Airline> {
   @Field()
   @Column({
@@ -27,9 +27,11 @@ export class Airline extends BaseEntity<Airline> {
   @Column({ type: DataType.STRING(26), allowNull: false })
   userId: string
 
+  @Field(() => Location)
   @HasOne(() => Location, { onDelete: 'SET NULL' })
   location: Location
 
+  @Field(() => [Flight], { nullable: true })
   @HasMany(() => Flight, { onDelete: 'SET NULL' })
   flights: Flight[]
 
