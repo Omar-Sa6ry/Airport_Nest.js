@@ -23,9 +23,10 @@ export class Gate extends BaseEntity<Gate> {
   @Column(DataType.STRING)
   terminalId: string
 
-    @HasMany(() => CheckIn, { onDelete: 'SET NULL' })
-    checkIns: CheckIn[]
+  @HasMany(() => CheckIn, { onDelete: 'SET NULL' })
+  checkIns: CheckIn[]
 
+  @Field(() => Terminal)
   @BelongsTo(() => Terminal)
   terminals: Terminal
 }

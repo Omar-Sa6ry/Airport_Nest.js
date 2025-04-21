@@ -1,17 +1,33 @@
-import { Args, Int, Mutation, Query, Resolver } from '@nestjs/graphql'
+import {
+  Args,
+  Int,
+  Mutation,
+  Parent,
+  Query,
+  ResolveField,
+  Resolver,
+} from '@nestjs/graphql'
 import { GateService } from './gate.service'
 import { Auth } from 'src/common/decerator/auth.decerator'
 import { Role, Permission } from 'src/common/constant/enum.constant'
-import { CreateGateDto } from './dtos/createGate.dto'
-import { GateResponse, GatesResponse } from './dtos/Gate.response'
-import { GateInputResponse } from './input/Gate.input'
 import { RedisService } from 'src/common/redis/redis.service'
+import { Terminal } from '../terminal/entity/terminal.model'
+import { Gate } from './entity/gate.model'
+import { TerminalService } from '../terminal/terminal.service'
+import { Airport } from '../airport/entity/airport.model'
+import { CreateGateDto } from './input/CreateGate.dto'
+import {
+  GateDataResponse,
+  GateResponse,
+  GatesResponse,
+} from './dto/Gate.response'
 
-@Resolver()
+@Resolver(() => Gate)
 export class GateResolver {
   constructor (
     private readonly redisService: RedisService,
     private readonly gateService: GateService,
+    private readonly terminalService: TerminalService,
   ) {}
 
   @Mutation(() => GateResponse)
@@ -22,10 +38,10 @@ export class GateResolver {
     return this.gateService.create(createGateDto)
   }
 
-  @Query(() => GateResponse)
-  async gateById (@Args('id') id: string): Promise<GateResponse> {
+  @Query(() => GateDataResponse)
+  async gateById (@Args('id') id: string): Promise<GateDataResponse> {
     const cachedGate = await this.redisService.get(`gate:${id}`)
-    if (cachedGate instanceof GateInputResponse) {
+    if (cachedGate instanceof GateDataResponse) {
       return cachedGate
     }
 
@@ -54,5 +70,15 @@ export class GateResolver {
   @Auth([Role.ADMIN, Role.MANAGER], [Permission.GATE_DELETE])
   async deleteGate (@Args('id') id: string): Promise<GateResponse> {
     return this.gateService.delete(id)
+  }
+
+  @ResolveField(() => Terminal)
+  async terminal (@Parent() gate: Gate): Promise<Terminal> {
+    return (await this.terminalService.findById(gate.terminalId)).data
+  }
+
+  @ResolveField(() => Airport)
+  async airport (@Parent() gate: Gate): Promise<Airport> {
+    return this.terminalService.findAirportByTerminal(gate.terminalId)
   }
 }

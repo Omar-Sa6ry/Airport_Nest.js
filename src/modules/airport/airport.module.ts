@@ -9,10 +9,11 @@ import { TerminalModule } from '../terminal/terminal.module'
 import { EmployeeModule } from '../employee/employee.module'
 import { GateModule } from '../gate/gate.module'
 import { WebSocketModule } from 'src/common/websocket/websocket.module'
+import { Gate } from '../gate/entity/gate.model'
 
 @Module({
   imports: [
-    SequelizeModule.forFeature([Airport]),
+    SequelizeModule.forFeature([Airport, Gate]),
     LocationModule,
     forwardRef(() => TerminalModule),
     EmployeeModule,

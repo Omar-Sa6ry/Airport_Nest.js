@@ -4,19 +4,19 @@ import { InjectModel } from '@nestjs/sequelize'
 import { Op } from 'sequelize'
 import { I18nService } from 'nestjs-i18n'
 import { Gate } from '../entity/gate.model'
-import { GateInput } from '../input/Gate.input'
 import { Terminal } from 'src/modules/terminal/entity/terminal.model'
+import { GateData } from '../dto/Gate.response'
 
 @Injectable()
 export class GateLoader {
-  private loader: DataLoader<string, GateInput>
+  private loader: DataLoader<string, GateData>
 
   constructor (
     @InjectModel(Terminal) private terminalRepo: typeof Terminal,
     @InjectModel(Gate) private gateRepo: typeof Gate,
     private readonly i18n: I18nService,
   ) {
-    this.loader = new DataLoader<string, GateInput>(async (keys: string[]) => {
+    this.loader = new DataLoader<string, GateData>(async (keys: string[]) => {
       const gates = await this.gateRepo.findAll({
         where: { terminalId: { [Op.in]: keys } },
       })
@@ -42,13 +42,13 @@ export class GateLoader {
     })
   }
 
-  load (id: string): Promise<GateInput> {
+  load (id: string): Promise<GateData> {
     return this.loader.load(id)
   }
 
-  async loadMany (ids: string[]): Promise<GateInput[]> {
+  async loadMany (ids: string[]): Promise<GateData[]> {
     const results = await this.loader.loadMany(ids)
 
-    return results.filter(result => !(result instanceof Error)) as GateInput[]
+    return results.filter(result => !(result instanceof Error)) as GateData[]
   }
 }

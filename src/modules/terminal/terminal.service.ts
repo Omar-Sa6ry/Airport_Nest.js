@@ -1,8 +1,4 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common'
+import { Injectable, NotFoundException } from '@nestjs/common'
 import { WebSocketMessageGateway } from 'src/common/websocket/websocket.gateway'
 import { RedisService } from 'src/common/redis/redis.service'
 import { Limit, Page } from 'src/common/constant/messages.constant'
@@ -62,11 +58,25 @@ export class TerminalService {
   async findById (id: string): Promise<TerminalResponse> {
     const terminal = await this.terminalRepo.findByPk(id)
     if (!terminal) {
-      throw new BadRequestException(await this.i18n.t('terminal.NOT_FOUND'))
+      throw new NotFoundException(await this.i18n.t('terminal.NOT_FOUND'))
     }
 
     this.redisService.set(`terminal:${terminal.id}`, terminal)
     return { data: terminal.dataValues }
+  }
+
+  async findAirportByTerminal (id: string): Promise<Airport> {
+    const terminal = await this.terminalRepo.findByPk(id)
+    if (!terminal)
+      throw new NotFoundException(await this.i18n.t('terminal.NOT_FOUND'))
+
+    const airport = await this.airportRepo.findByPk(
+      terminal.dataValues.airportId,
+    )
+    if (!airport)
+      throw new NotFoundException(await this.i18n.t('airport.NOT_FOUND'))
+
+    return airport
   }
 
   async findByData (
@@ -76,7 +86,7 @@ export class TerminalService {
       where: { ...findTerminalDto },
     })
     if (!terminal) {
-      throw new BadRequestException(await this.i18n.t('terminal.NOT_FOUND'))
+      throw new NotFoundException(await this.i18n.t('terminal.NOT_FOUND'))
     }
 
     this.redisService.set(`terminal:${terminal.id}`, terminal)
@@ -145,7 +155,7 @@ export class TerminalService {
   async delete (id: string): Promise<TerminalResponse> {
     const terminal = await this.terminalRepo.findByPk(id)
     if (!terminal) {
-      throw new BadRequestException(await this.i18n.t('terminal.NOT_FOUND'))
+      throw new NotFoundException(await this.i18n.t('terminal.NOT_FOUND'))
     }
 
     await terminal.destroy()

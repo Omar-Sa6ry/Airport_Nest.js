@@ -3,7 +3,6 @@ import { UpdateAirportDto } from './input/UpdateAirport.dto'
 import { AirportService } from './airport.service'
 import { Airport } from './entity/airport.model'
 import { Terminal } from '../terminal/entity/terminal.model'
-import { GateOutput } from '../gate/dtos/Gate.response'
 import { Auth } from 'src/common/decerator/auth.decerator'
 import { CreateLocationInput } from '../location/inputs/CreateLocation.input'
 import { Role, Permission, AllRoles } from 'src/common/constant/enum.constant'
@@ -13,6 +12,7 @@ import { Location } from '../location/entity/location.model'
 import { GateService } from '../gate/gate.service'
 import { AirportResponse, AirportsResponse } from './dtos/airport.response'
 import { TerminalService } from '../terminal/terminal.service'
+import { GateData } from '../gate/dto/Gate.response'
 import { EmployeesResponse } from '../employee/dto/Employee.response.dto'
 import { EmployeeService } from '../employee/employee.service'
 import {
@@ -114,8 +114,8 @@ export class AirportResolver {
     return terminals?.items
   }
 
-  @ResolveField(() => [GateOutput])
-  async gates (@Parent() airport: Airport): Promise<GateOutput[]> {
+  @ResolveField(() => [GateData])
+  async gates (@Parent() airport: Airport): Promise<GateData[]> {
     return this.gateService.findGatesInAirport(airport.id)
   }
 

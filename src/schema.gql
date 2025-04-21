@@ -22,6 +22,9 @@ type Gate {
   updatedAt: DateTime!
   gateNumber: String!
   terminalId: String!
+  terminals: Terminal!
+  terminal: Terminal!
+  airport: Airport!
 }
 
 type Terminal {
@@ -30,7 +33,7 @@ type Terminal {
   updatedAt: DateTime!
   name: String!
   airportId: Airport!
-  airport: Airport!
+  airport: Airport
   gates(page: Int, limit: Int): [Gate!]
 }
 
@@ -216,7 +219,7 @@ type Airport {
   icaoCode: String!
   employees(page: Int, limit: Int): EmployeesResponse!
   terminals(page: Int, limit: Int): [Terminal!]!
-  gates: [GateOutput!]!
+  gates: [GateData!]!
   location: Location!
 }
 
@@ -392,34 +395,6 @@ type AdminAuthResponse {
   data: AdminAuthOutPut
 }
 
-type GateOutput {
-  id: String!
-  gateNumber: String!
-  terminal: Terminal!
-}
-
-type GateResponse {
-  message: String
-  success: Boolean
-  timeStamp: String
-  statusCode: Float
-  data: GateOutput
-}
-
-type GateOutputs {
-  gates: [Gate!]!
-  terminal: Terminal!
-}
-
-type GatesResponse {
-  message: String
-  success: Boolean
-  timeStamp: String
-  statusCode: Float
-  items: GateOutputs
-  pagination: PaginationInfo
-}
-
 type TerminalResponse {
   message: String
   success: Boolean
@@ -452,6 +427,39 @@ type AirportResponse {
   timeStamp: String
   statusCode: Float
   data: Airport
+}
+
+type GateData {
+  id: String!
+  gateNumber: String!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  terminal: Terminal!
+}
+
+type GateDataResponse {
+  message: String
+  success: Boolean
+  timeStamp: String
+  statusCode: Float
+  data: GateData
+}
+
+type GateResponse {
+  message: String
+  success: Boolean
+  timeStamp: String
+  statusCode: Float
+  data: Gate
+}
+
+type GatesResponse {
+  message: String
+  success: Boolean
+  timeStamp: String
+  statusCode: Float
+  items: [Gate!]
+  pagination: PaginationInfo
 }
 
 type LocationResponse {
@@ -746,7 +754,7 @@ type Query {
   getEmployeeByEmail(email: String!): EmployeeResponse!
   getEmployeeByPhone(phone: String!): EmployeeResponse!
   employeesInAirport(airportId: String!, page: Int, limit: Int): EmployeesResponse!
-  gateById(id: String!): GateResponse!
+  gateById(id: String!): GateDataResponse!
   gatesByTerminal(terminalId: String!, page: Int, limit: Int): GatesResponse!
   findAirlineById(id: String!): AirlineResponse!
   findAirlineByName(name: String!): AirlineResponse!

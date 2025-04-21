@@ -3,19 +3,19 @@ import { Injectable, NotFoundException } from '@nestjs/common'
 import { InjectModel } from '@nestjs/sequelize'
 import { I18nService } from 'nestjs-i18n'
 import { Limit, Page } from 'src/common/constant/messages.constant'
-import { GateLoader } from './loader/Gate.loader'
-import { GateOutput } from './dtos/Gate.response'
 import { RedisService } from 'src/common/redis/redis.service'
 import { WebSocketMessageGateway } from 'src/common/websocket/websocket.gateway'
 import { TerminalResponse } from '../terminal/dto/Terminal.response'
 import { Gate } from './entity/gate.model'
 import { Terminal } from '../terminal/entity/terminal.model'
-import { CreateGateDto } from './dtos/createGate.dto'
 import {
-  GateInput,
-  GateInputResponse,
-  GateInputsResponse,
-} from './input/Gate.input'
+  GateData,
+  GateDataResponse,
+  GateResponse,
+  GatesResponse,
+} from './dto/Gate.response'
+import { GateLoader } from './loader/Gate.loader'
+import { CreateGateDto } from './input/CreateGate.dto'
 
 @Injectable()
 export class GateService {
@@ -28,7 +28,7 @@ export class GateService {
     @InjectModel(Terminal) private readonly terminalRepo: typeof Terminal,
   ) {}
 
-  async create (createGateDto: CreateGateDto): Promise<GateInputResponse> {
+  async create (createGateDto: CreateGateDto): Promise<GateResponse> {
     let terminal
     const cachedTerminal = await this.redisService.get(
       `terminal:${createGateDto.terminalId}`,
@@ -39,9 +39,10 @@ export class GateService {
       terminal = await this.terminalRepo.findOne({
         where: { id: createGateDto.terminalId },
       })
-      if (!terminal)
-        throw new NotFoundException(await this.i18n.t('terminal.NOT_FOUND'))
     }
+
+    if (!terminal)
+      throw new NotFoundException(await this.i18n.t('terminal.NOT_FOUND'))
 
     const gateExists = await this.gateRepo.findOne({
       where: {
@@ -58,17 +59,14 @@ export class GateService {
 
       await transaction.commit()
 
-      const gateInputResponse: GateInputResponse = {
-        data: { ...gate.dataValues, terminal },
-      }
+      const gateResponse: GateResponse = { data: gate.dataValues }
 
-      this.redisService.set(`gate:${gate.id}`, gateInputResponse)
       this.websocketGateway.broadcast('gateCreate', {
         gateId: gate.id,
       })
 
       return {
-        data: gateInputResponse.data,
+        data: gateResponse.data,
         statusCode: 201,
         message: await this.i18n.t('gate.CREATED'),
       }
@@ -78,7 +76,7 @@ export class GateService {
     }
   }
 
-  async findById (id: string): Promise<GateInputResponse> {
+  async findById (id: string): Promise<GateDataResponse> {
     const gate = await this.gateRepo.findOne({ where: { id } })
     if (!gate) throw new NotFoundException(await this.i18n.t('gate.NOT_FOUND'))
 
@@ -88,20 +86,18 @@ export class GateService {
     if (!terminal)
       throw new NotFoundException(await this.i18n.t('terminal.NOT_FOUND'))
 
-    const gateInputResponse: GateInputResponse = {
+    const gateResponse: GateDataResponse = {
       data: { ...gate.dataValues, terminal: terminal.dataValues },
     }
 
-    this.redisService.set(`gate:${gate.id}`, gateInputResponse)
-
-    return gateInputResponse
+    return gateResponse
   }
 
   async findGatesInTerminal (
     terminalId: string,
     page: number = Page,
     limit: number = Limit,
-  ): Promise<GateInputsResponse> {
+  ): Promise<GatesResponse> {
     const terminal = await this.terminalRepo.findOne({})
     if (!terminal)
       throw new NotFoundException(await this.i18n.t('terminal.NOT_FOUND'))
@@ -112,11 +108,9 @@ export class GateService {
       offset: (page - 1) * limit,
       limit,
     })
-    if (!gates.length)
-      throw new NotFoundException(await this.i18n.t('gate.NOT_FOUNDS'))
 
-    const gatesInputResponse: GateInputsResponse = {
-      items: { gates, terminal },
+    const gatesInputResponse: GatesResponse = {
+      items: gates.map(g => g.dataValues),
       pagination: {
         totalItems: total,
         currentPage: page,
@@ -127,7 +121,7 @@ export class GateService {
     return gatesInputResponse
   }
 
-  async findGatesInAirport (airportId: string): Promise<GateOutput[]> {
+  async findGatesInAirport (airportId: string): Promise<GateData[]> {
     const terminal = await this.terminalRepo.findOne({})
     if (!terminal)
       throw new NotFoundException(await this.i18n.t('terminal.NOT_FOUND'))
@@ -143,7 +137,7 @@ export class GateService {
       data.map(terminal => terminal.id),
     )
 
-    const items: GateInput[] = data.map((m, index) => {
+    const items = data.map((m, index) => {
       const gate = gates[index]
       if (!gate) throw new NotFoundException(this.i18n.t('gate.NOT_FOUND'))
 
@@ -164,7 +158,7 @@ export class GateService {
     return gates
   }
 
-  async update (id: string, gateNumber: string): Promise<GateInputResponse> {
+  async update (id: string, gateNumber: string): Promise<GateResponse> {
     const gate = await this.gateRepo.findOne({ where: { id } })
     if (!gate) throw new NotFoundException(await this.i18n.t('gate.NOT_FOUND'))
 
@@ -175,20 +169,16 @@ export class GateService {
     if (!terminal)
       throw new NotFoundException(await this.i18n.t('terminal.NOT_FOUND'))
 
-    const gateInputResponse: GateInputResponse = {
-      data: { ...updatedGate.dataValues, terminal },
-    }
-
-    this.redisService.set(`gate:${updatedGate.id}`, gateInputResponse)
+    const gateResponse: GateResponse = { data: gate.dataValues }
 
     return {
-      data: gateInputResponse.data,
+      data: gateResponse.data,
       statusCode: 200,
       message: await this.i18n.t('gate.UPDATED'),
     }
   }
 
-  async delete (id: string): Promise<GateInputResponse> {
+  async delete (id: string): Promise<GateResponse> {
     const gate = await this.gateRepo.findOne({ where: { id } })
     if (!gate) throw new NotFoundException(await this.i18n.t('gate.NOT_FOUND'))
 

@@ -84,7 +84,7 @@ export class TerminalResolver {
     return this.terminalService.findTerminalsInAirport(airportId, page, limit)
   }
 
-  @ResolveField(() => Airport)
+  @ResolveField(() => Airport, { nullable: true })
   async airport (@Parent() terminal: Terminal): Promise<Airport> {
     const cacheKey = `airport:${terminal.airportId}`
 
@@ -108,6 +108,6 @@ export class TerminalResolver {
       page,
       limit,
     )
-    return gates.items.gates
+    return gates.items
   }
 }
