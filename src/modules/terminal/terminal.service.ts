@@ -5,18 +5,15 @@ import {
 } from '@nestjs/common'
 import { WebSocketMessageGateway } from 'src/common/websocket/websocket.gateway'
 import { RedisService } from 'src/common/redis/redis.service'
-import { FindTerminalDto } from './dtos/FindTerminal.dto copy'
 import { Limit, Page } from 'src/common/constant/messages.constant'
 import { Airport } from '../airport/entity/airport.model'
-import { CreateTerminalDto } from './dtos/CreateTerminal.dto'
-import { UpdateTerminalDto } from './dtos/UpdateTerminal.dto'
+import { FindTerminalDto } from './inputs/FindTerminal.dto copy'
+import { CreateTerminalDto } from './inputs/CreateTerminal.dto'
+import { UpdateTerminalDto } from './inputs/UpdateTerminal.dto'
 import { InjectModel } from '@nestjs/sequelize'
 import { I18nService } from 'nestjs-i18n'
 import { Terminal } from './entity/terminal.model'
-import {
-  TerminalInputResponse,
-  TerminalInputsResponse,
-} from './input/Terminal.input'
+import { TerminalResponse, TerminalsResponse } from './dto/Terminal.response'
 
 @Injectable()
 export class TerminalService {
@@ -30,7 +27,7 @@ export class TerminalService {
 
   async create (
     createTerminalDto: CreateTerminalDto,
-  ): Promise<TerminalInputResponse> {
+  ): Promise<TerminalResponse> {
     const transaction = await this.terminalRepo.sequelize.transaction()
     try {
       const airport = await this.airportRepo.findByPk(
@@ -52,7 +49,7 @@ export class TerminalService {
       })
 
       return {
-        data: terminal,
+        data: terminal.dataValues,
         statusCode: 201,
         message: await this.i18n.t('terminal.CREATED'),
       }
@@ -62,19 +59,19 @@ export class TerminalService {
     }
   }
 
-  async findById (id: string): Promise<TerminalInputResponse> {
+  async findById (id: string): Promise<TerminalResponse> {
     const terminal = await this.terminalRepo.findByPk(id)
     if (!terminal) {
       throw new BadRequestException(await this.i18n.t('terminal.NOT_FOUND'))
     }
 
     this.redisService.set(`terminal:${terminal.id}`, terminal)
-    return { data: terminal }
+    return { data: terminal.dataValues }
   }
 
   async findByData (
     findTerminalDto: FindTerminalDto,
-  ): Promise<TerminalInputResponse> {
+  ): Promise<TerminalResponse> {
     const terminal = await this.terminalRepo.findOne({
       where: { ...findTerminalDto },
     })
@@ -83,14 +80,14 @@ export class TerminalService {
     }
 
     this.redisService.set(`terminal:${terminal.id}`, terminal)
-    return { data: terminal }
+    return { data: terminal.dataValues }
   }
 
   async findTerminalsInAirport (
     airportId: string,
     page: number = Page,
     limit: number = Limit,
-  ): Promise<TerminalInputsResponse> {
+  ): Promise<TerminalsResponse> {
     let airport = await this.redisService.get(`airport:${airportId}`)
 
     if (!(airport instanceof Airport)) {
@@ -113,7 +110,7 @@ export class TerminalService {
     }
 
     return {
-      items: terminals,
+      items: terminals.map(t => t.dataValues),
       pagination: {
         totalItems: total,
         currentPage: page,
@@ -124,7 +121,7 @@ export class TerminalService {
 
   async update (
     updateTerminalDto: UpdateTerminalDto,
-  ): Promise<TerminalInputResponse> {
+  ): Promise<TerminalResponse> {
     const airport = await this.airportRepo.findByPk(updateTerminalDto.airportId)
     if (!airport) {
       throw new NotFoundException(await this.i18n.t('airport.NOT_FOUND'))
@@ -142,10 +139,10 @@ export class TerminalService {
       terminalId: terminal.id,
     })
 
-    return { data: terminal }
+    return { data: terminal.dataValues }
   }
 
-  async delete (id: string): Promise<TerminalInputResponse> {
+  async delete (id: string): Promise<TerminalResponse> {
     const terminal = await this.terminalRepo.findByPk(id)
     if (!terminal) {
       throw new BadRequestException(await this.i18n.t('terminal.NOT_FOUND'))

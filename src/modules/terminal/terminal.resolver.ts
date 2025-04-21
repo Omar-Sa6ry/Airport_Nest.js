@@ -8,21 +8,21 @@ import {
   Resolver,
 } from '@nestjs/graphql'
 import { Auth } from 'src/common/decerator/auth.decerator'
-import { Permission, Role } from 'src/common/constant/enum.constant'
+import { AllRoles, Permission, Role } from 'src/common/constant/enum.constant'
 import { RedisService } from 'src/common/redis/redis.service'
 import { Terminal } from './entity/terminal.model'
 import { TerminalService } from './terminal.service'
-import { TerminalResponse, TerminalsResponse } from './dtos/Terminal.response'
-import { CreateTerminalDto } from './dtos/CreateTerminal.dto'
-import { UpdateTerminalDto } from './dtos/UpdateTerminal.dto'
-import { FindTerminalDto } from './dtos/FindTerminal.dto copy'
 import { Airport } from '../airport/entity/airport.model'
 import { AirportService } from '../airport/airport.service'
 import { GateService } from '../gate/gate.service'
 import { Gate } from '../gate/entity/gate.model'
 import { AirportResponse } from '../airport/dtos/airport.response'
+import { FindTerminalDto } from './inputs/FindTerminal.dto copy'
+import { CreateTerminalDto } from './inputs/CreateTerminal.dto'
+import { UpdateTerminalDto } from './inputs/UpdateTerminal.dto'
+import { TerminalResponse, TerminalsResponse } from './dto/Terminal.response'
 
-@Resolver(of => Terminal)
+@Resolver(() => Terminal)
 export class TerminalResolver {
   constructor (
     private readonly redisService: RedisService,
@@ -54,7 +54,7 @@ export class TerminalResolver {
   }
 
   @Query(() => TerminalResponse)
-  @Auth([], [Permission.TERMINAL_VIEW])
+  @Auth(AllRoles, [Permission.TERMINAL_VIEW])
   async terminalById (@Args('id') id: string): Promise<TerminalResponse> {
     const terminalCacheKey = `terminal:${id}`
     const cachedTerminal = await this.redisService.get(terminalCacheKey)
@@ -67,7 +67,7 @@ export class TerminalResolver {
   }
 
   @Query(() => TerminalResponse)
-  @Auth([], [Permission.TERMINAL_VIEW])
+  @Auth(AllRoles, [Permission.TERMINAL_VIEW])
   async terminalByData (
     @Args('findTerminalDto') findTerminalDto?: FindTerminalDto,
   ): Promise<TerminalResponse> {
@@ -75,7 +75,7 @@ export class TerminalResolver {
   }
 
   @Query(() => TerminalsResponse)
-  @Auth([], [Permission.TERMINAL_VIEW])
+  @Auth(AllRoles, [Permission.TERMINAL_VIEW])
   async allTerminalsInAirport (
     @Args('airportId') airportId: string,
     @Args('page', { type: () => Int, nullable: true }) page?: number,
@@ -97,12 +97,12 @@ export class TerminalResolver {
     return airport?.data
   }
 
-  @ResolveField(() => [Gate])
+  @ResolveField(() => [Gate], { nullable: true })
   async gates (
     @Parent() terminal: Terminal,
     @Args('page', { type: () => Int, nullable: true }) page?: number,
     @Args('limit', { type: () => Int, nullable: true }) limit?: number,
-  ): Promise<Gate[]> {
+  ): Promise<Gate[] | null> {
     const gates = await this.gateService.findGatesInTerminal(
       terminal.id,
       page,

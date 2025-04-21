@@ -31,7 +31,7 @@ type Terminal {
   name: String!
   airportId: Airport!
   airport: Airport!
-  gates(page: Int, limit: Int): [Gate!]!
+  gates(page: Int, limit: Int): [Gate!]
 }
 
 type Location {
@@ -420,6 +420,23 @@ type GatesResponse {
   pagination: PaginationInfo
 }
 
+type TerminalResponse {
+  message: String
+  success: Boolean
+  timeStamp: String
+  statusCode: Float
+  data: Terminal
+}
+
+type TerminalsResponse {
+  message: String
+  success: Boolean
+  timeStamp: String
+  statusCode: Float
+  items: [Terminal!]
+  pagination: PaginationInfo
+}
+
 type AirportsResponse {
   message: String
   success: Boolean
@@ -476,23 +493,6 @@ type AirlineLocationsResponse {
   timeStamp: String
   statusCode: Float
   items: [AirlineLocation!]
-  pagination: PaginationInfo
-}
-
-type TerminalResponse {
-  message: String
-  success: Boolean
-  timeStamp: String
-  statusCode: Float
-  data: Terminal
-}
-
-type TerminalsResponse {
-  message: String
-  success: Boolean
-  timeStamp: String
-  statusCode: Float
-  items: [Terminal!]
   pagination: PaginationInfo
 }
 

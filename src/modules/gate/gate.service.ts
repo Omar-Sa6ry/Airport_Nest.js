@@ -2,8 +2,12 @@ import { Op } from 'sequelize'
 import { Injectable, NotFoundException } from '@nestjs/common'
 import { InjectModel } from '@nestjs/sequelize'
 import { I18nService } from 'nestjs-i18n'
+import { Limit, Page } from 'src/common/constant/messages.constant'
+import { GateLoader } from './loader/Gate.loader'
+import { GateOutput } from './dtos/Gate.response'
 import { RedisService } from 'src/common/redis/redis.service'
 import { WebSocketMessageGateway } from 'src/common/websocket/websocket.gateway'
+import { TerminalResponse } from '../terminal/dto/Terminal.response'
 import { Gate } from './entity/gate.model'
 import { Terminal } from '../terminal/entity/terminal.model'
 import { CreateGateDto } from './dtos/createGate.dto'
@@ -12,10 +16,6 @@ import {
   GateInputResponse,
   GateInputsResponse,
 } from './input/Gate.input'
-import { TerminalInputResponse } from '../terminal/input/Terminal.input'
-import { Limit, Page } from 'src/common/constant/messages.constant'
-import { GateLoader } from './loader/Gate.loader'
-import { GateOutput } from './dtos/Gate.response'
 
 @Injectable()
 export class GateService {
@@ -33,7 +33,7 @@ export class GateService {
     const cachedTerminal = await this.redisService.get(
       `terminal:${createGateDto.terminalId}`,
     )
-    if (cachedTerminal instanceof TerminalInputResponse) {
+    if (cachedTerminal instanceof TerminalResponse) {
       terminal = cachedTerminal.data
     } else {
       terminal = await this.terminalRepo.findOne({

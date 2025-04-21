@@ -132,9 +132,7 @@ export class EmployeeResolver {
 
   @ResolveField(() => Location, { name: 'location' })
   async location (@Parent() employee: EmployeeOutput): Promise<Location> {
-    console.log(employee)
     const location = await this.locationService.findByUser(employee.userId)
-    console.log(location)
     return location.data
   }
 
