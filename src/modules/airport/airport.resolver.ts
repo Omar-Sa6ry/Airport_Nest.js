@@ -11,9 +11,11 @@ import { LocationService } from '../location/location.service'
 import { Location } from '../location/entity/location.model'
 import { GateService } from '../gate/gate.service'
 import { AirportResponse, AirportsResponse } from './dtos/airport.response'
+import { FlightService } from '../flight/flight.service'
+import { FlightsFromAirportResponse } from '../flight/dtos/FlightsFromAirport.response'
 import { TerminalService } from '../terminal/terminal.service'
 import { GateData } from '../gate/dto/Gate.response'
-import { EmployeesResponse } from '../employee/dto/Employee.response.dto'
+import { EmployeeOutput } from '../employee/dto/Employee.response.dto'
 import { EmployeeService } from '../employee/employee.service'
 import {
   Args,
@@ -30,6 +32,7 @@ export class AirportResolver {
   constructor (
     private readonly redisService: RedisService,
     private readonly airportService: AirportService,
+    private readonly flighttService: FlightService,
     private readonly employeeService: EmployeeService,
     private readonly terminalService: TerminalService,
     private readonly locationService: LocationService,
@@ -91,25 +94,15 @@ export class AirportResolver {
     return this.airportService.findAll(page, limit)
   }
 
-  @ResolveField(() => EmployeesResponse, { nullable: true })
-  async employees (
-    @Parent() airport: Airport,
-    @Args('page', { type: () => Int, nullable: true }) page?: number,
-    @Args('limit', { type: () => Int, nullable: true }) limit?: number,
-  ): Promise<EmployeesResponse> {
-    return this.employeeService.findEmployeeInAirport(airport.id, page, limit)
+  @ResolveField(() => [EmployeeOutput], { nullable: true })
+  async employees (@Parent() airport: Airport): Promise<EmployeeOutput[]> {
+    return this.employeeService.findAllEmployeeInAirport(airport.id)
   }
 
   @ResolveField(() => [Terminal], { nullable: true })
-  async terminals (
-    @Parent() airport: Airport,
-    @Args('page', { type: () => Int, nullable: true }) page?: number,
-    @Args('limit', { type: () => Int, nullable: true }) limit?: number,
-  ): Promise<Terminal[]> {
+  async terminals (@Parent() airport: Airport): Promise<Terminal[]> {
     const terminals = await this.terminalService.findTerminalsInAirport(
       airport.id,
-      page,
-      limit,
     )
     return terminals?.items
   }
@@ -117,6 +110,20 @@ export class AirportResolver {
   @ResolveField(() => [GateData], { nullable: true })
   async gates (@Parent() airport: Airport): Promise<GateData[]> {
     return this.gateService.findGatesInAirport(airport.id)
+  }
+
+  @ResolveField(() => FlightsFromAirportResponse)
+  async flightsTo (
+    @Parent() airport: Airport,
+  ): Promise<FlightsFromAirportResponse> {
+    return this.flighttService.findAllFromAirport(airport.id)
+  }
+
+  @ResolveField(() => FlightsFromAirportResponse)
+  async flightsFrom (
+    @Parent() airport: Airport,
+  ): Promise<FlightsFromAirportResponse> {
+    return this.flighttService.findAllFromAirport(airport.id)
   }
 
   @ResolveField(() => Location)

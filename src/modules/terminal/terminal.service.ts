@@ -93,11 +93,7 @@ export class TerminalService {
     return { data: terminal.dataValues }
   }
 
-  async findTerminalsInAirport (
-    airportId: string,
-    page: number = Page,
-    limit: number = Limit,
-  ): Promise<TerminalsResponse> {
+  async findTerminalsInAirport (airportId: string): Promise<TerminalsResponse> {
     let airport = await this.redisService.get(`airport:${airportId}`)
 
     if (!(airport instanceof Airport)) {
@@ -111,18 +107,11 @@ export class TerminalService {
       await this.terminalRepo.findAndCountAll({
         where: { airportId },
         order: [['createdAt', 'DESC']],
-        offset: (page - 1) * limit,
-        limit,
       })
 
     if (terminals.length !== 0) {
       return {
         items: terminals.map(t => t.dataValues),
-        pagination: {
-          totalItems: total,
-          currentPage: page,
-          totalPages: Math.ceil(total / limit),
-        },
       }
     }
   }

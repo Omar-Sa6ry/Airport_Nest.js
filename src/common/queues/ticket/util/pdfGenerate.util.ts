@@ -1,12 +1,12 @@
 import PDFDocument = require('pdfkit')
 import { Ticket } from '../../../../modules/ticket/entity/ticket.model'
 import { UserInput } from 'src/modules/users/input/User.input'
-import { FlightInput } from 'src/modules/flight/inputs/Flight.input'
+import { Flight } from 'src/modules/flight/entity/flight.model'
 
 export async function generatePDF (
   ticket: Ticket,
   user: UserInput,
-  flight: FlightInput,
+  flight: Flight,
   terminal: string,
   gate: string,
 ): Promise<Buffer> {
@@ -125,7 +125,6 @@ export async function generatePDF (
         .fontSize(12)
         .text('SEAT', 70, 440)
         .text('CLASS', 200, 440)
-        .text('PRICE', 330, 440)
         .text('STATUS', 460, 440)
 
       doc
@@ -134,7 +133,6 @@ export async function generatePDF (
         .font('Helvetica-Bold')
         .text(ticket.seatNumber, 70, 460)
         .text(ticket.class, 200, 460)
-        .text(`$${ticket.price}`, 330, 460)
         .text(ticket.status, 460, 460)
 
       // Footer with decorative elements

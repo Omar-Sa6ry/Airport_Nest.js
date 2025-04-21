@@ -3,6 +3,7 @@ import { IsOptional } from 'class-validator'
 import { BaseResponse } from 'src/common/bases/BaseResponse'
 import { FlightStatus } from 'src/common/constant/enum.constant'
 import { PaginationInfo } from 'src/common/dtos/pagintion'
+import { Airline } from 'src/modules/airline/entity/airline.model'
 import { Airport } from 'src/modules/airport/entity/airport.model'
 import { Gate } from 'src/modules/gate/entity/gate.model'
 
@@ -20,6 +21,9 @@ export class ToAirportFlightOutput {
   @Field(() => Gate)
   gate: Gate
 
+  @Field(() => Airline)
+  airline: Airline
+
   @Field(() => FlightStatus)
   status: FlightStatus
 
@@ -34,15 +38,6 @@ export class ToAirportFlightOutput {
 
   @Field(() => Date)
   updatedAt: Date
-}
-
-@ObjectType()
-export class ToAirportFlights {
-  @Field(() => [ToAirportFlightOutput])
-  flights: ToAirportFlightOutput[]
-
-  @Field(() => Airport)
-  toAirport: Airport
 }
 
 @ObjectType()

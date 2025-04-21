@@ -217,9 +217,11 @@ type Airport {
   name: String!
   iataCode: String!
   icaoCode: String!
-  employees(page: Int, limit: Int): EmployeesResponse
-  terminals(page: Int, limit: Int): [Terminal!]
+  employees: [EmployeeOutput!]
+  terminals: [Terminal!]
   gates: [GateData!]
+  flightsTo: FlightsFromAirportResponse!
+  flightsFrom: FlightsFromAirportResponse!
   location: Location!
 }
 
@@ -242,6 +244,7 @@ type Flight {
   status: FlightStatus!
   gate: Gate!
   fromAirport: Airport!
+  airline: airline!
   toAirport: Airport!
 }
 
@@ -429,6 +432,51 @@ type AirportResponse {
   data: Airport
 }
 
+type FlightOutput {
+  id: String!
+  gateId: String!
+  flightNumber: String!
+  status: FlightStatus!
+  leaveAt: DateTime!
+  arriveAt: DateTime!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  airline: airline
+  fromAirport: Airport
+  toAirport: Airport
+  gate: GateData
+}
+
+type FlightResponse {
+  message: String
+  success: Boolean
+  timeStamp: String
+  statusCode: Float
+  data: FlightOutput
+}
+
+type FromAirportFlightOutput {
+  id: String!
+  flightNumber: String!
+  toAirport: Airport!
+  airline: airline!
+  gate: Gate!
+  status: FlightStatus!
+  leaveAt: DateTime!
+  arriveAt: DateTime!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type FlightsFromAirportResponse {
+  message: String
+  success: Boolean
+  timeStamp: String
+  statusCode: Float
+  items: [FromAirportFlightOutput!]
+  pagination: PaginationInfo
+}
+
 type GateData {
   id: String!
   gateNumber: String!
@@ -504,54 +552,12 @@ type AirlineLocationsResponse {
   pagination: PaginationInfo
 }
 
-type FlightOutput {
-  id: String!
-  flightNumber: String!
-  fromAirport: Airport!
-  toAirport: Airport!
-  airline: airline!
-  gate: Gate!
-  status: FlightStatus!
-  leaveAt: DateTime!
-  arriveAt: DateTime!
-  createdAt: DateTime!
-  updatedAt: DateTime!
-}
-
-type FlightResponse {
-  message: String
-  success: Boolean
-  timeStamp: String
-  statusCode: Float
-  data: FlightOutput
-}
-
-type FromAirportFlightOutput {
-  id: String!
-  flightNumber: String!
-  toAirport: Airport!
-  gate: Gate!
-  status: FlightStatus!
-  leaveAt: DateTime!
-  arriveAt: DateTime!
-  createdAt: DateTime!
-  updatedAt: DateTime!
-}
-
-type FlightsFromAirportResponse {
-  message: String
-  success: Boolean
-  timeStamp: String
-  statusCode: Float
-  items: [FromAirportFlightOutput!]
-  pagination: PaginationInfo
-}
-
 type ToAirportFlightOutput {
   id: String!
   flightNumber: String!
   fromAirport: Airport!
   gate: Gate!
+  airline: airline!
   status: FlightStatus!
   leaveAt: DateTime!
   arriveAt: DateTime!
@@ -749,7 +755,11 @@ type Query {
   allAirports(page: Int, limit: Int): AirportsResponse!
   terminalById(id: String!): TerminalResponse!
   terminalByData(findTerminalDto: FindTerminalDto!): TerminalResponse!
-  allTerminalsInAirport(airportId: String!, page: Int, limit: Int): TerminalsResponse!
+  allTerminalsInAirport(airportId: String!): TerminalsResponse!
+  getFlightById(id: String!): FlightResponse!
+  getFlightByData(findOptions: FlightOptinalInput!): FlightResponse!
+  getAllFlightsToAitport(id: String!): FlightsToAirportResponse!
+  getAllFlightsFromAitport(id: String!): FlightsFromAirportResponse!
   getEmployeeById(id: String!): EmployeeResponse!
   getEmployeeByEmail(email: String!): EmployeeResponse!
   getEmployeeByPhone(phone: String!): EmployeeResponse!
@@ -760,10 +770,6 @@ type Query {
   findAirlineByName(name: String!): AirlineResponse!
   findAllAirlines(page: Int, limit: Int): AirlinesResponse!
   findAllFlightsInAirline(airlineId: String!, page: Int, limit: Int): FlightsInAirlinesResponse!
-  getFlightById(id: String!): FlightResponse!
-  getFlightByData(findOptions: FlightOptinalInput!): FlightResponse!
-  getAllFlightsToAitport(id: String!): FlightsToAirportResponse!
-  getAllFlightsFromAitport(id: String!): FlightsFromAirportResponse!
   findSeatById(id: ID!): SeatResponse!
   findAllAvailableSeatsInFlight(findSeatInput: FindSeatInput!, page: Int, limit: Int): SeatsResponse!
   findFlightCrewById(id: String!): FlightCrewResponse!
@@ -812,6 +818,12 @@ type Mutation {
   createTerminal(createTerminalDto: CreateTerminalDto!): TerminalResponse!
   updateTerminal(updateTerminalDto: UpdateTerminalDto!): TerminalResponse!
   deleteTerminal(id: String!): TerminalResponse!
+  createFlight(createFlightInput: CreateFlightInput!): FlightResponse!
+  deleteFlight(id: String!): FlightResponse!
+  updateFlight(id: String!, updateFlightInput: FlightOptinalInput!): FlightResponse!
+  changeFlightGate(flightId: String!, gateId: String!): FlightResponse!
+  cancelFlight(id: String!): FlightResponse!
+  delayFlight(id: String!, delayTimeByMinute: Float!): FlightResponse!
   createEmployee(userId: String!, airportId: String!, role: String!): EmployeeResponse!
   deleteEmployee(id: String!): EmployeeResponse!
   editUserRoleToManager(id: String!): EmployeeResponse!
@@ -822,12 +834,6 @@ type Mutation {
   createAirline(name: String!, createLocationInput: CreateLocationInput!): AirlineResponse!
   updateAirline(id: String!, name: String!): AirlineResponse!
   deleteAirline(id: String!): AirlineResponse!
-  createFlight(createFlightInput: CreateFlightInput!): FlightResponse!
-  deleteFlight(id: String!): FlightResponse!
-  updateFlight(id: String!, updateFlightInput: FlightOptinalInput!): FlightResponse!
-  changeFlightGate(flightId: String!, gateId: String!): FlightResponse!
-  cancelFlight(id: String!): FlightResponse!
-  delayFlight(id: String!, delayTime: Float!): FlightResponse!
   createSeat(createSeatInput: CreateSeatInput!): SeatResponse!
   bookSeat(id: ID!): SeatResponse!
   unBookSeat(id: ID!): SeatResponse!
@@ -926,11 +932,6 @@ input UpdateTerminalDto {
   id: String!
 }
 
-input CreateGateDto {
-  gateNumber: String!
-  terminalId: String!
-}
-
 input CreateFlightInput {
   flightNumber: String!
   airlineId: String!
@@ -939,6 +940,11 @@ input CreateFlightInput {
   gateId: String!
   leaveAt: DateTime!
   arriveAt: DateTime!
+}
+
+input CreateGateDto {
+  gateNumber: String!
+  terminalId: String!
 }
 
 input CreateSeatInput {

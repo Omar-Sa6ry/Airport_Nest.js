@@ -16,6 +16,7 @@ import { Airport } from '../airport/entity/airport.model'
 import { CreateFlightInput } from './inputs/CreateFlight.input'
 import { FlightOptinalInput } from './inputs/FlightOptinals.input'
 import { FlightStatus } from 'src/common/constant/enum.constant'
+import { TerminalService } from '../terminal/terminal.service'
 import { Limit, Page } from 'src/common/constant/messages.constant'
 import { Ticket } from '../ticket/entity/ticket.model'
 import { UpdateFlightService } from 'src/common/queues/update flight/UpdateFlight.service'
@@ -30,6 +31,7 @@ export class FlightService {
     private readonly i18n: I18nService,
     private readonly redisService: RedisService,
     private readonly scheduleService: ScheduleService,
+    private readonly terminalServices: TerminalService,
     private readonly flightFromAirportLoader: FlightFromAirportLoader,
     private readonly flightToAirportLoader: FlightToAirportLoader,
     private readonly updateFlightService: UpdateFlightService,
@@ -57,8 +59,14 @@ export class FlightService {
     if (!airline)
       throw new NotFoundException(await this.i18n.t('airline.NOT_FOUND'))
 
+    const terminals = await this.terminalServices.findTerminalsInAirport(
+      createFlightInput.fromAirportId,
+    )
+    const terminalsId = [...new Set(terminals?.items.map(t => t.id))]
+
     const gate = await this.gateRepo.findByPk(createFlightInput.gateId)
-    if (!gate) throw new NotFoundException(await this.i18n.t('gate.NOT_FOUND'))
+    if (!gate || !terminalsId.includes(gate.terminalId))
+      throw new NotFoundException(await this.i18n.t('gate.NOT_FOUND'))
 
     const toAirport = await this.airportRepo.findByPk(
       createFlightInput.toAirportId,
@@ -72,15 +80,7 @@ export class FlightService {
         transaction,
       })
 
-      const flightInput: FlightResponse = {
-        data: {
-          ...flight.dataValues,
-          gate: gate.dataValues,
-          fromAirport: fromAirport.dataValues,
-          toAirport: toAirport.dataValues,
-          airline: airline.dataValues,
-        },
-      }
+      const flightInput: FlightResponse = { data: flight.dataValues }
 
       this.redisService.set(`flight:${flight.id}`, flightInput)
       this.websocketGateway.broadcast('flightCreate', {
@@ -119,15 +119,7 @@ export class FlightService {
       throw new NotFoundException(await this.i18n.t('flight.NOT_FOUND'))
     }
 
-    const flightInput: FlightResponse = {
-      data: {
-        ...flight.dataValues,
-        gate: flight.gate.dataValues,
-        fromAirport: flight.fromAirport.dataValues,
-        toAirport: flight.toAirport.dataValues,
-        airline: flight.airline.dataValues,
-      },
-    }
+    const flightInput: FlightResponse = { data: flight.dataValues }
     this.redisService.set(`flight:${flight.id}`, flightInput)
 
     return flightInput
@@ -143,15 +135,8 @@ export class FlightService {
       throw new NotFoundException(await this.i18n.t('flight.NOT_FOUND'))
     }
 
-    const flightInput: FlightResponse = {
-      data: {
-        ...flight.dataValues,
-        gate: flight.gate.dataValues,
-        fromAirport: flight.fromAirport.dataValues,
-        toAirport: flight.toAirport.dataValues,
-        airline: flight.airline.dataValues,
-      },
-    }
+    const flightInput: FlightResponse = { data: flight.dataValues }
+
     this.redisService.set(`flight:${flight.id}`, flightInput)
 
     return flightInput
@@ -281,7 +266,7 @@ export class FlightService {
       },
     })
     this.updateFlightService.notifyTicketUsers(
-      tickets.map(t => t.dataValues.id),
+      tickets.map(t => t?.dataValues?.id),
       JSON.stringify(updateFlightInput),
     )
 
@@ -297,17 +282,21 @@ export class FlightService {
   }
 
   async changwGate (flightId: string, gateId: string): Promise<FlightResponse> {
-    const gate = await this.gateRepo.findByPk(gateId)
-    if (!gate) {
-      throw new NotFoundException(await this.i18n.t('gate.NOT_FOUND'))
-    }
-
     const flight = await this.flightModel.findByPk(flightId, {
       include: ['fromAirport', 'toAirport', 'gate'],
     })
     if (!flight) {
       throw new NotFoundException(await this.i18n.t('flight.NOT_FOUND'))
     }
+
+    const terminals = await this.terminalServices.findTerminalsInAirport(
+      flight.fromAirportId,
+    )
+    const terminalsId = [...new Set(terminals?.items.map(t => t.id))]
+
+    const gate = await this.gateRepo.findByPk(gateId)
+    if (!gate || !terminalsId.includes(gate.terminalId))
+      throw new NotFoundException(await this.i18n.t('gate.NOT_FOUND'))
 
     const transaction = await this.flightModel.sequelize.transaction()
     try {

@@ -7,12 +7,14 @@ import { Airport } from 'src/modules/airport/entity/airport.model'
 import { Gate } from 'src/modules/gate/entity/gate.model'
 import { Flight } from '../entity/flight.model'
 import { ToAirportFlightOutput } from '../dtos/FlightsToAirport.response'
+import { Airline } from 'src/modules/airline/entity/airline.model'
 
 @Injectable()
 export class FlightToAirportLoader {
   private loader: DataLoader<string, ToAirportFlightOutput>
 
   constructor (
+    @InjectModel(Airline) private airlineRepo: typeof Airline,
     @InjectModel(Flight) private flightRepo: typeof Flight,
     @InjectModel(Gate) private gateRepo: typeof Gate,
     @InjectModel(Airport) private airportRepo: typeof Airport,
@@ -29,6 +31,14 @@ export class FlightToAirportLoader {
           where: { id: { [Op.in]: gateIds } },
         })
         const gateMap = new Map(gates.map(gate => [gate.id, gate]))
+
+        const airlineIds = [...new Set(flights.map(flight => flight.airlineId))]
+        const airlines = await this.airlineRepo.findAll({
+          where: { id: { [Op.in]: airlineIds } },
+        })
+        const airlineMap = new Map(
+          airlines.map(airline => [airline.id, airline]),
+        )
 
         const airportIds = [
           ...new Set(flights.map(flight => flight.fromAirportId)),
@@ -52,8 +62,13 @@ export class FlightToAirportLoader {
           const gate = gateMap.get(flight.gateId)
           if (!gate) throw new NotFoundException(this.i18n.t('gate.NOT_FOUND'))
 
+          const airline = airlineMap.get(flight.airlineId)?.dataValues
+          if (!airline)
+            throw new NotFoundException(this.i18n.t('airline.NOT_FOUND'))
+
           return {
             ...flight.dataValues,
+            airline,
             fromAirport: fromAirport.dataValues,
             gate: gate.dataValues,
           }

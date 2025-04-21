@@ -77,6 +77,7 @@ export class Flight extends BaseEntity<Flight> {
   @BelongsTo(() => Airport, 'fromAirportId')
   fromAirport: Airport
 
+  @Field(() => Airline)
   @BelongsTo(() => Airline, 'airlineId')
   airline: Airline
 

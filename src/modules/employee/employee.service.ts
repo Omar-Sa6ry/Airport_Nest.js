@@ -346,4 +346,32 @@ export class EmployeeService {
       return result
     }
   }
+
+  async findAllEmployeeInAirport (airportId: string): Promise<EmployeeOutput[]> {
+    const airport = await this.airportRepo.findByPk(airportId)
+    if (!airport) {
+      throw new NotFoundException(await this.i18n.t('airport.NOT_FOUND'))
+    }
+
+    const data = await this.employeeRepo.findAll({
+      where: { airportId },
+      order: [['createdAt', 'DESC']],
+    })
+
+    if (data.length !== 0) {
+      const employees = await this.employeeLoader.loadMany(
+        data.map(employee => employee.id),
+      )
+
+      const items: EmployeeOutput[] = data.map((m, index) => {
+        const employee = employees[index]
+        if (!employee)
+          throw new NotFoundException(this.i18n.t('employee.NOT_FOUND'))
+
+        return employee
+      })
+
+      return items
+    }
+  }
 }

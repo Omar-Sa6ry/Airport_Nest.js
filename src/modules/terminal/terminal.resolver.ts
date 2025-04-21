@@ -78,10 +78,8 @@ export class TerminalResolver {
   @Auth(AllRoles, [Permission.TERMINAL_VIEW])
   async allTerminalsInAirport (
     @Args('airportId') airportId: string,
-    @Args('page', { type: () => Int, nullable: true }) page?: number,
-    @Args('limit', { type: () => Int, nullable: true }) limit?: number,
   ): Promise<TerminalsResponse> {
-    return this.terminalService.findTerminalsInAirport(airportId, page, limit)
+    return this.terminalService.findTerminalsInAirport(airportId)
   }
 
   @ResolveField(() => Airport, { nullable: true })
