@@ -10,11 +10,14 @@ import { SeatResolver } from './seat.resolver'
 import { Gate } from '../gate/entity/gate.model'
 import { Airport } from '../airport/entity/airport.model'
 import { FlightModule } from '../flight/flight.module'
+import { AirlineModule } from '../airline/airline.module'
+import { Airline } from '../airline/entity/airline.model'
 
 @Module({
   imports: [
-    SequelizeModule.forFeature([Flight, Gate, Airport, Seat]),
+    SequelizeModule.forFeature([Flight, Airline, Gate, Airport, Seat]),
     UserModule,
+    AirlineModule,
     FlightModule,
     WebSocketModule,
     RedisModule,

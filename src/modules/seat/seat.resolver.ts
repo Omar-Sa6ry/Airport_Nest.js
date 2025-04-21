@@ -4,8 +4,10 @@ import { CreateSeatInput } from './inputs/CreateSeat.input'
 import { UpdateSeatInput } from './inputs/UpdateSeat.input'
 import { FindSeatInput } from './inputs/FindSeat.input'
 import { SeatResponse, SeatsResponse } from './dto/Seat.response'
+import { CurrentUser } from 'src/common/decerator/currentUser.decerator'
+import { CurrentUserDto } from 'src/common/dtos/currentUser.dto'
 import { RedisService } from 'src/common/redis/redis.service'
-import { FlightResponse } from '../flight/dtos/Flight.response'
+import { FlightOutput } from '../flight/dtos/Flight.response'
 import { Auth } from 'src/common/decerator/auth.decerator'
 import { Permission, Role } from 'src/common/constant/enum.constant'
 import { FlightService } from '../flight/flight.service'
@@ -83,6 +85,15 @@ export class SeatResolver {
     return this.seatService.update(id, updateSeatInput)
   }
 
+  @Mutation(() => SeatsResponse)
+  @Auth([Role.AIRLINE_MANAGER], [Permission.SEAT_UPDATE])
+  async makeSeatsAvaliableInFlight (
+    @CurrentUser() user: CurrentUserDto,
+    @Args('flightId', { type: () => ID }) id: string,
+  ): Promise<SeatsResponse> {
+    return this.seatService.makeSeatsAvaliableInFlight(id, user.id)
+  }
+
   @Mutation(() => SeatResponse)
   @Auth([Role.AIRLINE_MANAGER], [Permission.SEAT_DELETE])
   async deleteSeat (
@@ -91,8 +102,8 @@ export class SeatResolver {
     return this.seatService.delete(id)
   }
 
-  @ResolveField(() => FlightResponse, { nullable: true })
-  async flight (@Parent() seat: Seat): Promise<FlightResponse> {
-    return this.flightService.findById(seat.flightId)
+  @ResolveField(() => FlightOutput, { nullable: true })
+  async flight (@Parent() seat: Seat): Promise<FlightOutput> {
+    return (await this.flightService.findById(seat.flightId)).data
   }
 }

@@ -8,10 +8,13 @@ import { Ticket } from './entity/ticket.model'
 import { SendTicketService } from 'src/common/queues/ticket/SendTicket.service'
 import { Seat } from '../seat/entity/Seat.model'
 import { SeatService } from '../seat/seat.service'
+import { AirlineModule } from '../airline/airline.module'
+import { Airline } from '../airline/entity/airline.model'
 
 @Module({
   imports: [
-    SequelizeModule.forFeature([Ticket, Seat]),
+    SequelizeModule.forFeature([Ticket, Airline, Seat]),
+    AirlineModule,
     UserModule,
     SendTicketModule,
   ],

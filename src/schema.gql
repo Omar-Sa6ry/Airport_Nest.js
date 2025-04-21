@@ -610,7 +610,7 @@ type Seat {
   seatNumber: Int!
   class: TicketClass!
   isAvailable: Boolean!
-  flight: FlightResponse
+  flight: FlightOutput
 }
 
 type SeatResponse {
@@ -771,7 +771,7 @@ type Query {
   findAirlineById(id: String!): AirlineResponse!
   findAirlineByName(name: String!): AirlineResponse!
   findAllAirlines(page: Int, limit: Int): AirlinesResponse!
-  findAllFlightsInAirline(airlineId: String!, page: Int, limit: Int): FlightsInAirlinesResponse!
+  findAllFlightsInAirline(airlineId: String!): FlightsInAirlinesResponse!
   findSeatById(id: ID!): SeatResponse!
   findAllAvailableSeatsInFlight(findSeatInput: FindSeatInput!, page: Int, limit: Int): SeatsResponse!
   findFlightCrewById(id: String!): FlightCrewResponse!
@@ -840,6 +840,7 @@ type Mutation {
   bookSeat(id: ID!): SeatResponse!
   unBookSeat(id: ID!): SeatResponse!
   updateSeat(id: ID!, updateSeatInput: UpdateSeatInput!): SeatResponse!
+  makeSeatsAvaliableInFlight(flightId: ID!): SeatsResponse!
   deleteSeat(id: ID!): SeatResponse!
   createFlightCrew(createFlightCrewInput: CreateFlightCrewInput!): FlightCrewResponse!
   deleteFlightCrew(flightCrewId: String!): FlightCrewResponse!

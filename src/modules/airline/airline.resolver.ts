@@ -63,10 +63,8 @@ export class AirlineResolver {
   @Auth([Role.ADMIN, Role.AIRLINE_MANAGER], [Permission.AIRLINE_MANAGE_FLIGHTS])
   async findAllFlightsInAirline (
     @Args('airlineId') airlineId: string,
-    @Args('page', { type: () => Int, nullable: true }) page?: number,
-    @Args('limit', { type: () => Int, nullable: true }) limit?: number,
   ): Promise<FlightsInAirlinesResponse> {
-    return this.airlineService.findAllFlightInAirline(airlineId, page, limit)
+    return this.airlineService.findAllFlightInAirline(airlineId)
   }
 
   @Mutation(() => AirlineResponse)

@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common'
+import {
+  BadGatewayException,
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common'
 import { InjectModel } from '@nestjs/sequelize'
 import { Seat } from './entity/seat.model'
 import { CreateSeatInput } from './inputs/CreateSeat.input'
@@ -10,14 +15,18 @@ import { SeatResponse, SeatsResponse } from './dto/Seat.response'
 import { Limit, Page } from 'src/common/constant/messages.constant'
 import { FindSeatInput } from './inputs/FindSeat.input'
 import { Flight } from '../flight/entity/flight.model'
+import { Airline } from '../airline/entity/airline.model'
+import { AirlineService } from '../airline/airline.service'
 
 @Injectable()
 export class SeatService {
   constructor (
     private readonly i18n: I18nService,
+    private readonly airlineService: AirlineService,
     private readonly redisService: RedisService,
     private readonly websocketGateway: WebSocketMessageGateway,
     @InjectModel(Seat) private seatRepo: typeof Seat,
+    @InjectModel(Airline) private airlineRepo: typeof Airline,
     @InjectModel(Flight) private flightRepo: typeof Flight,
   ) {}
 
@@ -135,6 +144,36 @@ export class SeatService {
     return {
       data: seat.dataValues,
       message: await this.i18n.t('seat.CANCELLED'),
+    }
+  }
+
+  async makeSeatsAvaliableInFlight (
+    flightId: string,
+    userId: string,
+  ): Promise<SeatsResponse> {
+    const airline = await this.airlineRepo.findOne({ where: { userId } })
+    if (!airline)
+      throw new BadGatewayException(await this.i18n.t('airline.NOT_OWNER'))
+
+    const flights = (
+      await this.airlineService.findAllFlightInAirline(airline.id)
+    ).items
+    const flightIds = [...new Set(flights.map(f => f.id))]
+
+    if (flightIds.includes(flightId))
+      throw new BadRequestException(await this.i18n.t('seat.NOT_HAVE_THIS_SEAT'))
+
+    const seats = await this.seatRepo.findAll({
+      where: { flightId, isAvailable: false },
+    })
+    if (seats.length === 0)
+      throw new NotFoundException(await this.i18n.t('seat.NOT_FOUNDS'))
+
+    await seats.map(s => s.update({ isAvailable: true }))
+
+    return {
+      items: seats.map(s => s.dataValues),
+      message: await this.i18n.t('seat.AVALIABLES'),
     }
   }
 

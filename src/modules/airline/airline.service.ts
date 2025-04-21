@@ -90,8 +90,6 @@ export class AirlineService {
 
   async findAllFlightInAirline (
     airlineId: string,
-    page: number = Page,
-    limit: number = Limit,
   ): Promise<FlightsInAirlinesResponse> {
     const airline = await this.airlineModel.findByPk(airlineId)
     if (!airline)
@@ -100,11 +98,9 @@ export class AirlineService {
     const flights = await this.flightModel.findAll({
       where: { airlineId },
       order: [['createdAt', 'DESC']],
-      offset: (page - 1) * limit,
-      limit,
     })
 
-    if (flights.length == 0)
+    if (flights.length === 0)
       throw new NotFoundException(await this.i18n.t('flight.NOT_FOUNDS'))
 
     return { items: flights.map(f => f.dataValues) }
