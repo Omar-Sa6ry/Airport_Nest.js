@@ -12,12 +12,12 @@ import { EmployeeLoader } from './loader/Employee.loader'
 import { Employee } from './entity/employee.model'
 import { InjectModel } from '@nestjs/sequelize'
 import { I18nService } from 'nestjs-i18n'
-import { Role } from 'src/common/constant/enum.constant'
+import { EmployeeRole, Role } from 'src/common/constant/enum.constant'
 import {
-  EmployeeInput,
-  EmployeeInputResponse,
-  EmployeeInputsResponse,
-} from './input/Employee.input'
+  EmployeeOutput,
+  EmployeeResponse,
+  EmployeesResponse,
+} from './dto/Employee.response.dto'
 
 @Injectable()
 export class EmployeeService {
@@ -35,7 +35,25 @@ export class EmployeeService {
     userId: string,
     airportId: string,
     role: Role,
-  ): Promise<EmployeeInputResponse> {
+    managerId: string,
+  ): Promise<EmployeeResponse> {
+    if (
+      !Object.values(EmployeeRole).includes(role as unknown as EmployeeRole)
+    ) {
+      throw new BadRequestException(
+        await this.i18n.t('employee.ROLE_NOT_FOUND'),
+      )
+    }
+
+    const manager = await this.employeeRepo.findOne({
+      where: { userId: managerId },
+    })
+
+    if (manager.airportId !== airportId)
+      throw new NotFoundException(
+        await this.i18n.t('employee.NOT_MANAGER_IN_THIS_AIRPORT'),
+      )
+
     const transaction = await this.employeeRepo.sequelize.transaction()
     try {
       const user = await this.userRepo.findByPk(userId)
@@ -54,13 +72,14 @@ export class EmployeeService {
       )
 
       user.role = role
+
       await user.save({ transaction })
       await transaction.commit()
 
-      const result: EmployeeInputResponse = {
+      const result: EmployeeResponse = {
         data: {
-          employee: { ...user.dataValues, ...employee.dataValues },
-          airport: airport.dataValues,
+          ...user.dataValues,
+          ...employee.dataValues,
         },
       }
 
@@ -82,7 +101,7 @@ export class EmployeeService {
     }
   }
 
-  async findById (id: string): Promise<EmployeeInputResponse> {
+  async findById (id: string): Promise<EmployeeResponse> {
     const user = await this.userRepo.findByPk(id)
     if (!user) {
       throw new NotFoundException(await this.i18n.t('user.NOT_FOUND'))
@@ -99,13 +118,10 @@ export class EmployeeService {
       throw new NotFoundException(await this.i18n.t('airport.NOT_FOUND'))
     }
 
-    const result: EmployeeInputResponse = {
+    const result: EmployeeResponse = {
       data: {
-        employee: {
-          ...user.dataValues,
-          ...employee.dataValues,
-        },
-        airport: airport.dataValues,
+        ...user.dataValues,
+        ...employee.dataValues,
       },
     }
 
@@ -115,7 +131,7 @@ export class EmployeeService {
     return result
   }
 
-  async findByPhone (phone: string): Promise<EmployeeInputResponse> {
+  async findByPhone (phone: string): Promise<EmployeeResponse> {
     const user = await this.userRepo.findOne({ where: { phone } })
     if (!user) {
       throw new NotFoundException(await this.i18n.t('user.NOT_FOUND'))
@@ -127,18 +143,10 @@ export class EmployeeService {
     if (!employee)
       throw new BadRequestException(await this.i18n.t('employee.NOT_FOUND'))
 
-    const airport = await this.airportRepo.findByPk(employee.airportId)
-    if (!airport) {
-      throw new NotFoundException(await this.i18n.t('airport.NOT_FOUND'))
-    }
-
-    const result: EmployeeInputResponse = {
+    const result: EmployeeResponse = {
       data: {
-        employee: {
-          ...user.dataValues,
-          ...employee.dataValues,
-        },
-        airport: airport.dataValues,
+        ...user.dataValues,
+        ...employee.dataValues,
       },
     }
 
@@ -148,7 +156,7 @@ export class EmployeeService {
     return result
   }
 
-  async findByEmail (email: string): Promise<EmployeeInputResponse> {
+  async findByEmail (email: string): Promise<EmployeeResponse> {
     const user = await this.userRepo.findOne({ where: { email } })
     if (!user) {
       throw new NotFoundException(await this.i18n.t('user.NOT_FOUND'))
@@ -165,13 +173,10 @@ export class EmployeeService {
       throw new NotFoundException(await this.i18n.t('airport.NOT_FOUND'))
     }
 
-    const result: EmployeeInputResponse = {
+    const result: EmployeeResponse = {
       data: {
-        employee: {
-          ...user.dataValues,
-          ...employee.dataValues,
-        },
-        airport: airport.dataValues,
+        ...user.dataValues,
+        ...employee.dataValues,
       },
     }
 
@@ -181,7 +186,7 @@ export class EmployeeService {
     return result
   }
 
-  async delete (id: string): Promise<EmployeeInputResponse> {
+  async delete (id: string, managerId: string): Promise<EmployeeResponse> {
     const user = await this.userRepo.findOne({ where: { id } })
     if (!(user instanceof User))
       throw new BadRequestException(await this.i18n.t('user.EMAIL_WRONG'))
@@ -192,6 +197,15 @@ export class EmployeeService {
     if (!employee)
       throw new BadRequestException(await this.i18n.t('employee.NOT_FOUND'))
 
+    const manager = await this.employeeRepo.findOne({
+      where: { userId: managerId },
+    })
+
+    if (manager.airportId !== employee.airportId)
+      throw new NotFoundException(
+        await this.i18n.t('employee.NOT_MANAGER_IN_THIS_AIRPORT'),
+      )
+
     await employee.destroy()
     return { message: await this.i18n.t('employee.DELETED'), data: null }
   }
@@ -199,12 +213,7 @@ export class EmployeeService {
   async editUserRoleInAirport (
     id: string,
     role: Role,
-  ): Promise<EmployeeInputResponse> {
-    // if (role !== Role.PILOT && role !== Role.CREW)
-    //   throw new BadRequestException(
-    //     await this.i18n.t('employee.ROLE_NOT_FOUND'),
-    //   )
-
+  ): Promise<EmployeeResponse> {
     const transaction = await this.employeeRepo.sequelize.transaction()
 
     try {
@@ -224,18 +233,10 @@ export class EmployeeService {
 
       await transaction.commit()
 
-      const airport = await this.airportRepo.findByPk(employee.airportId)
-      if (!airport) {
-        throw new NotFoundException(await this.i18n.t('airport.NOT_FOUND'))
-      }
-
-      const result: EmployeeInputResponse = {
+      const result: EmployeeResponse = {
         data: {
-          employee: {
-            ...user.dataValues,
-            ...employee.dataValues,
-          },
-          airport: airport.dataValues,
+          ...user.dataValues,
+          ...employee.dataValues,
         },
       }
 
@@ -257,7 +258,7 @@ export class EmployeeService {
     }
   }
 
-  async editUserRoleToManager (id: string): Promise<EmployeeInputResponse> {
+  async editUserRoleToManager (id: string): Promise<EmployeeResponse> {
     const transaction = await this.employeeRepo.sequelize.transaction()
 
     try {
@@ -277,18 +278,10 @@ export class EmployeeService {
 
       await transaction.commit()
 
-      const airport = await this.airportRepo.findByPk(employee.airportId)
-      if (!airport) {
-        throw new NotFoundException(await this.i18n.t('airport.NOT_FOUND'))
-      }
-
-      const result: EmployeeInputResponse = {
+      const result: EmployeeResponse = {
         data: {
-          employee: {
-            ...user.dataValues,
-            ...employee.dataValues,
-          },
-          airport: airport.dataValues,
+          ...user.dataValues,
+          ...employee.dataValues,
         },
       }
 
@@ -314,7 +307,7 @@ export class EmployeeService {
     airportId: string,
     page: number = Page,
     limit: number = Limit,
-  ): Promise<EmployeeInputsResponse> {
+  ): Promise<EmployeesResponse> {
     const airport = await this.airportRepo.findByPk(airportId)
     if (!airport) {
       throw new NotFoundException(await this.i18n.t('airport.NOT_FOUND'))
@@ -335,7 +328,7 @@ export class EmployeeService {
       data.map(employee => employee.id),
     )
 
-    const items: EmployeeInput[] = data.map((m, index) => {
+    const items: EmployeeOutput[] = data.map((m, index) => {
       const employee = employees[index]
       if (!employee)
         throw new NotFoundException(this.i18n.t('employee.NOT_FOUND'))
@@ -343,8 +336,8 @@ export class EmployeeService {
       return employee
     })
 
-    const result: EmployeeInputsResponse = {
-      items: { employees: items, airport: airport?.dataValues },
+    const result: EmployeesResponse = {
+      items,
       pagination: {
         totalItems: total,
         currentPage: page,

@@ -13,14 +13,14 @@ import { Employee } from '../employee/entity/employee.model'
 import { CreatePassengerDto } from './dtos/CreatePassengerData.dto'
 import { CreateImagDto } from 'src/common/upload/dtos/createImage.dto'
 import { RedisService } from 'src/common/redis/redis.service'
+import { EmployeeOutput } from '../employee/dto/Employee.response.dto'
+import { AuthResponse } from './dtos/AuthRes.dto'
+import { AdminAuthResponse } from './dtos/AdminAuthRes.dto'
 import { CreateUserDto } from './dtos/CreateUserData.dto'
-import { EmployeeInput } from '../employee/input/Employee.input'
-import { AuthEmployeeInputResponse } from './input/AuthEmployee'
 import { AirportService } from '../airport/airport.service'
 import { LocationService } from '../location/location.service'
 import { Role } from 'src/common/constant/enum.constant'
 import { UploadService } from '../../common/upload/upload.service'
-import { AuthInputResponse } from './input/Auth.input'
 import { InjectModel } from '@nestjs/sequelize'
 import { CreateLocationInput } from '../location/inputs/CreateLocation.input'
 import { I18nService } from 'nestjs-i18n'
@@ -54,7 +54,7 @@ export class AuthService {
     createPassengerDto: CreatePassengerDto,
     createLocationInput: CreateLocationInput,
     avatar?: CreateImagDto,
-  ): Promise<AuthInputResponse> {
+  ): Promise<AuthResponse> {
     const { email } = createUserDto
     if (!email.endsWith('@gmail.com'))
       throw new BadRequestException(await this.i18n.t('user.END_EMAIL'))
@@ -110,7 +110,7 @@ export class AuthService {
         ...passenger.dataValues,
         passengerId: passenger.dataValues.id,
       }
-      const result: AuthInputResponse = {
+      const result: AuthResponse = {
         data: { user: userWithPassenger, token },
         statusCode: 201,
         message: await this.i18n.t('user.CREATED'),
@@ -140,10 +140,7 @@ export class AuthService {
     }
   }
 
-  async login (
-    fcmToken: string,
-    loginDto: LoginDto,
-  ): Promise<AuthInputResponse> {
+  async login (fcmToken: string, loginDto: LoginDto): Promise<AuthResponse> {
     const { email, password } = loginDto
 
     let user = await this.userRepo.findOne({ where: { email } })
@@ -169,7 +166,7 @@ export class AuthService {
       ...passenger.dataValues,
       passengerId: passenger.dataValues.id,
     }
-    const result: AuthInputResponse = {
+    const result: AuthResponse = {
       data: { user: userWithPassenger, token },
       message: await this.i18n.t('user.LOGIN'),
     }
@@ -183,7 +180,7 @@ export class AuthService {
     return result
   }
 
-  async forgotPassword (email: string): Promise<AuthInputResponse> {
+  async forgotPassword (email: string): Promise<AuthResponse> {
     const lowerEmail = email.toLowerCase()
     const user = await await this.userRepo.findOne({
       where: { email: lowerEmail },
@@ -309,7 +306,7 @@ export class AuthService {
   async roleLogin (
     fcmToken: string,
     loginDto: LoginDto,
-  ): Promise<AuthEmployeeInputResponse> {
+  ): Promise<AdminAuthResponse> {
     const { email, password } = loginDto
 
     let user = await this.userRepo.findOne({ where: { email } })
@@ -334,11 +331,11 @@ export class AuthService {
     if (!airport)
       throw new NotFoundException(await this.i18n.t('airport.NOT_FOUND'))
 
-    const userWithEmployee: EmployeeInput = {
+    const userWithEmployee: EmployeeOutput = {
       ...user.dataValues,
       ...employee.dataValues,
     }
-    const result: AuthEmployeeInputResponse = {
+    const result: AdminAuthResponse = {
       data: { user: userWithEmployee, token },
       statusCode: 201,
       message: await this.i18n.t('user.CREATED'),

@@ -5,5 +5,6 @@
   "UPDATED": "Employee updated successfully",
   "DELETED": "Employee deleted successfully",
   "ROLE_NOT_FOUND": "Role not found",
-  "ROLE_NOT_Admin": "You don't have permission to perform this action"
+  "ROLE_NOT_Admin": "You don't have permission to perform this action",
+  "NOT_MANAGER_IN_THIS_AIRPORT": "You arenot manager in this airport"
 }

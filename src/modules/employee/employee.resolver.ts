@@ -1,31 +1,46 @@
-import { Args, Int, Mutation, Query, Resolver } from '@nestjs/graphql'
+import {
+  Args,
+  Int,
+  Mutation,
+  Parent,
+  Query,
+  ResolveField,
+  Resolver,
+} from '@nestjs/graphql'
 import { Permission, Role } from 'src/common/constant/enum.constant'
 import { RedisService } from 'src/common/redis/redis.service'
 import { CurrentUser } from 'src/common/decerator/currentUser.decerator'
+import { Airport } from '../airport/entity/airport.model'
+import { AirportService } from '../airport/airport.service'
+import { Location } from '../location/entity/location.model'
 import { CurrentUserDto } from 'src/common/dtos/currentUser.dto'
 import { Auth } from 'src/common/decerator/auth.decerator'
+import { LocationService } from '../location/location.service'
 import { EmployeeService } from './employee.service'
-import { Employee } from './entity/employee.model'
 import {
+  EmployeeOutput,
   EmployeeResponse,
   EmployeesResponse,
 } from './dto/Employee.response.dto'
 
-@Resolver(() => Employee)
+@Resolver(() => EmployeeOutput)
 export class EmployeeResolver {
   constructor (
-    private employeeService: EmployeeService,
+    private readonly locationService: LocationService,
+    private readonly airportService: AirportService,
+    private readonly employeeService: EmployeeService,
     private readonly redisService: RedisService,
   ) {}
 
   @Mutation(() => EmployeeResponse)
   @Auth([Role.MANAGER], [Permission.EMPLOYEE_CREATE])
   async createEmployee (
+    @CurrentUser() user: CurrentUserDto,
     @Args('userId') userId: string,
     @Args('airportId') airportId: string,
     @Args('role') role: Role,
   ): Promise<EmployeeResponse> {
-    return await this.employeeService.create(userId, airportId, role)
+    return await this.employeeService.create(userId, airportId, role, user.id)
   }
 
   @Query(() => EmployeeResponse)
@@ -79,10 +94,10 @@ export class EmployeeResolver {
   @Mutation(() => EmployeeResponse)
   @Auth([Role.ADMIN, Role.MANAGER], [Permission.EMPLOYEE_DELETE])
   async deleteEmployee (
-    @Args('id') id: string,
     @CurrentUser() user: CurrentUserDto,
+    @Args('id') id: string,
   ): Promise<EmployeeResponse> {
-    return await this.employeeService.delete(id)
+    return await this.employeeService.delete(id, user.id)
   }
 
   @Query(() => EmployeesResponse)
@@ -107,12 +122,24 @@ export class EmployeeResolver {
   }
 
   @Mutation(() => EmployeeResponse)
-  @Auth([Role.ADMIN], [Permission.EMPLOYEE_UPDATE_ROLE])
+  @Auth([Role.MANAGER], [Permission.EMPLOYEE_UPDATE_ROLE])
   async editUserRoleInAirport (
     @Args('id') id: string,
     @Args('role') role: Role,
-    @CurrentUser() user: CurrentUserDto,
   ): Promise<EmployeeResponse> {
     return await this.employeeService.editUserRoleInAirport(id, role)
+  }
+
+  @ResolveField(() => Location, { name: 'location' })
+  async location (@Parent() employee: EmployeeOutput): Promise<Location> {
+    console.log(employee)
+    const location = await this.locationService.findByUser(employee.userId)
+    console.log(location)
+    return location.data
+  }
+
+  @ResolveField(() => Airport)
+  async airport (@Parent() employee: EmployeeOutput): Promise<Airport> {
+    return (await this.airportService.findById(employee.airportId)).data
   }
 }

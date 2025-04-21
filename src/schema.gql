@@ -355,11 +355,10 @@ type EmployeeOutput {
   fullName: String!
   phone: String!
   email: String!
+  airportId: String!
+  userId: String!
   role: Role!
-}
-
-type EmployeeWithAirportInput {
-  employee: EmployeeOutput!
+  location: Location!
   airport: Airport!
 }
 
@@ -368,12 +367,7 @@ type EmployeeResponse {
   success: Boolean
   timeStamp: String
   statusCode: Float
-  data: EmployeeWithAirportInput
-}
-
-type EmployeesWithAirportOtput {
-  employees: [EmployeeOutput!]!
-  airport: Airport!
+  data: EmployeeOutput
 }
 
 type EmployeesResponse {
@@ -381,7 +375,7 @@ type EmployeesResponse {
   success: Boolean
   timeStamp: String
   statusCode: Float
-  items: EmployeesWithAirportOtput
+  items: [EmployeeOutput!]
   pagination: PaginationInfo
 }
 

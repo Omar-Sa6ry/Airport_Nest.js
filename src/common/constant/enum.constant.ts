@@ -17,6 +17,19 @@ registerEnumType(Role, {
   description: 'User roles in the system',
 })
 
+export enum EmployeeRole {
+  ADMIN = 'admin',
+  PILOT = 'pilot',
+  SECURITY = 'security',
+  GROUND_STAFF = 'ground_staff',
+  FLIGHT_ATTENDANT = 'flight_attendant',
+}
+
+registerEnumType(EmployeeRole, {
+  name: 'EmployeeRole',
+  description: 'Employee roles in the system',
+})
+
 export enum Permission {
   AIRLINE_CREATE = 'airline:create',
   AIRLINE_READ = 'airline:read',

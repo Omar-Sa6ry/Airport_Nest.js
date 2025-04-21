@@ -76,9 +76,7 @@ export class AirportService {
   }
 
   async findById (airportId: string): Promise<AirportResponse> {
-    const airport = await (
-      await this.airportRepo.findByPk(airportId)
-    )?.dataValues
+    const airport = await await this.airportRepo.findByPk(airportId)
     if (!airport) {
       throw new NotFoundException(await this.i18n.t('airport.NOT_FOUND'))
     }

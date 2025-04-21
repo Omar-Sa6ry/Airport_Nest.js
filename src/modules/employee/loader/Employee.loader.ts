@@ -3,14 +3,14 @@ import { Injectable, NotFoundException } from '@nestjs/common'
 import { InjectModel } from '@nestjs/sequelize'
 import { Op } from 'sequelize'
 import { I18nService } from 'nestjs-i18n'
-import { EmployeeInput } from 'src/modules/employee/input/Employee.input'
 import { User } from 'src/modules/users/entities/user.entity'
 import { Employee } from 'src/modules/employee/entity/employee.model'
 import { Airport } from 'src/modules/airport/entity/airport.model'
+import { EmployeeOutput } from '../dto/Employee.response.dto'
 
 @Injectable()
 export class EmployeeLoader {
-  private loader: DataLoader<string, EmployeeInput>
+  private loader: DataLoader<string, EmployeeOutput>
 
   constructor (
     @InjectModel(User) private userRepo: typeof User,
@@ -18,7 +18,7 @@ export class EmployeeLoader {
     @InjectModel(Employee) private employeeRepo: typeof Employee,
     private readonly i18n: I18nService,
   ) {
-    this.loader = new DataLoader<string, EmployeeInput>(
+    this.loader = new DataLoader<string, EmployeeOutput>(
       async (keys: string[]) => {
         const employees = await this.employeeRepo.findAll({
           where: { id: { [Op.in]: keys } },
@@ -78,7 +78,7 @@ export class EmployeeLoader {
             }
           })
 
-          const p: EmployeeInput = {
+          const p: EmployeeOutput = {
             ...employee?.dataValues,
             ...user?.dataValues,
           }
@@ -89,15 +89,15 @@ export class EmployeeLoader {
     )
   }
 
-  load (id: string): Promise<EmployeeInput> {
+  load (id: string): Promise<EmployeeOutput> {
     return this.loader.load(id)
   }
 
-  async loadMany (ids: string[]): Promise<EmployeeInput[]> {
+  async loadMany (ids: string[]): Promise<EmployeeOutput[]> {
     const results = await this.loader.loadMany(ids)
 
     return results.filter(
       result => !(result instanceof Error),
-    ) as EmployeeInput[]
+    ) as EmployeeOutput[]
   }
 }
