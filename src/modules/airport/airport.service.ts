@@ -11,20 +11,15 @@ import { RedisService } from 'src/common/redis/redis.service'
 import { Airport } from './entity/airport.model'
 import { WebSocketMessageGateway } from 'src/common/websocket/websocket.gateway'
 import { Limit, Page } from 'src/common/constant/messages.constant'
-// import { AirportLoader } from './loader/airport.loader'
-import { UpdateAirportDto } from './dtos/UpdateAirport.dto'
-import { CreateAirportDto } from './dtos/CreateAirport.dto'
-import {
-  AirportInputResponse,
-  AirportInputsResponse,
-} from './input/Airport.input'
+import { UpdateAirportDto } from './input/UpdateAirport.dto'
+import { CreateAirportDto } from './input/CreateAirport.dto'
+import { AirportResponse, AirportsResponse } from './dtos/airport.response'
 
 @Injectable()
 export class AirportService {
   constructor (
     private readonly i18n: I18nService,
     private readonly redisService: RedisService,
-    // private readonly airportLoader: AirportLoader,
     private readonly locationService: LocationService,
     private readonly websocketGateway: WebSocketMessageGateway,
     @InjectModel(Airport) private airportRepo: typeof Airport,
@@ -33,7 +28,7 @@ export class AirportService {
   async create (
     createAirportDto: CreateAirportDto,
     createLocationInput: CreateLocationInput,
-  ): Promise<AirportInputResponse> {
+  ): Promise<AirportResponse> {
     const existingAirport = await this.airportRepo.findOne({
       where: { name: createAirportDto.name },
     })
@@ -55,18 +50,18 @@ export class AirportService {
         airportId: airport.id,
       })
 
-      const result: AirportInputResponse = {
-        data: { airport: airport },
+      const result: AirportResponse = {
+        data: airport.dataValues,
         statusCode: 201,
         message: await this.i18n.t('airport.CREATED'),
       }
 
-      const airportWithEmployees: AirportInputResponse = {
-        data: { airport: airport?.dataValues },
+      const airportResponse: AirportResponse = {
+        data: airport.dataValues,
       }
 
       const relationCacheKey = `airport:${airport.id}`
-      this.redisService.set(relationCacheKey, airportWithEmployees)
+      this.redisService.set(relationCacheKey, airportResponse)
 
       this.websocketGateway.broadcast('airportCreated', {
         airportId: airport.id,
@@ -80,7 +75,7 @@ export class AirportService {
     }
   }
 
-  async findById (airportId: string): Promise<AirportInputResponse> {
+  async findById (airportId: string): Promise<AirportResponse> {
     const airport = await (
       await this.airportRepo.findByPk(airportId)
     )?.dataValues
@@ -91,10 +86,10 @@ export class AirportService {
     const relationCacheKey = `airport:${airport.id}`
     this.redisService.set(relationCacheKey, airport)
 
-    return { data: { airport } }
+    return { data: airport.dataValues }
   }
 
-  async findByName (name: string): Promise<AirportInputResponse> {
+  async findByName (name: string): Promise<AirportResponse> {
     const airport = await (
       await this.airportRepo.findOne({ where: { name } })
     )?.dataValues
@@ -102,17 +97,13 @@ export class AirportService {
       throw new NotFoundException(await this.i18n.t('airport.NOT_FOUND'))
     }
 
-    const airportWithEmployees: AirportInputResponse = {
-      data: { airport },
-    }
-
-    return airportWithEmployees
+    return { data: airport.dataValues }
   }
 
   async findAll (
     page: number = Page,
     limit: number = Limit,
-  ): Promise<AirportInputsResponse> {
+  ): Promise<AirportsResponse> {
     const { rows: airports, count: total } =
       await this.airportRepo.findAndCountAll({
         order: [['createdAt', 'DESC']],
@@ -123,8 +114,8 @@ export class AirportService {
     if (airports.length === 0)
       throw new NotFoundException(await this.i18n.t('airport.NOT_FOUNDS'))
 
-    const result: AirportInputsResponse = {
-      items: { airports },
+    const result: AirportsResponse = {
+      items: airports.map(a => a.dataValues),
       pagination: {
         totalItems: total,
         currentPage: page,
@@ -138,7 +129,7 @@ export class AirportService {
   async update (
     id: string,
     updateAirportDto: UpdateAirportDto,
-  ): Promise<AirportInputResponse> {
+  ): Promise<AirportResponse> {
     const transaction = await this.airportRepo.sequelize.transaction()
 
     try {
@@ -167,7 +158,7 @@ export class AirportService {
       await transaction.commit()
 
       return {
-        data: { airport },
+        data: airport.dataValues,
         message: await this.i18n.t('airport.UPDATED'),
       }
     } catch (error) {
@@ -176,7 +167,7 @@ export class AirportService {
     }
   }
 
-  async delete (id: string): Promise<AirportInputResponse> {
+  async delete (id: string): Promise<AirportResponse> {
     const airport = await this.airportRepo.findByPk(id)
     if (!(airport instanceof Airport))
       throw new BadRequestException(await this.i18n.t('airport.NOT_FOUND'))

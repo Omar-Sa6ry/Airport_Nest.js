@@ -17,10 +17,10 @@ import { CreateTerminalDto } from './dtos/CreateTerminal.dto'
 import { UpdateTerminalDto } from './dtos/UpdateTerminal.dto'
 import { FindTerminalDto } from './dtos/FindTerminal.dto copy'
 import { Airport } from '../airport/entity/airport.model'
-import { AirportInputResponse } from '../airport/input/Airport.input'
 import { AirportService } from '../airport/airport.service'
 import { GateService } from '../gate/gate.service'
 import { Gate } from '../gate/entity/gate.model'
+import { AirportResponse } from '../airport/dtos/airport.response'
 
 @Resolver(of => Terminal)
 export class TerminalResolver {
@@ -89,12 +89,12 @@ export class TerminalResolver {
     const cacheKey = `airport:${terminal.airportId}`
 
     const cachedAirport = await this.redisService.get(cacheKey)
-    if (cachedAirport instanceof AirportInputResponse) {
-      return cachedAirport?.data?.airport
+    if (cachedAirport instanceof AirportResponse) {
+      return cachedAirport?.data
     }
 
     const airport = await this.airportService.findById(terminal.airportId)
-    return airport?.data?.airport
+    return airport?.data
   }
 
   @ResolveField(() => [Gate])

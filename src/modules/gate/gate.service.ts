@@ -7,15 +7,22 @@ import { WebSocketMessageGateway } from 'src/common/websocket/websocket.gateway'
 import { Gate } from './entity/gate.model'
 import { Terminal } from '../terminal/entity/terminal.model'
 import { CreateGateDto } from './dtos/createGate.dto'
-import { GateInputResponse, GateInputsResponse } from './input/Gate.input'
+import {
+  GateInput,
+  GateInputResponse,
+  GateInputsResponse,
+} from './input/Gate.input'
 import { TerminalInputResponse } from '../terminal/input/Terminal.input'
 import { Limit, Page } from 'src/common/constant/messages.constant'
+import { GateLoader } from './loader/Gate.loader'
+import { GateOutput } from './dtos/Gate.response'
 
 @Injectable()
 export class GateService {
   constructor (
     private readonly i18n: I18nService,
     private readonly redisService: RedisService,
+    private readonly gateLoader: GateLoader,
     private readonly websocketGateway: WebSocketMessageGateway,
     @InjectModel(Gate) private readonly gateRepo: typeof Gate,
     @InjectModel(Terminal) private readonly terminalRepo: typeof Terminal,
@@ -118,6 +125,32 @@ export class GateService {
     }
 
     return gatesInputResponse
+  }
+
+  async findGatesInAirport (airportId: string): Promise<GateOutput[]> {
+    const terminal = await this.terminalRepo.findOne({})
+    if (!terminal)
+      throw new NotFoundException(await this.i18n.t('terminal.NOT_FOUND'))
+
+    const data = await this.terminalRepo.findAll({
+      where: { airportId },
+      order: [['createdAt', 'DESC']],
+    })
+    if (data.length === 0)
+      throw new NotFoundException(await this.i18n.t('gate.NOT_FOUNDS'))
+
+    const gates = await this.gateLoader.loadMany(
+      data.map(terminal => terminal.id),
+    )
+
+    const items: GateInput[] = data.map((m, index) => {
+      const gate = gates[index]
+      if (!gate) throw new NotFoundException(this.i18n.t('gate.NOT_FOUND'))
+
+      return gate
+    })
+
+    return items
   }
 
   async findAll (keys: string[]): Promise<Gate[]> {

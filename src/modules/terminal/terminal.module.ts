@@ -1,33 +1,25 @@
-import { Module } from '@nestjs/common'
-import { RedisModule } from 'src/common/redis/redis.module'
+// terminal.module.ts
+import { forwardRef, Module } from '@nestjs/common'
 import { SequelizeModule } from '@nestjs/sequelize'
-import { WebSocketModule } from 'src/common/websocket/websocket.module'
-import { UserModule } from '../users/users.module'
-import { TerminalResolver } from './terminal.resolver'
 import { TerminalService } from './terminal.service'
+import { TerminalResolver } from './terminal.resolver'
+import { RedisModule } from 'src/common/redis/redis.module'
+import { WebSocketModule } from 'src/common/websocket/websocket.module'
 import { Terminal } from './entity/terminal.model'
 import { Airport } from '../airport/entity/airport.model'
-import { AirportService } from '../airport/airport.service'
-import { EmployeeLoader } from '../employee/loader/Employee.loader'
-import { GateService } from '../gate/gate.service'
-import { Gate } from '../gate/entity/gate.model'
-import { Employee } from '../employee/entity/employee.model'
-import { LocationModule } from '../location/location.module'
+import { AirportModule } from '../airport/airport.module'
+import { GateModule } from '../gate/gate.module'
+import { User } from '../users/entities/user.entity'
 
 @Module({
   imports: [
-    SequelizeModule.forFeature([Airport, Gate, Employee, Terminal]),
-    UserModule,
-    LocationModule,
-    WebSocketModule,
+    SequelizeModule.forFeature([Terminal, User, Airport]),
     RedisModule,
+    WebSocketModule,
+    forwardRef(() => AirportModule),
+    forwardRef(() => GateModule),
   ],
-  providers: [
-    TerminalResolver,
-    TerminalService,
-    AirportService,
-    GateService,
-    EmployeeLoader,
-  ],
+  providers: [TerminalService, TerminalResolver],
+  exports: [TerminalService],
 })
 export class TerminalModule {}

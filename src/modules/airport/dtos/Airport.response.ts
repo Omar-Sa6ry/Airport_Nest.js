@@ -5,15 +5,9 @@ import { PaginationInfo } from 'src/common/dtos/pagintion'
 import { Airport } from '../entity/airport.model'
 
 @ObjectType()
-export class AirportsOutput {
-  @Field(() => [Airport])
-  airports: Airport[]
-}
-
-@ObjectType()
 export class AirportsResponse extends BaseResponse {
-  @Field(() => AirportsOutput, { nullable: true })
-  items: AirportsOutput
+  @Field(() => [Airport], { nullable: true })
+  items: Airport[]
 
   @IsOptional()
   @Field(() => PaginationInfo, { nullable: true })
@@ -21,15 +15,7 @@ export class AirportsResponse extends BaseResponse {
 }
 
 @ObjectType()
-export class AirportOutput {
-  @Field(() => Airport)
-  airport: Airport
-}
-
-@ObjectType()
 export class AirportResponse extends BaseResponse {
-  @Field(() => AirportOutput, { nullable: true })
-  data: AirportOutput
+  @Field(() => Airport, { nullable: true })
+  data: Airport
 }
-
-

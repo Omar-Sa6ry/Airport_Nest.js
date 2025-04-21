@@ -1,12 +1,16 @@
-import { CreateAirportDto } from './dtos/CreateAirport.dto'
-import { UpdateAirportDto } from './dtos/UpdateAirport.dto'
+import { CreateAirportDto } from './input/CreateAirport.dto'
+import { UpdateAirportDto } from './input/UpdateAirport.dto'
 import { AirportService } from './airport.service'
 import { Airport } from './entity/airport.model'
 import { Terminal } from '../terminal/entity/terminal.model'
+import { GateOutput } from '../gate/dtos/Gate.response'
 import { Auth } from 'src/common/decerator/auth.decerator'
 import { CreateLocationInput } from '../location/inputs/CreateLocation.input'
-import { Role, Permission } from 'src/common/constant/enum.constant'
+import { Role, Permission, AllRoles } from 'src/common/constant/enum.constant'
 import { RedisService } from 'src/common/redis/redis.service'
+import { LocationService } from '../location/location.service'
+import { Location } from '../location/entity/location.model'
+import { GateService } from '../gate/gate.service'
 import { AirportResponse, AirportsResponse } from './dtos/airport.response'
 import { TerminalService } from '../terminal/terminal.service'
 import { EmployeesResponse } from '../employee/dto/Employee.response.dto'
@@ -25,9 +29,11 @@ import {
 export class AirportResolver {
   constructor (
     private readonly redisService: RedisService,
-    private airportService: AirportService,
-    private employeeService: EmployeeService,
-    private terminalService: TerminalService,
+    private readonly airportService: AirportService,
+    private readonly employeeService: EmployeeService,
+    private readonly terminalService: TerminalService,
+    private readonly locationService: LocationService,
+    private readonly gateService: GateService,
   ) {}
 
   @Mutation(() => AirportResponse)
@@ -59,7 +65,7 @@ export class AirportResolver {
   }
 
   @Query(() => AirportResponse)
-  @Auth([], [Permission.AIRPORT_READ])
+  @Auth(AllRoles, [Permission.AIRPORT_READ])
   async airportById (@Args('id') id: string): Promise<AirportResponse> {
     const cachedAirport = await this.redisService.get(`airport:${id}`)
 
@@ -71,13 +77,13 @@ export class AirportResolver {
   }
 
   @Query(() => AirportResponse)
-  @Auth([], [Permission.AIRPORT_READ])
+  @Auth(AllRoles, [Permission.AIRPORT_READ])
   async airportByName (@Args('name') name: string): Promise<AirportResponse> {
     return await this.airportService.findByName(name)
   }
 
   @Query(() => AirportsResponse)
-  @Auth([], [Permission.AIRPORT_READ_ALL])
+  @Auth(AllRoles, [Permission.AIRPORT_READ_ALL])
   async allAirports (
     @Args('page', { type: () => Int, nullable: true }) page?: number,
     @Args('limit', { type: () => Int, nullable: true }) limit?: number,
@@ -95,7 +101,6 @@ export class AirportResolver {
   }
 
   @ResolveField(() => [Terminal])
-  @Auth([], [Permission.TERMINAL_READ])
   async terminals (
     @Parent() airport: Airport,
     @Args('page', { type: () => Int, nullable: true }) page?: number,
@@ -107,5 +112,15 @@ export class AirportResolver {
       limit,
     )
     return terminals?.items
+  }
+
+  @ResolveField(() => [GateOutput])
+  async gates (@Parent() airport: Airport): Promise<GateOutput[]> {
+    return this.gateService.findGatesInAirport(airport.id)
+  }
+
+  @ResolveField(() => Location)
+  async location (@Parent() airport: Airport): Promise<Location> {
+    return this.locationService.findAirportById(airport?.id)
   }
 }

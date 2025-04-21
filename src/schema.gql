@@ -216,6 +216,8 @@ type Airport {
   icaoCode: String!
   employees(page: Int, limit: Int): EmployeesResponse!
   terminals(page: Int, limit: Int): [Terminal!]!
+  gates: [GateOutput!]!
+  location: Location!
 }
 
 type Employee {
@@ -396,8 +398,32 @@ type AdminAuthResponse {
   data: AdminAuthOutPut
 }
 
-type AirportsOutput {
-  airports: [Airport!]!
+type GateOutput {
+  id: String!
+  gateNumber: String!
+  terminal: Terminal!
+}
+
+type GateResponse {
+  message: String
+  success: Boolean
+  timeStamp: String
+  statusCode: Float
+  data: GateOutput
+}
+
+type GateOutputs {
+  gates: [Gate!]!
+  terminal: Terminal!
+}
+
+type GatesResponse {
+  message: String
+  success: Boolean
+  timeStamp: String
+  statusCode: Float
+  items: GateOutputs
+  pagination: PaginationInfo
 }
 
 type AirportsResponse {
@@ -405,12 +431,8 @@ type AirportsResponse {
   success: Boolean
   timeStamp: String
   statusCode: Float
-  items: AirportsOutput
+  items: [Airport!]
   pagination: PaginationInfo
-}
-
-type AirportOutput {
-  airport: Airport!
 }
 
 type AirportResponse {
@@ -418,7 +440,7 @@ type AirportResponse {
   success: Boolean
   timeStamp: String
   statusCode: Float
-  data: AirportOutput
+  data: Airport
 }
 
 type LocationResponse {
@@ -477,34 +499,6 @@ type TerminalsResponse {
   timeStamp: String
   statusCode: Float
   items: [Terminal!]
-  pagination: PaginationInfo
-}
-
-type GateOutput {
-  id: String!
-  gateNumber: String!
-  terminal: Terminal!
-}
-
-type GateResponse {
-  message: String
-  success: Boolean
-  timeStamp: String
-  statusCode: Float
-  data: GateOutput
-}
-
-type GateOutputs {
-  gates: [Gate!]!
-  terminal: Terminal!
-}
-
-type GatesResponse {
-  message: String
-  success: Boolean
-  timeStamp: String
-  statusCode: Float
-  items: GateOutputs
   pagination: PaginationInfo
 }
 
@@ -751,19 +745,19 @@ type Query {
   airportById(id: String!): AirportResponse!
   airportByName(name: String!): AirportResponse!
   allAirports(page: Int, limit: Int): AirportsResponse!
+  terminalById(id: String!): TerminalResponse!
+  terminalByData(findTerminalDto: FindTerminalDto!): TerminalResponse!
+  allTerminalsInAirport(airportId: String!, page: Int, limit: Int): TerminalsResponse!
   getEmployeeById(id: String!): EmployeeResponse!
   getEmployeeByEmail(email: String!): EmployeeResponse!
   getEmployeeByPhone(phone: String!): EmployeeResponse!
   employeesInAirport(airportId: String!, page: Int, limit: Int): EmployeesResponse!
+  gateById(id: String!): GateResponse!
+  gatesByTerminal(terminalId: String!, page: Int, limit: Int): GatesResponse!
   findAirlineById(id: String!): AirlineResponse!
   findAirlineByName(name: String!): AirlineResponse!
   findAllAirlines(page: Int, limit: Int): AirlinesResponse!
   findAllFlightsInAirline(airlineId: String!, page: Int, limit: Int): FlightsInAirlinesResponse!
-  terminalById(id: String!): TerminalResponse!
-  terminalByData(findTerminalDto: FindTerminalDto!): TerminalResponse!
-  allTerminalsInAirport(airportId: String!, page: Int, limit: Int): TerminalsResponse!
-  gateById(id: String!): GateResponse!
-  gatesByTerminal(terminalId: String!, page: Int, limit: Int): GatesResponse!
   getFlightById(id: String!): FlightResponse!
   getFlightByData(findOptions: FlightOptinalInput!): FlightResponse!
   getAllFlightsToAitport(id: String!): FlightsToAirportResponse!
@@ -813,19 +807,19 @@ type Mutation {
   createAirport(createAirportDto: CreateAirportDto!, createLocationInput: CreateLocationInput!): AirportResponse!
   updateAirport(id: String!, updateAirportDto: UpdateAirportDto!): AirportResponse!
   deleteAirport(id: String!): AirportResponse!
+  createTerminal(createTerminalDto: CreateTerminalDto!): TerminalResponse!
+  updateTerminal(updateTerminalDto: UpdateTerminalDto!): TerminalResponse!
+  deleteTerminal(id: String!): TerminalResponse!
   createEmployee(userId: String!, airportId: String!, role: String!): EmployeeResponse!
   deleteEmployee(id: String!): EmployeeResponse!
   editUserRoleToManager(id: String!): EmployeeResponse!
   editUserRoleInAirport(id: String!, role: String!): EmployeeResponse!
-  createAirline(name: String!, createLocationInput: CreateLocationInput!): AirlineResponse!
-  updateAirline(id: String!, name: String!): AirlineResponse!
-  deleteAirline(id: String!): AirlineResponse!
-  createTerminal(createTerminalDto: CreateTerminalDto!): TerminalResponse!
-  updateTerminal(updateTerminalDto: UpdateTerminalDto!): TerminalResponse!
-  deleteTerminal(id: String!): TerminalResponse!
   createGate(createGateDto: CreateGateDto!): GateResponse!
   updateGate(id: String!, gateNumber: String!): GateResponse!
   deleteGate(id: String!): GateResponse!
+  createAirline(name: String!, createLocationInput: CreateLocationInput!): AirlineResponse!
+  updateAirline(id: String!, name: String!): AirlineResponse!
+  deleteAirline(id: String!): AirlineResponse!
   createFlight(createFlightInput: CreateFlightInput!): FlightResponse!
   deleteFlight(id: String!): FlightResponse!
   updateFlight(id: String!, updateFlightInput: FlightOptinalInput!): FlightResponse!
