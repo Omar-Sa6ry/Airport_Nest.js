@@ -4,10 +4,11 @@ import { TicketClass } from 'src/common/constant/enum.constant'
 
 @InputType()
 export class FindSeatInput {
-  @Field()
-  flightId: string
+  @IsOptional()
+  @Field({ nullable: true })
+  flightId?: string
 
   @IsOptional()
   @Field(() => TicketClass, { nullable: true })
-  class: TicketClass
+  class?: TicketClass
 }

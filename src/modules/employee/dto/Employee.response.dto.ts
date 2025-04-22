@@ -24,10 +24,10 @@ export class EmployeeOutput {
   @Field(() => String)
   email: string
 
-  @Field(() => String)
+  @Field(() => String, { nullable: true })
   airportId: string
 
-  @Field(() => String)
+  @Field(() => String, { nullable: true })
   userId: string
 
   @Field(() => Role)

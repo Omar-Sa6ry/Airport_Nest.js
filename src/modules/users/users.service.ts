@@ -2,6 +2,7 @@ import { User } from './entities/user.entity'
 import { UpdateUserDto } from './dtos/UpdateUser.dto'
 import { RedisService } from 'src/common/redis/redis.service'
 import { Passenger } from './entities/passenger.model'
+import { Employee } from '../employee/entity/employee.model'
 import { UserInput, UserInputResponse } from './input/User.input'
 import { UploadService } from '../../common/upload/upload.service'
 import { InjectModel } from '@nestjs/sequelize'
@@ -19,6 +20,7 @@ export class UserService {
     private uploadService: UploadService,
     private readonly redisService: RedisService,
     @InjectModel(User) private userRepo: typeof User,
+    @InjectModel(Employee) private employeeRepo: typeof Employee,
     @InjectModel(Passenger) private passengerRepo: typeof Passenger,
   ) {}
 
@@ -45,6 +47,21 @@ export class UserService {
     this.redisService.set(userCacheKey, userWithPassenger)
 
     return { data: userWithPassenger }
+  }
+
+  async findUserByEmployeeId (employeeId: string): Promise<User> {
+    const employee = await this.employeeRepo.findByPk(employeeId)
+    if (!employee) {
+      throw new NotFoundException(await this.i18n.t('employee.NOT_FOUND'))
+    }
+
+    const user = await this.userRepo.findOne({
+      where: { id: employee.userId },
+    })
+    if (!user)
+      throw new BadRequestException(await this.i18n.t('user.NOT_FOUND'))
+
+    return user
   }
 
   async findByPhone (phone: string): Promise<UserInputResponse> {

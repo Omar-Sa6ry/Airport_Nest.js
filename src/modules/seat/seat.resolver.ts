@@ -54,10 +54,8 @@ export class SeatResolver {
   @Query(() => SeatsResponse)
   async findAllAvailableSeatsInFlight (
     @Args('findSeatInput') findSeatInput: FindSeatInput,
-    @Args('page', { type: () => Int, nullable: true }) page?: number,
-    @Args('limit', { type: () => Int, nullable: true }) limit?: number,
   ): Promise<SeatsResponse> {
-    return this.seatService.findAllAvaliableInFlight(findSeatInput, page, limit)
+    return this.seatService.findAllAvaliableInFlight(findSeatInput)
   }
 
   @Mutation(() => SeatResponse)

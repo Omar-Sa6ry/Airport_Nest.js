@@ -1,5 +1,4 @@
 import {
-  BadGatewayException,
   BadRequestException,
   Injectable,
   NotFoundException,
@@ -12,7 +11,6 @@ import { RedisService } from 'src/common/redis/redis.service'
 import { WebSocketMessageGateway } from 'src/common/websocket/websocket.gateway'
 import { UpdateSeatInput } from './inputs/UpdateSeat.input'
 import { SeatResponse, SeatsResponse } from './dto/Seat.response'
-import { Limit, Page } from 'src/common/constant/messages.constant'
 import { FindSeatInput } from './inputs/FindSeat.input'
 import { Flight } from '../flight/entity/flight.model'
 import { Airline } from '../airline/entity/airline.model'
@@ -83,8 +81,6 @@ export class SeatService {
 
   async findAllAvaliableInFlight (
     findSeat: FindSeatInput,
-    page: number = Page,
-    limit: number = Limit,
   ): Promise<SeatsResponse> {
     const flight = await this.flightRepo.findByPk(findSeat.flightId)
     if (!flight)
@@ -93,8 +89,6 @@ export class SeatService {
     const { rows: seats, count: total } = await this.seatRepo.findAndCountAll({
       where: { isAvailable: true, ...findSeat },
       order: [['createdAt', 'DESC']],
-      offset: (page - 1) * limit,
-      limit,
     })
 
     if (!seats.length)
@@ -102,11 +96,23 @@ export class SeatService {
 
     return {
       items: seats.map(seat => seat.dataValues),
-      pagination: {
-        totalItems: total,
-        currentPage: page,
-        totalPages: Math.ceil(total / limit),
-      },
+    }
+  }
+
+  async findAllInFlight (flightId: string): Promise<SeatsResponse> {
+    const flight = await this.flightRepo.findByPk(flightId)
+    if (!flight)
+      throw new NotFoundException(await this.i18n.t('flight.NOT_FOUND'))
+
+    const seats = await this.seatRepo.findAll({
+      where: { flightId },
+      order: [['createdAt', 'DESC']],
+    })
+
+    if (seats.length !== 0) {
+      return {
+        items: seats?.map(seat => seat.dataValues),
+      }
     }
   }
 
@@ -153,7 +159,7 @@ export class SeatService {
   ): Promise<SeatsResponse> {
     const airline = await this.airlineRepo.findOne({ where: { userId } })
     if (!airline)
-      throw new BadGatewayException(await this.i18n.t('airline.NOT_OWNER'))
+      throw new BadRequestException(await this.i18n.t('airline.NOT_OWNER'))
 
     const flights = (
       await this.airlineService.findAllFlightInAirline(airline.id)
@@ -161,7 +167,9 @@ export class SeatService {
     const flightIds = [...new Set(flights.map(f => f.id))]
 
     if (flightIds.includes(flightId))
-      throw new BadRequestException(await this.i18n.t('seat.NOT_HAVE_THIS_SEAT'))
+      throw new BadRequestException(
+        await this.i18n.t('seat.NOT_HAVE_THIS_SEAT'),
+      )
 
     const seats = await this.seatRepo.findAll({
       where: { flightId, isAvailable: false },

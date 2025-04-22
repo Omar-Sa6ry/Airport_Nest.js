@@ -7,6 +7,10 @@ import { Auth } from 'src/common/decerator/auth.decerator'
 import { FlightOutput, FlightResponse } from './dtos/Flight.response'
 import { FlightsFromAirportResponse } from './dtos/FlightsFromAirport.response'
 import { FlightsToAirportResponse } from './dtos/FlightsToAirport.response'
+import { FlightCrewService } from '../flightCrew/flightCrew.service'
+import { FllghtCrewsData } from '../flightCrew/dtos/FlightCrews.response'
+import { SeatService } from '../seat/seat.service'
+import { Seat } from '../seat/entity/seat.model'
 import { RedisService } from 'src/common/redis/redis.service'
 import { Airline } from '../airline/entity/airline.model'
 import { AirlineService } from '../airline/airline.service'
@@ -30,6 +34,8 @@ export class FlightResolver {
     private readonly airlineService: AirlineService,
     private readonly airportService: AirportService,
     private readonly gateService: GateService,
+    private readonly flightCrewService: FlightCrewService,
+    private readonly seatService: SeatService,
     private readonly flightService: FlightService,
   ) {}
 
@@ -126,5 +132,24 @@ export class FlightResolver {
   @ResolveField(() => GateData, { nullable: true })
   async gate (@Parent() flight: FlightOutput): Promise<GateData> {
     return (await this.gateService.findById(flight.gateId)).data
+  }
+
+  @ResolveField(() => [FllghtCrewsData], { nullable: true })
+  async flightCrews (
+    @Parent() flight: FlightOutput,
+  ): Promise<FllghtCrewsData[]> {
+    return (await this.flightCrewService.findAllForFlight(flight.id)).items
+  }
+
+  @ResolveField(() => [Seat], { nullable: true })
+  async avaliableSeats (@Parent() flight: FlightOutput): Promise<Seat[]> {
+    return (
+      await this.seatService.findAllAvaliableInFlight({ flightId: flight.id })
+    ).items
+  }
+
+  @ResolveField(() => [Seat], { nullable: true })
+  async seats (@Parent() flight: FlightOutput): Promise<Seat[]> {
+    return (await this.seatService.findAllInFlight(flight.id)).items
   }
 }

@@ -8,10 +8,11 @@ import { EmailModule } from 'src/common/queues/email/email.module'
 import { SequelizeModule } from '@nestjs/sequelize'
 import { WebSocketModule } from 'src/common/websocket/websocket.module'
 import { Passenger } from './entities/passenger.model'
+import { Employee } from '../employee/entity/employee.model'
 
 @Module({
   imports: [
-    SequelizeModule.forFeature([User, Passenger]),
+    SequelizeModule.forFeature([User, Employee, Passenger]),
     EmailModule,
     WebSocketModule,
     RedisModule,

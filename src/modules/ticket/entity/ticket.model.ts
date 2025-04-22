@@ -5,7 +5,7 @@ import { TicketClass, TicketStatus } from 'src/common/constant/enum.constant'
 import { CheckIn } from 'src/modules/checkIn/entity/checkIn.entity'
 import { Baggage } from 'src/modules/baggage/entity/baggage.model'
 import { BaseEntity } from 'src/common/bases/BaseEntity'
-import { Seat } from 'src/modules/seat/entity/Seat.model'
+import { Seat } from 'src/modules/seat/entity/seat.model'
 import {
   BelongsTo,
   Column,

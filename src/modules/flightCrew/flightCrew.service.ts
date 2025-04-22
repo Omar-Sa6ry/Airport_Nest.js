@@ -9,7 +9,6 @@ import { Employee } from '../employee/entity/employee.model'
 import { FlightCrew } from './entity/flightCrew.model'
 import { CreateFlightCrewInput } from './inputs/CreateFlightCrew.input'
 import { I18nService } from 'nestjs-i18n'
-import { RedisService } from 'src/common/redis/redis.service'
 import { WebSocketMessageGateway } from 'src/common/websocket/websocket.gateway'
 import { CrewRole } from 'src/common/constant/enum.constant'
 import { FlightCrewResponse } from './dtos/FlightCrew.response'
@@ -23,13 +22,12 @@ export class FlightCrewService {
   constructor (
     private readonly i18n: I18nService,
     private readonly flightCrewLoader: FlightCrewDataLoader,
-    private readonly redisService: RedisService,
     private readonly websocketGateway: WebSocketMessageGateway,
-    @InjectModel(FlightCrew)
-    private readonly flightCrewModel: typeof FlightCrew,
     @InjectModel(Flight) private readonly flightModel: typeof Flight,
     @InjectModel(User) private readonly userModel: typeof User,
     @InjectModel(Employee) private readonly employeeModel: typeof Employee,
+    @InjectModel(FlightCrew)
+    private readonly flightCrewModel: typeof FlightCrew,
   ) {}
 
   async create (
@@ -84,19 +82,12 @@ export class FlightCrewService {
 
     const flightCrew = await this.flightCrewModel.create(createFlightCrewInput)
 
-    const data = {
-      ...flightCrew.dataValues,
-      user: user.dataValues,
-      flight: flight.dataValues,
-    }
-
-    this.redisService.set(`flightCrew${flightCrew.id}`, flightCrew)
     this.websocketGateway.broadcast('flightCrewCreate', {
       flightCrewId: flightCrew.id,
     })
 
     return {
-      data,
+      data: flightCrew.dataValues,
     }
   }
 
@@ -110,25 +101,12 @@ export class FlightCrewService {
       )
     }
 
-    const user = await this.userModel.findByPk(
-      flightCrew.employee.dataValues.userId,
-    )
-
-    await this.redisService.set(`flightCrew${id}`, flightCrew)
     return {
-      data: {
-        ...flightCrew.dataValues,
-        flight: flightCrew.flight.dataValues,
-        user: user.dataValues,
-      },
+      data: flightCrew.dataValues,
     }
   }
 
-  async findAllForFlight (
-    flightId: string,
-    page: number = Page,
-    limit: number = Limit,
-  ): Promise<FllghtCrewsResponse> {
+  async findAllForFlight (flightId: string): Promise<FllghtCrewsResponse> {
     const flight = await this.flightModel.findByPk(flightId)
     if (!flight) {
       throw new NotFoundException(await this.i18n.translate('flight.NOT_FOUND'))
@@ -138,8 +116,6 @@ export class FlightCrewService {
       await this.flightCrewModel.findAndCountAll({
         where: { flightId },
         order: [['createdAt', 'DESC']],
-        offset: (page - 1) * limit,
-        limit,
       })
 
     if (data.length === 0)
@@ -159,11 +135,6 @@ export class FlightCrewService {
 
     return {
       items,
-      pagination: {
-        totalItems: total,
-        currentPage: page,
-        totalPages: Math.ceil(total / limit),
-      },
     }
   }
 

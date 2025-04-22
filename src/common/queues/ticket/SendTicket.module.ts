@@ -9,7 +9,7 @@ import { WebSocketModule } from 'src/common/websocket/websocket.module'
 import { NotificationModule } from '../notification/notification.module'
 import { UserModule } from 'src/modules/users/users.module'
 import { SequelizeModule } from '@nestjs/sequelize'
-import { Seat } from 'src/modules/seat/entity/Seat.model'
+import { Seat } from 'src/modules/seat/entity/seat.model'
 import { Flight } from 'src/modules/flight/entity/flight.model'
 import { Ticket } from 'src/modules/ticket/entity/ticket.model'
 
