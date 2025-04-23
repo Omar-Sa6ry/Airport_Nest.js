@@ -2,7 +2,7 @@ import { ObjectType, Field, ID, Int } from '@nestjs/graphql'
 import { Flight } from 'src/modules/flight/entity/flight.model'
 import { Ticket } from 'src/modules/ticket/entity/ticket.model'
 import { BaseEntity } from 'src/common/bases/BaseEntity'
-import { TicketClass } from 'src/common/constant/enum.constant'
+import { SeatClass } from 'src/common/constant/enum.constant'
 import {
   Column,
   DataType,
@@ -27,13 +27,21 @@ export class Seat extends BaseEntity<Seat> {
   @Column(DataType.INTEGER)
   seatNumber: number
 
-  @Field(() => TicketClass)
-  @Column(DataType.ENUM(...Object.values(TicketClass)))
-  class: TicketClass
+  @Field(() => Int)
+  @Column(DataType.INTEGER)
+  price: number
+
+  @Field(() => SeatClass)
+  @Column(DataType.ENUM(...Object.values(SeatClass)))
+  class: SeatClass
 
   @Field()
   @Column({ type: DataType.BOOLEAN, defaultValue: true })
   isAvailable: boolean
+
+  @Field(() => Date, { nullable: true })
+  @Column({ type: DataType.DATE, allowNull: true })
+  expairyAt: Date
 
   @BelongsTo(() => Flight, { onDelete: 'CASCADE' })
   flight: Flight

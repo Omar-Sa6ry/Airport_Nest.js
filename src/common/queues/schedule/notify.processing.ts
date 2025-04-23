@@ -2,13 +2,13 @@ import { Processor, WorkerHost } from '@nestjs/bullmq'
 import { SchedulerRegistry } from '@nestjs/schedule'
 import { InjectModel } from '@nestjs/sequelize'
 import { Job } from 'bullmq'
-import * as nodemailer from 'nodemailer'
 import { Ticket } from 'src/modules/ticket/entity/ticket.model'
 import { Passenger } from 'src/modules/users/entities/passenger.model'
 import { User } from 'src/modules/users/entities/user.entity'
 import { NotificationService } from '../notification/notification.service'
 import { CronJob } from 'cron'
 import { Op } from 'sequelize'
+import { Seat } from 'src/modules/seat/entity/seat.model'
 
 @Processor('schedule')
 export class ScheduleProcessor extends WorkerHost {
@@ -17,6 +17,7 @@ export class ScheduleProcessor extends WorkerHost {
     private readonly notificationService: NotificationService,
     @InjectModel(Ticket) private readonly ticketModel: typeof Ticket,
     @InjectModel(User) private readonly userModel: typeof User,
+    @InjectModel(Seat) private readonly seatModel: typeof Seat,
     @InjectModel(Passenger) private readonly passengerModel: typeof Passenger,
   ) {
     super()
@@ -27,10 +28,13 @@ export class ScheduleProcessor extends WorkerHost {
 
     const notifyTime = new Date(leaveAt.getTime() - 60 * 60 * 1000)
 
+    const seats = await this.seatModel.findAll({ where: { flightId } })
+    const seatsId = [...new Set(seats.map(seat => seat.id))]
+
     const job = new CronJob(notifyTime, async () => {
       const tickets = await this.ticketModel.findAll({
         where: {
-          flightId,
+          seatId: { [Op.in]: seatsId },
         },
       })
 

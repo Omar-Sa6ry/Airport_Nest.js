@@ -32,11 +32,11 @@ export class AirlineResolver {
   @Mutation(() => AirlineResponse)
   @Auth([Role.ADMIN], [Permission.AIRLINE_CREATE])
   async createAirline (
-    @CurrentUser() user: CurrentUserDto,
     @Args('name') name: string,
+    @Args('userId') userId: string,
     @Args('createLocationInput') createLocationInput: CreateLocationInput,
   ): Promise<AirlineResponse> {
-    return this.airlineService.create(user.id, name, createLocationInput)
+    return this.airlineService.create(userId, name, createLocationInput)
   }
 
   @Query(() => AirlineResponse)

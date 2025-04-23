@@ -1,16 +1,20 @@
 import { Field, InputType, Int } from '@nestjs/graphql'
 import { IsOptional } from 'class-validator'
-import { TicketClass } from 'src/common/constant/enum.constant'
+import { SeatClass } from 'src/common/constant/enum.constant'
 
 @InputType()
 export class UpdateSeatInput {
   @IsOptional()
   @Field(() => Int, { nullable: true })
+  price?: number
+
+  @IsOptional()
+  @Field(() => Int, { nullable: true })
   seatNumber?: number
 
   @IsOptional()
-  @Field(() => TicketClass, { nullable: true })
-  class?: TicketClass
+  @Field(() => SeatClass, { nullable: true })
+  class?: SeatClass
 
   @IsOptional()
   @Field({ nullable: true })

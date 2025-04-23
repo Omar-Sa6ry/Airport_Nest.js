@@ -67,6 +67,7 @@ export enum Permission {
   TICKET_DELETE = 'TICKET_DELETE',
   TICKET_VIEW = 'TICKET_VIEW',
   TICKET_ALL_VIEW = 'TICKET_VIEW',
+  TICKET_BOOK = 'TICKET_BOOK',
 
   USER_VIEW = 'USER_VIEW',
   USER_CREATE = 'USER_CREATE',
@@ -149,17 +150,18 @@ export enum FlightStatus {
 }
 registerEnumType(FlightStatus, { name: 'FlightStatus' })
 
-export enum TicketClass {
+export enum SeatClass {
   ECONOMY = 'ECONOMY',
   BUSINESS = 'BUSINESS',
   FIRST = 'FIRST',
 }
-registerEnumType(TicketClass, { name: 'TicketClass' })
+registerEnumType(SeatClass, { name: 'SeatClass' })
 
 export enum TicketStatus {
-  BOOKED = 'BOOKED',
-  CANCELED = 'CANCELED',
-  USED = 'USED',
+  PENDING_PAYMENT = 'pending_payment',
+  BOOKED = 'booked',
+  CANCELED = 'canceled',
+  EXPIRY = 'expiry',
 }
 registerEnumType(TicketStatus, { name: 'TicketStatus' })
 

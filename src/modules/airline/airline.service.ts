@@ -1,8 +1,3 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common'
 import { Airline } from './entity/airline.model'
 import { InjectModel } from '@nestjs/sequelize'
 import { I18nService } from 'nestjs-i18n'
@@ -13,6 +8,12 @@ import { Flight } from '../flight/entity/flight.model'
 import { LocationService } from '../location/location.service'
 import { CreateLocationInput } from '../location/inputs/CreateLocation.input'
 import { FlightsInAirlinesResponse } from './dtos/FlightsInAirline.dto'
+import { Role } from 'src/common/constant/enum.constant'
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common'
 
 @Injectable()
 export class AirlineService {
@@ -43,6 +44,7 @@ export class AirlineService {
       userId,
     })
 
+    await user.update({ role: Role.AIRLINE_MANAGER })
     this.locationSerice.create({
       ...createLocationInput,
       airlineId: airline.id,

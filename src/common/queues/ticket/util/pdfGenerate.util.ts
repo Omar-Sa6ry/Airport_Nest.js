@@ -2,6 +2,7 @@ import PDFDocument = require('pdfkit')
 import { Ticket } from '../../../../modules/ticket/entity/ticket.model'
 import { UserInput } from 'src/modules/users/input/User.input'
 import { Flight } from 'src/modules/flight/entity/flight.model'
+import { SeatClass } from 'src/common/constant/enum.constant'
 
 export async function generatePDF (
   ticket: Ticket,
@@ -9,12 +10,15 @@ export async function generatePDF (
   flight: Flight,
   terminal: string,
   gate: string,
+  seatClass: SeatClass,
+  airline: string,
+  seatNumber: number,
 ): Promise<Buffer> {
   return new Promise((resolve, reject) => {
     try {
       const doc = new PDFDocument({
         size: 'A4',
-        margin: 50,
+        margin: 0,
         bufferPages: true,
       })
 
@@ -23,49 +27,59 @@ export async function generatePDF (
       doc.on('end', () => resolve(Buffer.concat(buffers)))
       doc.on('error', reject)
 
-      // Brown color palette
+      // Elegant purple color palette
       const colors = {
-        primary: '#5D4037',
-        secondary: '#8D6E63',
-        accent: '#D7CCC8',
-        text: '#3E2723',
-        lightText: '#EFEBE9',
+        primary: '#6A0DAD', // Deep purple
+        secondary: '#9C27B0', // Medium purple
+        accent: '#E1BEE7', // Light purple
+        darkAccent: '#4A148C', // Dark purple
+        text: '#212121', // Dark text
+        lightText: '#FFFFFF', // White text
       }
 
-      // Add elegant background
-      doc.rect(0, 0, doc.page.width, doc.page.height).fill(colors.accent)
+      // Gradient background
+      const gradient = doc.linearGradient(0, 0, doc.page.width, doc.page.height)
+      gradient.stop(0, colors.primary)
+      gradient.stop(1, colors.secondary)
+      doc.rect(0, 0, doc.page.width, doc.page.height).fill(gradient)
 
-      // Header with decorative elements
-      doc.fill(colors.primary).rect(0, 0, doc.page.width, 120).fill()
+      // Decorative header with airline logo
+      doc.fill(colors.darkAccent).rect(0, 0, doc.page.width, 100).fill()
 
-      // Add airline logo placeholder
       doc
         .fill(colors.lightText)
-        .fontSize(16)
-        .text('✈️ AIRLINE LOGO', 50, 40, { align: 'left' })
+        .fontSize(24)
+        .font('Helvetica-Bold')
+        .text(airline.toUpperCase(), 50, 40)
 
-      // Main title with elegant styling
+      // Main ticket container with shadow effect
       doc
         .fill(colors.lightText)
+        .roundedRect(40, 80, doc.page.width - 80, doc.page.height - 160, 15)
+        .fill()
+
+      // Ticket title
+      doc
+        .fill(colors.primary)
         .fontSize(28)
         .font('Helvetica-Bold')
-        .text('BOARDING PASS', {
+        .text('ELECTRONIC BOARDING PASS', {
           align: 'center',
           width: doc.page.width - 100,
-          lineGap: 5,
+          lineGap: 10,
         })
 
-      // Passenger info section with decorative border
+      // Passenger information section
       doc
         .fill(colors.secondary)
-        .roundedRect(50, 150, doc.page.width - 100, 80, 10)
+        .roundedRect(60, 150, doc.page.width - 120, 70, 10)
         .fill()
 
       doc
         .fill(colors.lightText)
-        .fontSize(14)
-        .text(`PASSENGER: ${user.firstName} ${user.lastName}`, 70, 170)
-        .text(`TICKET #: ${ticket.id}`, 70, 190)
+        .fontSize(16)
+        .text(`PASSENGER: ${user.firstName} ${user.lastName}`, 80, 170)
+        .text(`TICKET #: ${ticket.id}`, 80, 200)
 
       // Flight details in elegant cards
       const drawDetailCard = (
@@ -74,96 +88,107 @@ export async function generatePDF (
         title: string,
         value: string,
       ) => {
-        doc.fill(colors.accent).roundedRect(x, y, 150, 70, 5).fill()
+        doc.fill(colors.accent).roundedRect(x, y, 160, 80, 8).fill()
         doc
           .fill(colors.text)
-          .fontSize(10)
-          .text(title, x + 10, y + 15)
+          .fontSize(12)
+          .text(title, x + 15, y + 15)
         doc
           .fill(colors.primary)
-          .fontSize(16)
+          .fontSize(18)
           .font('Helvetica-Bold')
-          .text(value, x + 10, y + 35)
+          .text(value, x + 15, y + 40)
       }
 
-      // Flight details cards
-      drawDetailCard(50, 250, 'FLIGHT NUMBER', flight.flightNumber)
-      drawDetailCard(220, 250, 'GATE', gate)
-      drawDetailCard(390, 250, 'TERMINAL', terminal)
+      // Flight details section
+      drawDetailCard(60, 250, 'FLIGHT NUMBER', flight.flightNumber)
+      drawDetailCard(240, 250, 'GATE', gate)
+      drawDetailCard(420, 250, 'TERMINAL', terminal)
 
-      // Timeline visualization
+      // Flight route visualization
       doc
-        .moveTo(50, 350)
-        .lineTo(doc.page.width - 50, 350)
-        .stroke(colors.primary, 2)
-      doc.fill(colors.primary).circle(50, 350, 8).fill()
+        .moveTo(60, 360)
+        .lineTo(doc.page.width - 60, 360)
+        .stroke(colors.primary, 3)
+
+      doc.fill(colors.primary).circle(60, 360, 10).fill()
       doc
         .fill(colors.primary)
-        .circle(doc.page.width - 50, 350, 8)
+        .circle(doc.page.width - 60, 360, 10)
         .fill()
 
       doc
         .fill(colors.text)
-        .fontSize(12)
-        .text(flight?.fromAirport?.dataValues?.name, 50, 370)
-        .text(flight?.toAirport?.dataValues?.name, doc.page.width - 150, 370)
+        .fontSize(14)
+        .font('Helvetica-Bold')
+        .text(flight?.fromAirport?.dataValues?.name, 60, 380)
+        .text(flight?.toAirport?.dataValues?.name, doc.page.width - 160, 380)
 
-      doc
-        .fill(colors.text)
-        .fontSize(10)
-        .text(flight?.leaveAt.toLocaleString(), 50, 390)
-        .text(flight.arriveAt.toLocaleString(), doc.page.width - 150, 390)
-
-      // Ticket details section
       doc
         .fill(colors.secondary)
-        .roundedRect(50, 420, doc.page.width - 100, 120, 10)
+        .fontSize(12)
+        .text(flight?.leaveAt.toLocaleString(), 60, 400)
+        .text(flight.arriveAt.toLocaleString(), doc.page.width - 160, 400)
+
+      // Seat information section
+      doc
+        .fill(colors.secondary)
+        .roundedRect(60, 430, doc.page.width - 120, 100, 10)
         .fill()
 
       doc
         .fill(colors.lightText)
-        .fontSize(12)
-        .text('SEAT', 70, 440)
-        .text('CLASS', 200, 440)
-        .text('STATUS', 460, 440)
+        .fontSize(14)
+        .text('SEAT', 80, 450)
+        .text('CLASS', 200, 450)
+        .text('STATUS', 400, 450)
+        .text('AIRLINE', 400, 450)
 
       doc
         .fill(colors.lightText)
-        .fontSize(16)
+        .fontSize(18)
         .font('Helvetica-Bold')
-        .text(ticket.seatNumber, 70, 460)
-        .text(ticket.class, 200, 460)
-        .text(ticket.status, 460, 460)
+        .text(seatNumber.toString(), 80, 480)
+        .text(seatClass, 200, 480)
+        .text(ticket.status, 400, 480)
+        .text(airline, 400, 510)
 
-      // Footer with decorative elements
+      // Barcode area
+      doc
+        .fill(colors.accent)
+        .roundedRect(doc.page.width / 2 - 120, 550, 240, 60, 5)
+        .fill()
+
       doc
         .fill(colors.primary)
-        .rect(0, doc.page.height - 60, doc.page.width, 60)
-        .fill()
+        .fontSize(14)
+        .text(
+          `TICKET ID: ${ticket.id.substring(0, 8).toUpperCase()}`,
+          doc.page.width / 2 - 110,
+          570,
+        )
 
+      // Footer note
       doc
         .fill(colors.lightText)
         .fontSize(12)
+        .font('Helvetica-Oblique')
         .text(
-          'Thank you for flying with us!',
+          'Thank you for choosing our airline. Safe travels!',
           doc.page.width / 2,
-          doc.page.height - 40,
+          doc.page.height - 50,
           { align: 'center' },
         )
 
-      // Add barcode placeholder
+      // Decorative elements
       doc
-        .fill(colors.lightText)
-        .rect(doc.page.width / 2 - 100, doc.page.height - 120, 200, 40)
+        .fill(colors.accent)
+        .circle(doc.page.width - 100, 100, 30)
         .fill()
       doc
-        .fill(colors.primary)
-        .fontSize(10)
-        .text(
-          'BARCODE: TKT-' + ticket.id.substring(0, 8).toUpperCase(),
-          doc.page.width / 2 - 90,
-          doc.page.height - 110,
-        )
+        .fill(colors.accent)
+        .circle(100, doc.page.height - 100, 20)
+        .fill()
 
       doc.end()
     } catch (error) {

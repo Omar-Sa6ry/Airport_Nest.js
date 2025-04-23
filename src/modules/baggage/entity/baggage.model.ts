@@ -21,7 +21,7 @@ export class Baggage extends BaseEntity<Baggage> {
   weight: number
 
   @ForeignKey(() => Ticket)
-  @Column({ type: DataType.STRING(26), allowNull: false })
+  @Column({ type: DataType.STRING(26), allowNull: false, onDelete: 'CASCADE' })
   ticketId: string
 
   @Field(() => Ticket)

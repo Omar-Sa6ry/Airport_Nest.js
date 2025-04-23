@@ -9,10 +9,18 @@ import { BaggageService } from './baggage.service'
 import { BaggageLoader } from './loader/baggage.loader'
 import { Flight } from '../flight/entity/flight.model'
 import { Employee } from '../employee/entity/employee.model'
+import { Seat } from '../seat/entity/seat.model'
 
 @Module({
   imports: [
-    SequelizeModule.forFeature([Passenger, Flight, Employee, Ticket, Baggage]),
+    SequelizeModule.forFeature([
+      Passenger,
+      Flight,
+      Employee,
+      Seat,
+      Ticket,
+      Baggage,
+    ]),
     UserModule,
   ],
   providers: [BaggageResolver, BaggageService, BaggageLoader],

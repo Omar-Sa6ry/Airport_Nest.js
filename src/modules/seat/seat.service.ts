@@ -79,6 +79,15 @@ export class SeatService {
     return seatData
   }
 
+  async findByIdWithoutError (id: string): Promise<SeatResponse> {
+    const seat = await this.seatRepo.findByPk(id)
+    if (!seat) throw new NotFoundException(await this.i18n.t('seat.NOT_FOUND'))
+
+    const seatData = { data: seat.dataValues }
+    this.redisService.set(`seat:${seat.id}`, seatData)
+    return seatData
+  }
+
   async findAllAvaliableInFlight (
     findSeat: FindSeatInput,
   ): Promise<SeatsResponse> {

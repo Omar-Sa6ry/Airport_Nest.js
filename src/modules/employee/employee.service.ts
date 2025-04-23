@@ -45,14 +45,14 @@ export class EmployeeService {
       )
     }
 
-    const manager = await this.employeeRepo.findOne({
-      where: { userId: managerId },
-    })
+    // const manager = await this.employeeRepo.findOne({
+    //   where: { userId: managerId },
+    // })
 
-    if (manager.airportId !== airportId)
-      throw new NotFoundException(
-        await this.i18n.t('employee.NOT_MANAGER_IN_THIS_AIRPORT'),
-      )
+    // if (manager.airportId !== airportId)
+    //   throw new NotFoundException(
+    //     await this.i18n.t('employee.NOT_MANAGER_IN_THIS_AIRPORT'),
+    //   )
 
     const transaction = await this.employeeRepo.sequelize.transaction()
     try {

@@ -1,6 +1,6 @@
 import { InputType, Field, Int } from '@nestjs/graphql'
 import { IsOptional } from 'class-validator'
-import { TicketClass } from 'src/common/constant/enum.constant'
+import { SeatClass } from 'src/common/constant/enum.constant'
 
 @InputType()
 export class FindSeatInput {
@@ -9,6 +9,6 @@ export class FindSeatInput {
   flightId?: string
 
   @IsOptional()
-  @Field(() => TicketClass, { nullable: true })
-  class?: TicketClass
+  @Field(() => SeatClass, { nullable: true })
+  class?: SeatClass
 }

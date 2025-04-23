@@ -2,36 +2,19 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
-type Seat {
+type Baggage {
   id: ID!
   createdAt: DateTime!
   updatedAt: DateTime!
-  flightId: String!
-  seatNumber: Int!
-  class: TicketClass!
-  isAvailable: Boolean!
-  flight: FlightOutput
+  limit: Int!
+  weight: Int!
+  ticket: Ticket!
 }
 
 """
 A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
 """
 scalar DateTime
-
-enum TicketClass {
-  ECONOMY
-  BUSINESS
-  FIRST
-}
-
-type CheckIn {
-  id: ID!
-  createdAt: DateTime!
-  updatedAt: DateTime!
-  ticketId: String!
-  gateId: String!
-  price: Int!
-}
 
 type Gate {
   id: ID!
@@ -293,23 +276,42 @@ enum FlightStatus {
   LANDED
 }
 
+type Seat {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  flightId: String!
+  seatNumber: Int!
+  price: Int!
+  class: SeatClass!
+  isAvailable: Boolean!
+  expairyAt: DateTime
+  flight: FlightOutput
+}
+
+enum SeatClass {
+  ECONOMY
+  BUSINESS
+  FIRST
+}
+
 type Ticket {
   id: ID!
   createdAt: DateTime!
   updatedAt: DateTime!
   passengerId: String!
-  flightId: String!
   seatId: String!
-  seatNumber: Int!
-  class: TicketClass!
-  price: Int!
   status: TicketStatus!
+  baggage: Baggage!
+  seat: Seat!
+  flight: FlightOutput!
 }
 
 enum TicketStatus {
+  PENDING_PAYMENT
   BOOKED
   CANCELED
-  USED
+  EXPIRY
 }
 
 type User {
@@ -479,6 +481,7 @@ type FlightOutput {
   toAirport: Airport
   gate: GateData
   flightCrews: [FllghtCrewsData!]
+  tickets: [Ticket!]
   avaliableSeats: [Seat!]
   seats: [Seat!]
 }
@@ -693,40 +696,13 @@ type TicketsResponse {
   pagination: PaginationInfo
 }
 
-type CheckinInput {
+type CreateTicketResponse {
   message: String
   success: Boolean
   timeStamp: String
   statusCode: Float
-  id: String!
-  price: Int!
-  ticket: Ticket!
-  gate: Gate!
-}
-
-type CheckinResponse {
-  message: String
-  success: Boolean
-  timeStamp: String
-  statusCode: Float
-  data: CheckinInput
-}
-
-type CheckinsResponse {
-  message: String
-  success: Boolean
-  timeStamp: String
-  statusCode: Float
-  items: [CheckIn!]
-  pagination: PaginationInfo
-}
-
-type CreateCheckinResponse {
-  message: String
-  success: Boolean
-  timeStamp: String
-  statusCode: Float
-  data: String
+  data: Ticket
+  url: String!
 }
 
 type BaggageData {
@@ -773,6 +749,8 @@ type Query {
   getAllFlightsFromAitport(id: String!): FlightsFromAirportResponse!
   findSeatById(id: ID!): SeatResponse!
   findAllAvailableSeatsInFlight(findSeatInput: FindSeatInput!): SeatsResponse!
+  getTickets(flightId: String!): TicketsResponse!
+  getTicketById(id: String!): TicketResponse!
   getEmployeeById(id: String!): EmployeeResponse!
   getEmployeeByEmail(email: String!): EmployeeResponse!
   getEmployeeByPhone(phone: String!): EmployeeResponse!
@@ -785,11 +763,6 @@ type Query {
   findAllFlightsInAirline(airlineId: String!): FlightsInAirlinesResponse!
   findFlightCrewById(id: String!): FlightCrewResponse!
   findFlightCrewsForFlight(flightId: String!): FllghtCrewsResponse!
-  getTickets(flightId: String!, page: Float, limit: Float): TicketsResponse!
-  getTicketById(id: String!): TicketResponse!
-  getAllCheckIns(page: Float, limit: Float): CheckinsResponse!
-  getCheckInForUser: CheckinResponse!
-  getCheckInById(id: String!): CheckinResponse!
   findBaggageById(id: String!): BaggageResponse!
   findAllBaggageOnFlight(flightId: String!, page: Int, limit: Int): BaggagesResponse!
 }
@@ -808,7 +781,7 @@ input FlightOptinalInput {
 
 input FindSeatInput {
   flightId: String
-  class: TicketClass
+  class: SeatClass
 }
 
 type Mutation {
@@ -841,6 +814,10 @@ type Mutation {
   updateSeat(id: ID!, updateSeatInput: UpdateSeatInput!): SeatResponse!
   makeSeatsAvaliableInFlight(flightId: ID!): SeatsResponse!
   deleteSeat(id: ID!): SeatResponse!
+  bookeTicket(seatId: String!, createBaggageInput: CreateBaggageInput!): CreateTicketResponse!
+  unbookeTicket(ticketId: String!): TicketResponse!
+  deleteTicket(id: String!): TicketResponse!
+  deleteExpiryAnDeleteTickets: TicketResponse!
   createEmployee(userId: String!, airportId: String!, role: String!): EmployeeResponse!
   deleteEmployee(id: String!): EmployeeResponse!
   editUserRoleToManager(id: String!): EmployeeResponse!
@@ -848,14 +825,11 @@ type Mutation {
   createGate(createGateDto: CreateGateDto!): GateResponse!
   updateGate(id: String!, gateNumber: String!): GateResponse!
   deleteGate(id: String!): GateResponse!
-  createAirline(name: String!, createLocationInput: CreateLocationInput!): AirlineResponse!
+  createAirline(name: String!, userId: String!, createLocationInput: CreateLocationInput!): AirlineResponse!
   updateAirline(id: String!, name: String!): AirlineResponse!
   deleteAirline(id: String!): AirlineResponse!
   createFlightCrew(createFlightCrewInput: CreateFlightCrewInput!): FlightCrewResponse!
   deleteFlightCrew(flightCrewId: String!): FlightCrewResponse!
-  deleteTicket(id: String!): TicketResponse!
-  createCheckIn(createCheckInInput: CreateCheckInInput!, createTicketInput: CreateTicketInput!, createBagInput: CreateBagInput!, currency: Currency!): CreateCheckinResponse!
-  deleteCheckIn(id: String!): CheckinResponse!
   updateBaggage(id: String!, updateBaggageInput: UpdateBaggageInput!): BaggageResponse!
   deleteBaggage(id: String!): BaggageResponse!
 }
@@ -956,14 +930,22 @@ input CreateFlightInput {
 
 input CreateSeatInput {
   flightId: String!
+  price: Int!
   seatNumber: Int!
-  class: TicketClass!
+  class: SeatClass!
 }
 
 input UpdateSeatInput {
+  price: Int
   seatNumber: Int
-  class: TicketClass
+  class: SeatClass
   isAvailable: Boolean
+}
+
+input CreateBaggageInput {
+  ticketId: String
+  weight: Int!
+  limit: Int!
 }
 
 input CreateGateDto {
@@ -975,22 +957,6 @@ input CreateFlightCrewInput {
   flightId: String!
   employeeId: String!
   role: CrewRole!
-}
-
-input CreateCheckInInput {
-  price: Int!
-  gateId: String!
-}
-
-input CreateTicketInput {
-  flightId: String!
-  seatId: String!
-  class: TicketClass!
-}
-
-input CreateBagInput {
-  weight: Int!
-  limit: Int!
 }
 
 input UpdateBaggageInput {

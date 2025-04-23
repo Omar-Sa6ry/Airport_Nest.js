@@ -6,7 +6,7 @@ import { RedisService } from 'src/common/redis/redis.service'
 import { I18nService } from 'nestjs-i18n'
 import { Gate } from '../gate/entity/gate.model'
 import { FlightFromAirportLoader } from './loaders/flight.FromAirportloader'
-import { ScheduleService } from 'src/common/queues/schedule/schedule.service'
+import { ScheduleService } from 'src/common/queues/schedule/notify.service'
 import { FlightToAirportLoader } from './loaders/flight.ToAirportloader'
 import { WebSocketMessageGateway } from 'src/common/websocket/websocket.gateway'
 import { FlightsFromAirportResponse } from './dtos/FlightsFromAirport.response'
@@ -24,6 +24,7 @@ import {
   FlightsToAirportResponse,
   ToAirportFlightOutput,
 } from './dtos/FlightsToAirport.response'
+import { Seat } from '../seat/entity/seat.model'
 
 @Injectable()
 export class FlightService {
@@ -41,9 +42,13 @@ export class FlightService {
     @InjectModel(Ticket) private readonly ticketModel: typeof Ticket,
     @InjectModel(Flight) private readonly flightModel: typeof Flight,
     @InjectModel(Airline) private readonly airlineModel: typeof Airline,
+    @InjectModel(Seat) private readonly seatModel: typeof Seat,
   ) {}
 
-  async create (createFlightInput: CreateFlightInput): Promise<FlightResponse> {
+  async create (
+    createFlightInput: CreateFlightInput,
+    userId: string,
+  ): Promise<FlightResponse> {
     if (createFlightInput.fromAirportId === createFlightInput.toAirportId)
       throw new NotFoundException(await this.i18n.t('flight.SAME_AIRPORT'))
 
@@ -53,9 +58,9 @@ export class FlightService {
     if (!fromAirport)
       throw new NotFoundException(await this.i18n.t('airport.NOT_FOUND'))
 
-    const airline = await this.airlineModel.findByPk(
-      createFlightInput.airlineId,
-    )
+    const airline = await this.airlineModel.findOne({
+      where: { id: createFlightInput.airlineId, userId },
+    })
     if (!airline)
       throw new NotFoundException(await this.i18n.t('airline.NOT_FOUND'))
 
@@ -266,9 +271,14 @@ export class FlightService {
       data: update,
     }
 
+    const seats = await this.seatModel.findAll({
+      where: { flightId: flight.id },
+    })
+    const seatsId = [...new Set(seats.map(seat => seat.id))]
+
     const tickets = await this.ticketModel.findAll({
       where: {
-        flightId: id,
+        seatId: { [Op.in]: seatsId },
         createdAt: {
           [Op.gt]: flight.createdAt,
         },
@@ -319,9 +329,14 @@ export class FlightService {
         },
       }
 
+      const seats = await this.seatModel.findAll({
+        where: { flightId: flight.id },
+      })
+      const seatsId = [...new Set(seats.map(seat => seat.id))]
+
       const tickets = await this.ticketModel.findAll({
         where: {
-          flightId: flight.id,
+          seatId: { [Op.in]: seatsId },
           createdAt: {
             [Op.gt]: flight.createdAt,
           },
@@ -367,9 +382,14 @@ export class FlightService {
       },
     }
 
+    const seats = await this.seatModel.findAll({
+      where: { flightId: flight.dataValues.id },
+    })
+    const seatsId = [...new Set(seats.map(seat => seat.id))]
+
     const tickets = await this.ticketModel.findAll({
       where: {
-        flightId: id,
+        seatId: { [Op.in]: seatsId },
         createdAt: {
           [Op.gt]: flight.createdAt,
         },
@@ -412,9 +432,14 @@ export class FlightService {
         },
       }
 
+      const seats = await this.seatModel.findAll({
+        where: { flightId: flight.id },
+      })
+      const seatsId = [...new Set(seats.map(seat => seat.id))]
+
       const tickets = await this.ticketModel.findAll({
         where: {
-          flightId: id,
+          seatId: { [Op.in]: seatsId },
           createdAt: {
             [Op.gt]: flight.createdAt,
           },

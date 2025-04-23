@@ -1,4 +1,6 @@
 import * as graphqlUploadExpress from 'graphql-upload/graphqlUploadExpress.js'
+import * as bodyParser from 'body-parser'
+import { json } from 'express'
 import { Sequelize } from 'sequelize-typescript'
 import { NestFactory, Reflector } from '@nestjs/core'
 import { AppModule } from './app.module'
@@ -19,6 +21,10 @@ async function bootstrap () {
     app.useGlobalInterceptors(
       new ClassSerializerInterceptor(app.get(Reflector)),
     )
+
+    // Stripe
+    app.use('/stripe/webhook', bodyParser.raw({ type: 'application/json' }))
+    app.use(json())
 
     const sequelize = app.get(Sequelize)
     await sequelize.sync({ alter: true })

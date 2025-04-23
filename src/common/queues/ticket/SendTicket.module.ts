@@ -10,12 +10,24 @@ import { NotificationModule } from '../notification/notification.module'
 import { UserModule } from 'src/modules/users/users.module'
 import { SequelizeModule } from '@nestjs/sequelize'
 import { Seat } from 'src/modules/seat/entity/seat.model'
-import { Flight } from 'src/modules/flight/entity/flight.model'
 import { Ticket } from 'src/modules/ticket/entity/ticket.model'
+import { Gate } from 'src/modules/gate/entity/gate.model'
+import { Terminal } from 'src/modules/terminal/entity/terminal.model'
+import { Airline } from 'src/modules/airline/entity/airline.model'
+import { Location } from 'src/modules/location/entity/location.model'
+import { BaggageModule } from 'src/modules/baggage/baggage.module'
+import { ExpiryTicketProcessor } from './ExpiryTicket.processor'
 
 @Module({
   imports: [
-    SequelizeModule.forFeature([Ticket, Seat, Flight]),
+    SequelizeModule.forFeature([
+      Ticket,
+      Airline,
+      Location,
+      Gate,
+      Terminal,
+      Seat,
+    ]),
     BullModule.forRoot({
       connection: {
         host: process.env.REDIS_HOST || '127.0.0.1',
@@ -23,14 +35,18 @@ import { Ticket } from 'src/modules/ticket/entity/ticket.model'
       },
     }),
     BullModule.registerQueue({ name: 'ticketQueue' }),
+    BullModule.registerQueue({ name: 'expiryticketQueue' }),
     BullModule.registerQueue({ name: 'email' }),
+
     UserModule,
+    BaggageModule,
     RedisModule,
     WebSocketModule,
     NotificationModule,
   ],
   providers: [
     SendTicketService,
+    ExpiryTicketProcessor,
     TicketQueueProcessor,
     SendEmailService,
     EmailProcessor,

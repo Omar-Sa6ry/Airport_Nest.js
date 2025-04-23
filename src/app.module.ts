@@ -15,11 +15,11 @@ import { GateModule } from './modules/gate/gate.module'
 import { FlightModule } from './modules/flight/flight.module'
 import { SeatModule } from './modules/seat/seat.module'
 import { TicketModule } from './modules/ticket/ticket.module'
-import { CheckInModule } from './modules/checkIn/checkIn.module'
 import { LocationModule } from './modules/location/location.module'
 import { AirlineModule } from './modules/airline/airline.module'
 import { FlightCrewModule } from './modules/flightCrew/flightCrew.module'
 import { BaggageModule } from './modules/baggage/baggage.module'
+import { StripeModule } from './common/stripe/stripe.module'
 
 @Module({
   imports: [
@@ -41,7 +41,7 @@ import { BaggageModule } from './modules/baggage/baggage.module'
     SeatModule,
     FlightCrewModule,
     TicketModule,
-    CheckInModule,
+    StripeModule,
     BaggageModule,
   ],
 

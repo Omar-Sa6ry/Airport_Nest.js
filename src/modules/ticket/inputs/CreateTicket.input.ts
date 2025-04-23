@@ -1,14 +1,7 @@
-import { InputType, Field, Int } from '@nestjs/graphql'
-import { TicketClass } from 'src/common/constant/enum.constant'
+import { InputType, Field } from '@nestjs/graphql'
 
 @InputType()
 export class CreateTicketInput {
   @Field(() => String)
-  flightId: string
-
-  @Field(() => String)
   seatId: string
-
-  @Field(() => TicketClass)
-  class: TicketClass
 }

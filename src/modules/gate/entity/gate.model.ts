@@ -1,5 +1,4 @@
 import { Field, ObjectType } from '@nestjs/graphql'
-import { CheckIn } from 'src/modules/checkIn/entity/checkIn.entity'
 import { Terminal } from 'src/modules/terminal/entity/terminal.model'
 import { BaseEntity } from 'src/common/bases/BaseEntity'
 import {
@@ -22,9 +21,6 @@ export class Gate extends BaseEntity<Gate> {
   @ForeignKey(() => Terminal)
   @Column(DataType.STRING)
   terminalId: string
-
-  @HasMany(() => CheckIn, { onDelete: 'SET NULL' })
-  checkIns: CheckIn[]
 
   @Field(() => Terminal)
   @BelongsTo(() => Terminal)

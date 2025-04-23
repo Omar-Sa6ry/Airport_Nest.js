@@ -15,6 +15,7 @@ import { Op } from 'sequelize'
 import { BaggageLoader } from './loader/baggage.loader'
 import { Limit, Page } from 'src/common/constant/messages.constant'
 import { Passenger } from '../users/entities/passenger.model'
+import { Seat } from '../seat/entity/seat.model'
 
 @Injectable()
 export class BaggageService {
@@ -24,6 +25,7 @@ export class BaggageService {
     @InjectModel(Baggage) private readonly baggageModel: typeof Baggage,
     @InjectModel(Flight) private readonly flightModel: typeof Flight,
     @InjectModel(Passenger) private readonly passengerModel: typeof Passenger,
+    @InjectModel(Seat) private readonly seatModel: typeof Seat,
     @InjectModel(Ticket) private readonly ticketModel: typeof Ticket,
   ) {}
 
@@ -57,6 +59,17 @@ export class BaggageService {
     }
   }
 
+  async findByTicketId (ticketId: string): Promise<Baggage> {
+    const baggage = await this.baggageModel.findOne({ where: { ticketId } })
+    if (!baggage) {
+      throw new NotFoundException(
+        await this.i18n.translate('baggage.NOT_FOUND'),
+      )
+    }
+
+    return baggage.dataValues
+  }
+
   async findAllBaggageOnFlight (
     flightId: string,
     page: number = Page,
@@ -66,10 +79,15 @@ export class BaggageService {
     if (!flight)
       throw new NotFoundException(await this.i18n.translate('flight.NOT_FOUND'))
 
+    const seats = await this.seatModel.findAll({
+      where: { flightId: flight.id },
+    })
+    const seatsId = [...new Set(seats.map(seat => seat.id))]
+
     const { rows: data, count: total } = await this.ticketModel.findAndCountAll(
       {
         where: {
-          flightId,
+          seatId: { [Op.in]: seatsId },
           createdAt: {
             [Op.gt]: flight.createdAt,
           },

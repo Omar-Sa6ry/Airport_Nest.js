@@ -19,6 +19,7 @@ export class GeneralResponseInterceptor<T> implements NestInterceptor<T, any> {
           message: data?.message || 'Request successful',
           timeStamp: new Date().toISOString().split('T')[0],
           pagination: data?.pagination,
+          url: data?.url,
           items: Array.isArray(data?.items)
             ? data.items
             : data?.data?.items || [],

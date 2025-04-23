@@ -13,6 +13,10 @@ import { SeatService } from '../seat/seat.service'
 import { Seat } from '../seat/entity/seat.model'
 import { RedisService } from 'src/common/redis/redis.service'
 import { Airline } from '../airline/entity/airline.model'
+import { TicketService } from '../ticket/ticket.service'
+import { Ticket } from '../ticket/entity/ticket.model'
+import { CurrentUser } from 'src/common/decerator/currentUser.decerator'
+import { CurrentUserDto } from 'src/common/dtos/currentUser.dto'
 import { AirlineService } from '../airline/airline.service'
 import { AirportService } from '../airport/airport.service'
 import { GateService } from '../gate/gate.service'
@@ -31,6 +35,7 @@ import {
 export class FlightResolver {
   constructor (
     private readonly redisService: RedisService,
+    private readonly ticketService: TicketService,
     private readonly airlineService: AirlineService,
     private readonly airportService: AirportService,
     private readonly gateService: GateService,
@@ -42,9 +47,10 @@ export class FlightResolver {
   @Mutation(() => FlightResponse)
   @Auth([Role.AIRLINE_MANAGER], [Permission.FLIGHT_CREATE])
   async createFlight (
+    @CurrentUser() user: CurrentUserDto,
     @Args('createFlightInput') createFlightInput: CreateFlightInput,
   ): Promise<FlightResponse> {
-    return this.flightService.create(createFlightInput)
+    return this.flightService.create(createFlightInput, user.id)
   }
 
   @Mutation(() => FlightResponse)
@@ -139,6 +145,11 @@ export class FlightResolver {
     @Parent() flight: FlightOutput,
   ): Promise<FllghtCrewsData[]> {
     return (await this.flightCrewService.findAllForFlight(flight.id)).items
+  }
+
+  @ResolveField(() => [Ticket], { nullable: true })
+  async tickets (@Parent() flight: FlightOutput): Promise<Ticket[]> {
+    return (await this.ticketService.findAll(flight.id)).items
   }
 
   @ResolveField(() => [Seat], { nullable: true })
