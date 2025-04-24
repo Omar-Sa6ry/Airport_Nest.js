@@ -10,7 +10,6 @@ import {
 import { GateService } from './gate.service'
 import { Auth } from 'src/common/decerator/auth.decerator'
 import { Role, Permission } from 'src/common/constant/enum.constant'
-import { RedisService } from 'src/common/redis/redis.service'
 import { Terminal } from '../terminal/entity/terminal.model'
 import { Gate } from './entity/gate.model'
 import { TerminalService } from '../terminal/terminal.service'
@@ -25,7 +24,6 @@ import {
 @Resolver(() => Gate)
 export class GateResolver {
   constructor (
-    private readonly redisService: RedisService,
     private readonly gateService: GateService,
     private readonly terminalService: TerminalService,
   ) {}
@@ -40,11 +38,6 @@ export class GateResolver {
 
   @Query(() => GateDataResponse)
   async gateById (@Args('id') id: string): Promise<GateDataResponse> {
-    const cachedGate = await this.redisService.get(`gate:${id}`)
-    if (cachedGate instanceof GateDataResponse) {
-      return cachedGate
-    }
-
     return this.gateService.findById(id)
   }
 

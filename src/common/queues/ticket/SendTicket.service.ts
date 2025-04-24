@@ -86,17 +86,6 @@ export class SendTicketService {
         { delay: 66 * 60 * 1000 },
       )
 
-      const pdf = await generatePDF(
-        ticket,
-        user,
-        seat.flight.dataValues,
-        terminal.dataValues.name,
-        gate.dataValues.gateNumber,
-        seat.dataValues.class,
-        airline.dataValues.name,
-        seat.dataValues.seatNumber,
-      )
-
       const lineItem = [
         {
           price_data: {
@@ -121,7 +110,19 @@ export class SendTicketService {
       })
 
       const url: string = session.url
+
       await transaction.commit()
+
+      const pdf = await generatePDF(
+        ticket,
+        user,
+        seat.flight.dataValues,
+        terminal.dataValues.name,
+        gate.dataValues.gateNumber,
+        seat.dataValues.class,
+        airline.dataValues.name,
+        seat.dataValues.seatNumber,
+      )
 
       this.sendTicketToEmail(user.email, 'Ticket', `This is your ticket`, pdf)
       this.notificationService.sendNotification(

@@ -3,6 +3,7 @@ import { IsOptional } from 'class-validator'
 import { BaseResponse } from 'src/common/bases/BaseResponse'
 import { Role } from 'src/common/constant/enum.constant'
 import { PaginationInfo } from 'src/common/dtos/pagintion'
+import { Employee } from '../entity/employee.model'
 
 @ObjectType()
 export class EmployeeOutput {
@@ -36,8 +37,8 @@ export class EmployeeOutput {
 
 @ObjectType()
 export class EmployeeResponse extends BaseResponse {
-  @Field(() => EmployeeOutput, { nullable: true })
-  data: EmployeeOutput
+  @Field(() => Employee, { nullable: true })
+  data: Employee
 }
 
 @ObjectType()

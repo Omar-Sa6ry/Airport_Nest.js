@@ -8,7 +8,7 @@ import { SeatModule } from '../seat/seat.module'
 import { AirportModule } from '../airport/airport.module'
 import { AirlineModule } from '../airline/airline.module'
 import { FlightCrewModule } from '../flightCrew/flightCrew.module'
-import { scheduleQueueModule } from 'src/common/queues/schedule/notify.module'
+import { NotifyModule } from 'src/common/queues/notify/notify.module'
 import { UpdateFlightModule } from 'src/common/queues/update flight/UpdateFlight.module'
 import { NotificationModule } from 'src/common/queues/notification/notification.module'
 import { UserModule } from '../users/users.module'
@@ -20,7 +20,7 @@ import { WebSocketModule } from 'src/common/websocket/websocket.module'
 import { FlightService } from './flight.service'
 import { FlightToAirportLoader } from './loaders/flight.ToAirportloader'
 import { FlightFromAirportLoader } from './loaders/flight.FromAirportloader'
-import { ScheduleService } from 'src/common/queues/schedule/notify.service'
+import { NotifyService } from 'src/common/queues/notify/notify.service'
 import { UpdateFlightService } from 'src/common/queues/update flight/UpdateFlight.service'
 import { FlightResolver } from './flight.resolver'
 import { TicketModule } from '../ticket/ticket.module'
@@ -33,7 +33,7 @@ import { TicketModule } from '../ticket/ticket.module'
     forwardRef(() => AirportModule),
     forwardRef(() => AirlineModule),
     forwardRef(() => FlightCrewModule),
-    scheduleQueueModule,
+    NotifyModule,
     UpdateFlightModule,
     NotificationModule,
     UserModule,
@@ -49,7 +49,7 @@ import { TicketModule } from '../ticket/ticket.module'
     UpdateFlightService,
     FlightToAirportLoader,
     FlightFromAirportLoader,
-    ScheduleService,
+    NotifyService,
   ],
   exports: [
     SequelizeModule,
@@ -57,7 +57,7 @@ import { TicketModule } from '../ticket/ticket.module'
     FlightToAirportLoader,
     FlightService,
     UpdateFlightModule,
-    scheduleQueueModule,
+    NotifyModule,
   ],
 })
 export class FlightModule {}

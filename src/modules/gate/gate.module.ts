@@ -18,6 +18,6 @@ import { User } from '../users/entities/user.entity'
     forwardRef(() => TerminalModule),
   ],
   providers: [GateService, GateResolver, GateLoader],
-  exports: [GateService],
+  exports: [GateService, SequelizeModule],
 })
 export class GateModule {}

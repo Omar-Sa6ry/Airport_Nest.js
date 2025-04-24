@@ -1,5 +1,5 @@
 import { InputType, Field, Int } from '@nestjs/graphql'
-import { SeatClass } from 'src/common/constant/enum.constant'
+import { SeatClass, SeatPosition } from 'src/common/constant/enum.constant'
 
 @InputType()
 export class CreateSeatInput {
@@ -11,6 +11,9 @@ export class CreateSeatInput {
 
   @Field(() => Int)
   seatNumber: number
+
+  @Field(() => SeatPosition)
+  position: SeatPosition
 
   @Field(() => SeatClass)
   class: SeatClass

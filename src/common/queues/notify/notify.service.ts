@@ -3,7 +3,7 @@ import { InjectQueue } from '@nestjs/bullmq'
 import { Queue } from 'bullmq'
 
 @Injectable()
-export class ScheduleService {
+export class NotifyService {
   constructor (@InjectQueue('schedule') private readonly scheduleQueue: Queue) {}
 
   async sendNotify (leaveAt: Date, flightId: string) {

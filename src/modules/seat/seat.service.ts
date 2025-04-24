@@ -29,16 +29,18 @@ export class SeatService {
   ) {}
 
   async create (createSeatInput: CreateSeatInput): Promise<SeatResponse> {
-    const flight = await this.flightRepo.findByPk(createSeatInput.flightId)
+    const [flight, existingSeat] = await Promise.all([
+      this.flightRepo.findByPk(createSeatInput.flightId),
+      this.seatRepo.findOne({
+        where: {
+          flightId: createSeatInput.flightId,
+          seatNumber: createSeatInput.seatNumber,
+        },
+      }),
+    ])
+
     if (!flight)
       throw new NotFoundException(await this.i18n.t('flight.NOT_FOUND'))
-
-    const existingSeat = await this.seatRepo.findOne({
-      where: {
-        flightId: createSeatInput.flightId,
-        seatNumber: createSeatInput.seatNumber,
-      },
-    })
     if (existingSeat)
       throw new NotFoundException(await this.i18n.t('seat.ALREADY_EXISTS'))
 
@@ -95,7 +97,7 @@ export class SeatService {
     if (!flight)
       throw new NotFoundException(await this.i18n.t('flight.NOT_FOUND'))
 
-    const { rows: seats, count: total } = await this.seatRepo.findAndCountAll({
+    const seats = await this.seatRepo.findAll({
       where: { isAvailable: true, ...findSeat },
       order: [['createdAt', 'DESC']],
     })

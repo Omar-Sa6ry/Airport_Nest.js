@@ -1,22 +1,20 @@
+import { NotificationLoader } from './../notification/loader/notification.loader'
 import { Processor, WorkerHost } from '@nestjs/bullmq'
 import { SchedulerRegistry } from '@nestjs/schedule'
 import { InjectModel } from '@nestjs/sequelize'
 import { Job } from 'bullmq'
 import { Ticket } from 'src/modules/ticket/entity/ticket.model'
 import { Passenger } from 'src/modules/users/entities/passenger.model'
-import { User } from 'src/modules/users/entities/user.entity'
-import { NotificationService } from '../notification/notification.service'
 import { CronJob } from 'cron'
 import { Op } from 'sequelize'
 import { Seat } from 'src/modules/seat/entity/seat.model'
 
 @Processor('schedule')
-export class ScheduleProcessor extends WorkerHost {
+export class notifyProcessor extends WorkerHost {
   constructor (
     private readonly schedulerRegistry: SchedulerRegistry,
-    private readonly notificationService: NotificationService,
+    private readonly notificationLoader: NotificationLoader,
     @InjectModel(Ticket) private readonly ticketModel: typeof Ticket,
-    @InjectModel(User) private readonly userModel: typeof User,
     @InjectModel(Seat) private readonly seatModel: typeof Seat,
     @InjectModel(Passenger) private readonly passengerModel: typeof Passenger,
   ) {
@@ -43,20 +41,13 @@ export class ScheduleProcessor extends WorkerHost {
         where: { id: { [Op.in]: passengersId } },
       })
 
-      const usersId = passengers.map(p => p.dataValues.userId)
-      const users = await this.userModel.findAll({
-        where: { id: { [Op.in]: usersId } },
-      })
+      const userIds = [...new Set(passengers.map(p => p.userId))]
 
-      for (const user of users) {
-        if (user.fcmToken) {
-          await this.notificationService.sendNotification(
-            user.fcmToken,
-            'Alert ',
-            'Your flight will depart in 1 hour. Please get ready!',
-          )
-        }
-      }
+      this.notificationLoader.sendNotifications(
+        userIds,
+        'Alert ',
+        'Your flight will depart in 1 hour. Please get ready!',
+      )
 
       this.schedulerRegistry.deleteCronJob(`flight-${flightId}`)
     })

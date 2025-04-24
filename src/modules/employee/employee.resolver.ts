@@ -14,6 +14,8 @@ import { Airport } from '../airport/entity/airport.model'
 import { AirportService } from '../airport/airport.service'
 import { Location } from '../location/entity/location.model'
 import { CurrentUserDto } from 'src/common/dtos/currentUser.dto'
+import { InjectModel } from '@nestjs/sequelize'
+import { User } from '../users/entities/user.entity'
 import { Auth } from 'src/common/decerator/auth.decerator'
 import { LocationService } from '../location/location.service'
 import { EmployeeService } from './employee.service'
@@ -30,6 +32,7 @@ export class EmployeeResolver {
     private readonly airportService: AirportService,
     private readonly employeeService: EmployeeService,
     private readonly redisService: RedisService,
+    @InjectModel(User) private userRepo: typeof User,
   ) {}
 
   @Mutation(() => EmployeeResponse)
@@ -139,5 +142,10 @@ export class EmployeeResolver {
   @ResolveField(() => Airport, { nullable: true })
   async airport (@Parent() employee: EmployeeOutput): Promise<Airport> {
     return (await this.airportService.findById(employee.airportId)).data
+  }
+
+  @ResolveField(() => User, { nullable: true })
+  async user (@Parent() employee: EmployeeOutput): Promise<User> {
+    return this.userRepo.findByPk(employee.userId)
   }
 }

@@ -24,5 +24,5 @@ export class Gate extends BaseEntity<Gate> {
 
   @Field(() => Terminal)
   @BelongsTo(() => Terminal)
-  terminals: Terminal
+  terminal: Terminal
 }

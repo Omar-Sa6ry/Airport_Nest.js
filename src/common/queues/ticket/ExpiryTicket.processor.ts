@@ -18,7 +18,7 @@ export class ExpiryTicketProcessor extends WorkerHost {
     super()
   }
   async process (job: Job): Promise<void> {
-    const { fcmToken, email, seatId } = job.data.seatId
+    const { fcmToken, email, seatId } = job.data
 
     const seat = await this.seatModel.findByPk(seatId, { include: ['ticket'] })
     if (!seat || seat.isAvailable || !seat.ticket) return

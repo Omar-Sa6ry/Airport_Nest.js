@@ -6,7 +6,7 @@ import { RedisService } from 'src/common/redis/redis.service'
 import { I18nService } from 'nestjs-i18n'
 import { Gate } from '../gate/entity/gate.model'
 import { FlightFromAirportLoader } from './loaders/flight.FromAirportloader'
-import { ScheduleService } from 'src/common/queues/schedule/notify.service'
+import { NotifyService } from 'src/common/queues/notify/notify.service'
 import { FlightToAirportLoader } from './loaders/flight.ToAirportloader'
 import { WebSocketMessageGateway } from 'src/common/websocket/websocket.gateway'
 import { FlightsFromAirportResponse } from './dtos/FlightsFromAirport.response'
@@ -18,20 +18,20 @@ import { FlightOptinalInput } from './inputs/FlightOptinals.input'
 import { FlightStatus } from 'src/common/constant/enum.constant'
 import { TerminalService } from '../terminal/terminal.service'
 import { Limit, Page } from 'src/common/constant/messages.constant'
+import { Seat } from '../seat/entity/seat.model'
 import { Ticket } from '../ticket/entity/ticket.model'
 import { UpdateFlightService } from 'src/common/queues/update flight/UpdateFlight.service'
 import {
   FlightsToAirportResponse,
   ToAirportFlightOutput,
 } from './dtos/FlightsToAirport.response'
-import { Seat } from '../seat/entity/seat.model'
 
 @Injectable()
 export class FlightService {
   constructor (
     private readonly i18n: I18nService,
     private readonly redisService: RedisService,
-    private readonly scheduleService: ScheduleService,
+    private readonly notifyService: NotifyService,
     private readonly terminalServices: TerminalService,
     private readonly flightFromAirportLoader: FlightFromAirportLoader,
     private readonly flightToAirportLoader: FlightToAirportLoader,
@@ -52,32 +52,33 @@ export class FlightService {
     if (createFlightInput.fromAirportId === createFlightInput.toAirportId)
       throw new NotFoundException(await this.i18n.t('flight.SAME_AIRPORT'))
 
-    const fromAirport = await this.airportRepo.findByPk(
-      createFlightInput.fromAirportId,
-    )
-    if (!fromAirport)
-      throw new NotFoundException(await this.i18n.t('airport.NOT_FOUND'))
+    const [airport, airline, terminals, gate] = await Promise.all([
+      this.airportRepo.findAll({
+        where: {
+          id: {
+            [Op.in]: [
+              createFlightInput.fromAirportId,
+              createFlightInput.toAirportId,
+            ],
+          },
+        },
+      }),
+      this.airlineModel.findOne({
+        where: { id: createFlightInput.airlineId, userId },
+      }),
+      this.terminalServices.findTerminalsInAirport(
+        createFlightInput.fromAirportId,
+      ),
+      this.gateRepo.findByPk(createFlightInput.gateId),
+    ])
 
-    const airline = await this.airlineModel.findOne({
-      where: { id: createFlightInput.airlineId, userId },
-    })
+    if (airport.length < 2)
+      throw new NotFoundException(await this.i18n.t('airport.NOT_FOUNDS'))
     if (!airline)
       throw new NotFoundException(await this.i18n.t('airline.NOT_FOUND'))
-
-    const terminals = await this.terminalServices.findTerminalsInAirport(
-      createFlightInput.fromAirportId,
-    )
     const terminalsId = [...new Set(terminals?.items.map(t => t.id))]
-
-    const gate = await this.gateRepo.findByPk(createFlightInput.gateId)
     if (!gate || !terminalsId.includes(gate.terminalId))
       throw new NotFoundException(await this.i18n.t('gate.NOT_FOUND'))
-
-    const toAirport = await this.airportRepo.findByPk(
-      createFlightInput.toAirportId,
-    )
-    if (!toAirport)
-      throw new NotFoundException(await this.i18n.t('airport.NOT_FOUND'))
 
     const transaction = await this.flightModel.sequelize.transaction()
     try {
@@ -92,7 +93,7 @@ export class FlightService {
         flightId: flight.id,
       })
 
-      this.scheduleService.sendNotify(flight.leaveAt, flight.id)
+      this.notifyService.sendNotify(flight.leaveAt, flight.id)
 
       await transaction.commit()
       return {
@@ -124,7 +125,7 @@ export class FlightService {
       throw new NotFoundException(await this.i18n.t('flight.NOT_FOUND'))
     }
 
-    const flightInput: FlightResponse = { data: flight.dataValues }
+    const flightInput: FlightResponse = { data: { ...flight.dataValues } }
     this.redisService.set(`flight:${flight.id}`, flightInput)
 
     return flightInput
@@ -140,7 +141,7 @@ export class FlightService {
       throw new NotFoundException(await this.i18n.t('flight.NOT_FOUND'))
     }
 
-    const flightInput: FlightResponse = { data: flight.dataValues }
+    const flightInput: FlightResponse = { data: { ...flight.dataValues } }
 
     this.redisService.set(`flight:${flight.id}`, flightInput)
 

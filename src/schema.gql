@@ -22,8 +22,7 @@ type Gate {
   updatedAt: DateTime!
   gateNumber: String!
   terminalId: String!
-  terminals: Terminal!
-  terminal: Terminal
+  terminal: Terminal!
   airport: Airport
 }
 
@@ -246,9 +245,7 @@ type FlightCrew {
 }
 
 enum CrewRole {
-  CREW
   PILOT
-  SECURITY
   FLIGHT_ATTENDANT
 }
 
@@ -284,6 +281,7 @@ type Seat {
   seatNumber: Int!
   price: Int!
   class: SeatClass!
+  position: SeatPosition!
   isAvailable: Boolean!
   expairyAt: DateTime
   flight: FlightOutput
@@ -293,6 +291,12 @@ enum SeatClass {
   ECONOMY
   BUSINESS
   FIRST
+}
+
+enum SeatPosition {
+  WINDOW
+  MIDDLE
+  AISLE
 }
 
 type Ticket {
@@ -401,6 +405,7 @@ type EmployeeOutput {
   role: Role!
   location: Location
   airport: Airport
+  user: User
 }
 
 type EmployeeResponse {
@@ -408,7 +413,7 @@ type EmployeeResponse {
   success: Boolean
   timeStamp: String
   statusCode: Float
-  data: EmployeeOutput
+  data: Employee
 }
 
 type EmployeesResponse {
@@ -782,6 +787,7 @@ input FlightOptinalInput {
 input FindSeatInput {
   flightId: String
   class: SeatClass
+  position: SeatPosition
 }
 
 type Mutation {
@@ -932,6 +938,7 @@ input CreateSeatInput {
   flightId: String!
   price: Int!
   seatNumber: Int!
+  position: SeatPosition!
   class: SeatClass!
 }
 
@@ -940,6 +947,7 @@ input UpdateSeatInput {
   seatNumber: Int
   class: SeatClass
   isAvailable: Boolean
+  position: SeatPosition
 }
 
 input CreateBaggageInput {

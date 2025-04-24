@@ -50,16 +50,11 @@ export class AirportService {
         airportId: airport.id,
       })
 
-      const result: AirportResponse = {
-        data: airport.dataValues,
-        statusCode: 201,
-        message: await this.i18n.t('airport.CREATED'),
-      }
+      await transaction.commit()
 
       const airportResponse: AirportResponse = {
         data: airport.dataValues,
       }
-
       const relationCacheKey = `airport:${airport.id}`
       this.redisService.set(relationCacheKey, airportResponse)
 
@@ -67,8 +62,11 @@ export class AirportService {
         airportId: airport.id,
       })
 
-      await transaction.commit()
-      return result
+      return {
+        data: airport.dataValues,
+        statusCode: 201,
+        message: await this.i18n.t('airport.CREATED'),
+      }
     } catch (error) {
       await transaction.rollback()
       throw error

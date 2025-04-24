@@ -29,9 +29,8 @@ export class TerminalService {
       const airport = await this.airportRepo.findByPk(
         createTerminalDto.airportId,
       )
-      if (!airport) {
+      if (!airport)
         throw new NotFoundException(await this.i18n.t('airport.NOT_FOUND'))
-      }
 
       const terminal = await this.terminalRepo.create(createTerminalDto, {
         transaction,

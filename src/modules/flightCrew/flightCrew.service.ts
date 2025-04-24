@@ -13,7 +13,6 @@ import { WebSocketMessageGateway } from 'src/common/websocket/websocket.gateway'
 import { CrewRole } from 'src/common/constant/enum.constant'
 import { FlightCrewResponse } from './dtos/FlightCrew.response'
 import { User } from '../users/entities/user.entity'
-import { Limit, Page } from 'src/common/constant/messages.constant'
 import { FllghtCrewsResponse } from './dtos/FlightCrews.response'
 import { FlightCrewDataLoader } from './loader/flightCrew.loader'
 
@@ -33,21 +32,17 @@ export class FlightCrewService {
   async create (
     createFlightCrewInput: CreateFlightCrewInput,
   ): Promise<FlightCrewResponse> {
-    const flight = await this.flightModel.findByPk(
-      createFlightCrewInput.flightId,
-    )
-    if (!flight) {
-      throw new NotFoundException(await this.i18n.translate('flight.NOT_FOUND'))
-    }
+    const [flight, employee] = await Promise.all([
+      this.flightModel.findByPk(createFlightCrewInput.flightId),
+      this.employeeModel.findByPk(createFlightCrewInput.employeeId),
+    ])
 
-    const employee = await this.employeeModel.findByPk(
-      createFlightCrewInput.employeeId,
-    )
-    if (!employee) {
+    if (!flight)
+      throw new NotFoundException(await this.i18n.translate('flight.NOT_FOUND'))
+    if (!employee)
       throw new NotFoundException(
         await this.i18n.translate('employee.NOT_FOUND'),
       )
-    }
 
     const user = await this.userModel.findByPk(employee.userId)
     if (!user)
@@ -69,16 +64,18 @@ export class FlightCrewService {
         await this.i18n.translate('flightCrew.EXISTED_CREW'),
       )
 
-    const pilots = await this.flightCrewModel.findAll({
-      where: {
-        role: CrewRole.PILOT,
-      },
-    })
+    if (createFlightCrewInput.role === CrewRole.PILOT) {
+      const pilots = await this.flightCrewModel.findAll({
+        where: {
+          role: CrewRole.PILOT,
+        },
+      })
 
-    if (pilots.length === 1 && createFlightCrewInput.role === CrewRole.PILOT)
-      throw new BadRequestException(
-        await this.i18n.translate('flightCrew.EXISTED_PILOT'),
-      )
+      if (pilots.length === 1)
+        throw new BadRequestException(
+          await this.i18n.translate('flightCrew.EXISTED_PILOT'),
+        )
+    }
 
     const flightCrew = await this.flightCrewModel.create(createFlightCrewInput)
 
@@ -92,9 +89,7 @@ export class FlightCrewService {
   }
 
   async findById (id: string): Promise<FlightCrewResponse> {
-    const flightCrew = await this.flightCrewModel.findByPk(id, {
-      include: ['flight', 'employee'],
-    })
+    const flightCrew = await this.flightCrewModel.findByPk(id)
     if (!flightCrew) {
       throw new NotFoundException(
         await this.i18n.translate('flightCrew.NOT_FOUND'),

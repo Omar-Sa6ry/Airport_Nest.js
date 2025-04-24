@@ -10,13 +10,11 @@ export class NotificationLoader {
     private readonly notificationService: NotificationService,
   ) {}
 
-  async sendNotifications (userIds: number[], title: string, body: string) {
+  async sendNotifications (userIds: string[], title: string, body: string) {
     if (!userIds.length) return
 
     const users = await this.userRepo.findAll({
       where: { id: userIds },
-      attributes: ['fcmToken'],
-      raw: true,
     })
 
     const notifications = users.map(user => ({
@@ -25,6 +23,6 @@ export class NotificationLoader {
       body,
     }))
 
-    await this.notificationService.sendNotifications(notifications)
+    this.notificationService.sendNotifications(notifications)
   }
 }

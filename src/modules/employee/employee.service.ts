@@ -45,27 +45,24 @@ export class EmployeeService {
       )
     }
 
-    // const manager = await this.employeeRepo.findOne({
-    //   where: { userId: managerId },
-    // })
+    const [manager, user, airport] = await Promise.all([
+      this.employeeRepo.findOne({
+        where: { userId: managerId },
+      }),
+      this.userRepo.findByPk(userId),
+      this.airportRepo.findByPk(airportId),
+    ])
 
-    // if (manager.airportId !== airportId)
-    //   throw new NotFoundException(
-    //     await this.i18n.t('employee.NOT_MANAGER_IN_THIS_AIRPORT'),
-    //   )
+    if (manager.airportId !== airportId)
+      throw new NotFoundException(
+        await this.i18n.t('employee.NOT_MANAGER_IN_THIS_AIRPORT'),
+      )
+    if (!user) throw new NotFoundException(await this.i18n.t('user.NOT_FOUND'))
+    if (!airport)
+      throw new NotFoundException(await this.i18n.t('airport.NOT_FOUND'))
 
     const transaction = await this.employeeRepo.sequelize.transaction()
     try {
-      const user = await this.userRepo.findByPk(userId)
-      if (!user) {
-        throw new NotFoundException(await this.i18n.t('user.NOT_FOUND'))
-      }
-
-      const airport = await this.airportRepo.findByPk(airportId)
-      if (!airport) {
-        throw new NotFoundException(await this.i18n.t('airport.NOT_FOUND'))
-      }
-
       const employee = await this.employeeRepo.create(
         { userId, airportId },
         { transaction },
@@ -77,15 +74,11 @@ export class EmployeeService {
       await transaction.commit()
 
       const result: EmployeeResponse = {
-        data: {
-          ...user.dataValues,
-          ...employee.dataValues,
-        },
+        data: employee.dataValues,
       }
 
       const relationCacheKey = `user:${user.id}`
       this.redisService.set(relationCacheKey, result)
-
       this.websocketGateway.broadcast('employeeCreate', {
         userId: user.id,
         employeeId: employee.id,
@@ -102,30 +95,17 @@ export class EmployeeService {
   }
 
   async findById (id: string): Promise<EmployeeResponse> {
-    const user = await this.userRepo.findByPk(id)
-    if (!user) {
-      throw new NotFoundException(await this.i18n.t('user.NOT_FOUND'))
-    }
-
     const employee = await this.employeeRepo.findOne({
-      where: { userId: user.id },
+      where: { userId: id },
     })
     if (!employee)
       throw new BadRequestException(await this.i18n.t('employee.NOT_FOUND'))
 
-    const airport = await this.airportRepo.findByPk(employee.airportId)
-    if (!airport) {
-      throw new NotFoundException(await this.i18n.t('airport.NOT_FOUND'))
-    }
-
     const result: EmployeeResponse = {
-      data: {
-        ...user.dataValues,
-        ...employee.dataValues,
-      },
+      data: employee.dataValues,
     }
 
-    const userCacheKey = `user:${user.id}`
+    const userCacheKey = `user:${employee.userId}`
     this.redisService.set(userCacheKey, result)
 
     return result
@@ -144,10 +124,7 @@ export class EmployeeService {
       throw new BadRequestException(await this.i18n.t('employee.NOT_FOUND'))
 
     const result: EmployeeResponse = {
-      data: {
-        ...user.dataValues,
-        ...employee.dataValues,
-      },
+      data: employee.dataValues,
     }
 
     const userCacheKey = `user:${user.id}`
@@ -174,10 +151,7 @@ export class EmployeeService {
     }
 
     const result: EmployeeResponse = {
-      data: {
-        ...user.dataValues,
-        ...employee.dataValues,
-      },
+      data: employee.dataValues,
     }
 
     const userCacheKey = `user:${user.id}`
@@ -217,15 +191,16 @@ export class EmployeeService {
     const transaction = await this.employeeRepo.sequelize.transaction()
 
     try {
-      const user = await this.userRepo.findByPk(id)
-      if (!user) {
-        throw new NotFoundException(await this.i18n.t('user.NOT_FOUND'))
-      }
+      const [user, employee] = await Promise.all([
+        this.userRepo.findByPk(id),
+        this.employeeRepo.findOne({
+          where: { userId: id },
+        }),
+      ])
 
-      const employee = await this.employeeRepo.findOne({
-        where: { userId: user?.id },
-      })
-      if (!(employee instanceof Employee))
+      if (!user)
+        throw new NotFoundException(await this.i18n.t('user.NOT_FOUND'))
+      if (!employee)
         throw new BadRequestException(await this.i18n.t('employee.NOT_FOUND'))
 
       user.role = role
@@ -233,23 +208,13 @@ export class EmployeeService {
 
       await transaction.commit()
 
-      const result: EmployeeResponse = {
-        data: {
-          ...user.dataValues,
-          ...employee.dataValues,
-        },
-      }
-
-      const relationCacheKey = `user:${user.id}`
-      this.redisService.set(relationCacheKey, result)
-
       this.websocketGateway.broadcast('userUpdateRole', {
         userId: user.id,
         user,
       })
 
       return {
-        data: result.data,
+        data: employee.dataValues,
         message: await this.i18n.t('employee.UPDATED'),
       }
     } catch (error) {
@@ -262,15 +227,16 @@ export class EmployeeService {
     const transaction = await this.employeeRepo.sequelize.transaction()
 
     try {
-      const user = await this.userRepo.findByPk(id)
-      if (!user) {
-        throw new NotFoundException(await this.i18n.t('user.NOT_FOUND'))
-      }
+      const [user, employee] = await Promise.all([
+        this.userRepo.findByPk(id),
+        this.employeeRepo.findOne({
+          where: { userId: id },
+        }),
+      ])
 
-      const employee = await this.employeeRepo.findOne({
-        where: { userId: user?.id },
-      })
-      if (!(employee instanceof Employee))
+      if (!user)
+        throw new NotFoundException(await this.i18n.t('user.NOT_FOUND'))
+      if (!employee)
         throw new BadRequestException(await this.i18n.t('employee.NOT_FOUND'))
 
       user.role = Role.MANAGER
@@ -278,23 +244,13 @@ export class EmployeeService {
 
       await transaction.commit()
 
-      const result: EmployeeResponse = {
-        data: {
-          ...user.dataValues,
-          ...employee.dataValues,
-        },
-      }
-
-      const relationCacheKey = `user:${user.id}`
-      this.redisService.set(relationCacheKey, result)
-
       this.websocketGateway.broadcast('userUpdateRole', {
         userId: user.id,
         user,
       })
 
       return {
-        data: result.data,
+        data: employee.dataValues,
         message: await this.i18n.t('employee.UPDATED'),
       }
     } catch (error) {

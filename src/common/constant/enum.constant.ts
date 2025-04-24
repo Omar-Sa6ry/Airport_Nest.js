@@ -12,11 +12,6 @@ export enum Role {
 }
 export const AllRoles: Role[] = Object.values(Role)
 
-registerEnumType(Role, {
-  name: 'Role',
-  description: 'User roles in the system',
-})
-
 export enum EmployeeRole {
   ADMIN = 'admin',
   PILOT = 'pilot',
@@ -25,10 +20,38 @@ export enum EmployeeRole {
   FLIGHT_ATTENDANT = 'flight_attendant',
 }
 
-registerEnumType(EmployeeRole, {
-  name: 'EmployeeRole',
-  description: 'Employee roles in the system',
-})
+export enum FlightStatus {
+  SCHEDULED = 'scheduled',
+  DELAYED = 'delayed',
+  CANCELLED = 'cancelled',
+  IN_AIR = 'in_air',
+  LANDED = 'landed',
+}
+
+export enum SeatClass {
+  ECONOMY = 'ECONOMY',
+  BUSINESS = 'BUSINESS',
+  FIRST = 'FIRST',
+}
+
+export enum CrewRole {
+  PILOT = 'pilot',
+  FLIGHT_ATTENDANT = 'flight_attendant',
+}
+
+export enum SeatPosition {
+  WINDOW = 'window',
+  MIDDLE = 'middel',
+  AISLE = 'alsle',
+}
+
+
+export enum TicketStatus {
+  PENDING_PAYMENT = 'pending_payment',
+  BOOKED = 'booked',
+  CANCELED = 'canceled',
+  EXPIRY = 'expiry',
+}
 
 export enum Permission {
   AIRLINE_CREATE = 'airline:create',
@@ -110,26 +133,8 @@ export enum Permission {
   BAGGAGE_READ_ALL = 'baggage:read_all',
   BAGGAGE_UPDATE = 'baggage:update',
   BAGGAGE_DELETE = 'baggage:delete',
-}
 
-registerEnumType(Permission, {
-  name: 'Permission',
-  description: 'Detailed permissions in the system',
-})
-
-export enum CrewRole {
-  CREW = 'crew',
-  PILOT = 'pilot',
-  SECURITY = 'security',
-  FLIGHT_ATTENDANT = 'flight_attendant',
-}
-
-registerEnumType(CrewRole, {
-  name: 'CrewRole',
-})
-
-export enum Permission {
-  MANAGE_PASSENGERS = 'manage_passengers',
+    MANAGE_PASSENGERS = 'manage_passengers',
   MANAGE_FLIGHTS = 'manage_flights',
   MANAGE_STAFF = 'manage_staff',
   CHECK_FLIGHT_DETAILS = 'check_flight_details',
@@ -137,33 +142,8 @@ export enum Permission {
   ALLOCATE_SEATS = 'allocate_seats',
 }
 
-registerEnumType(Permission, {
-  name: 'Permission',
-})
 
-export enum FlightStatus {
-  SCHEDULED = 'scheduled',
-  DELAYED = 'delayed',
-  CANCELLED = 'cancelled',
-  IN_AIR = 'in_air',
-  LANDED = 'landed',
-}
-registerEnumType(FlightStatus, { name: 'FlightStatus' })
 
-export enum SeatClass {
-  ECONOMY = 'ECONOMY',
-  BUSINESS = 'BUSINESS',
-  FIRST = 'FIRST',
-}
-registerEnumType(SeatClass, { name: 'SeatClass' })
-
-export enum TicketStatus {
-  PENDING_PAYMENT = 'pending_payment',
-  BOOKED = 'booked',
-  CANCELED = 'canceled',
-  EXPIRY = 'expiry',
-}
-registerEnumType(TicketStatus, { name: 'TicketStatus' })
 
 export enum Currency {
   AED = 'aed', // United Arab Emirates Dirham
@@ -325,4 +305,32 @@ export enum Currency {
   ZMW = 'zmw', // Zambian Kwacha
   ZWL = 'zwl', // Zimbabwean Dollar
 }
+
+registerEnumType(SeatPosition, {
+  name: 'SeatPosition',
+})
+
 registerEnumType(Currency, { name: 'Currency' })
+registerEnumType(CrewRole, {
+  name: 'CrewRole',
+})
+registerEnumType(Permission, {
+  name: 'Permission',
+})
+registerEnumType(SeatClass, { name: 'SeatClass' })
+registerEnumType(FlightStatus, { name: 'FlightStatus' })
+
+registerEnumType(Permission, {
+  name: 'Permission',
+  description: 'Detailed permissions in the system',
+})
+registerEnumType(Role, {
+  name: 'Role',
+  description: 'User roles in the system',
+})
+registerEnumType(TicketStatus, { name: 'TicketStatus' })
+
+registerEnumType(EmployeeRole, {
+  name: 'EmployeeRole',
+  description: 'Employee roles in the system',
+})
