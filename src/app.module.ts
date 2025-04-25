@@ -20,12 +20,14 @@ import { AirlineModule } from './modules/airline/airline.module'
 import { FlightCrewModule } from './modules/flightCrew/flightCrew.module'
 import { BaggageModule } from './modules/baggage/baggage.module'
 import { StripeModule } from './common/stripe/stripe.module'
+import { PubSubModule } from './common/pubSub/pubsub.module'
 
 @Module({
   imports: [
     ConfigModule,
     GraphqlModule,
     DataBaseModule,
+    PubSubModule,
     ThrottlerModule,
     TranslationModule,
 

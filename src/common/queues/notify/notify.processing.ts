@@ -8,6 +8,8 @@ import { Passenger } from 'src/modules/users/entities/passenger.model'
 import { CronJob } from 'cron'
 import { Op } from 'sequelize'
 import { Seat } from 'src/modules/seat/entity/seat.model'
+import { PubSub } from 'graphql-subscriptions'
+import { Inject } from '@nestjs/common'
 
 @Processor('schedule')
 export class notifyProcessor extends WorkerHost {
@@ -17,6 +19,7 @@ export class notifyProcessor extends WorkerHost {
     @InjectModel(Ticket) private readonly ticketModel: typeof Ticket,
     @InjectModel(Seat) private readonly seatModel: typeof Seat,
     @InjectModel(Passenger) private readonly passengerModel: typeof Passenger,
+    @Inject('PUB_SUB') private readonly pubSub: PubSub,
   ) {
     super()
   }
@@ -48,6 +51,15 @@ export class notifyProcessor extends WorkerHost {
         'Alert ',
         'Your flight will depart in 1 hour. Please get ready!',
       )
+
+      for (const userId of userIds) {
+        await this.pubSub.publish('notifyUsers', {
+          flightNotification: {
+            message: 'Your flight will depart in 1 hour. Please get ready!',
+            userId,
+          },
+        })
+      }
 
       this.schedulerRegistry.deleteCronJob(`flight-${flightId}`)
     })

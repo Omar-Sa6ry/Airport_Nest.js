@@ -8,6 +8,8 @@ import { I18nService } from 'nestjs-i18n'
 import { SendEmailService } from 'src/common/queues/email/sendemail.service'
 import { NotificationService } from 'src/common/queues/notification/notification.service'
 import { Processor, WorkerHost } from '@nestjs/bullmq'
+import { Inject } from '@nestjs/common'
+import { PubSub } from 'graphql-subscriptions'
 
 @Processor('updateFlight')
 export class UpdateFlightProcessor extends WorkerHost {
@@ -18,6 +20,7 @@ export class UpdateFlightProcessor extends WorkerHost {
     private readonly i18n: I18nService,
     private readonly notificationService: NotificationService,
     private readonly sendEmailService: SendEmailService,
+    @Inject('PUB_SUB') private readonly pubSub: PubSub,
   ) {
     super()
   }
@@ -65,6 +68,15 @@ export class UpdateFlightProcessor extends WorkerHost {
         'Flight Update Notification',
         updateFlightInput,
       )
+
+      for (const userId of userIds) {
+        await this.pubSub.publish('updateFlight', {
+          flightNotification: {
+            message: updateFlightInput,
+            userId,
+          },
+        })
+      }
     }
   }
 }

@@ -15,7 +15,7 @@ import { RedisModule } from 'src/common/redis/redis.module'
 import { WebSocketModule } from 'src/common/websocket/websocket.module'
 import { NotificationModule } from '../notification/notification.module'
 import { BaggageModule } from 'src/modules/baggage/baggage.module'
-import { EmailModule } from 'src/common/queues/email/email.module' // لو عندك إيميل موديول مستقل
+import { EmailModule } from 'src/common/queues/email/email.module'
 import { SendEmailService } from '../email/sendemail.service'
 
 @Module({

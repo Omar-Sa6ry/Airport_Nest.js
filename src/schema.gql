@@ -734,6 +734,30 @@ type BaggagesResponse {
   pagination: PaginationInfo
 }
 
+type TicketExpired {
+  id: String!
+  seatId: String!
+  message: String!
+}
+
+type TicketExpiredResponsee {
+  message: String
+  success: Boolean
+  timeStamp: String
+  statusCode: Float
+  data: TicketExpired
+}
+
+type NotifySubscription {
+  userId: String!
+  message: String!
+}
+
+type UpdateFlightSubscription {
+  userId: String!
+  message: String!
+}
+
 type Query {
   sayHello: String!
   getUserById(id: String!): UserResponse!
@@ -970,4 +994,10 @@ input CreateFlightCrewInput {
 input UpdateBaggageInput {
   weight: Int
   limit: Int
+}
+
+type Subscription {
+  ticketExpired: TicketExpiredResponsee!
+  notifyUsers: NotifySubscription!
+  updateFlight: UpdateFlightSubscription!
 }

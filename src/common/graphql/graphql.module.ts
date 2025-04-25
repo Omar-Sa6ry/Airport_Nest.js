@@ -15,7 +15,14 @@ import { join } from 'path'
       playground: true,
       uploads: true,
       debug: true,
-
+      installSubscriptionHandlers: true,
+      subscriptions: {
+        'subscriptions-transport-ws': {
+          path: '/graphql',
+          keepAlive: 10000,
+        },
+        'graphql-ws': true,
+      },
       formatError: error => {
         const originalError = error.extensions || {}
         return {
