@@ -17,10 +17,11 @@ import { SeatModule } from './modules/seat/seat.module'
 import { TicketModule } from './modules/ticket/ticket.module'
 import { LocationModule } from './modules/location/location.module'
 import { AirlineModule } from './modules/airline/airline.module'
-import { FlightCrewModule } from './modules/flightCrew/flightCrew.module'
+import { FlightCrewModule } from './modules/flightCrew/flightCrew/flightCrew.module'
 import { BaggageModule } from './modules/baggage/baggage.module'
 import { StripeModule } from './common/stripe/stripe.module'
 import { PubSubModule } from './common/pubSub/pubsub.module'
+import { AirportCrewModule } from './modules/flightCrew/airportCrew/airportCrew.module'
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { PubSubModule } from './common/pubSub/pubsub.module'
     EmployeeModule,
     AirlineModule,
     AirportModule,
+    AirportCrewModule,
     TerminalModule,
     GateModule,
     FlightModule,

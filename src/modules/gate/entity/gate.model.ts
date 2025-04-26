@@ -13,7 +13,7 @@ import {
 @ObjectType()
 @Table({ tableName: 'gate', timestamps: true })
 export class Gate extends BaseEntity<Gate> {
-  @Column(DataType.STRING)
+  @Column(DataType.STRING(10))
   @Field(() => String)
   gateNumber: string
 

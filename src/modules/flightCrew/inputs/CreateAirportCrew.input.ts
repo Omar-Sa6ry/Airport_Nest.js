@@ -2,9 +2,9 @@ import { InputType, Field } from '@nestjs/graphql'
 import { Role } from 'src/common/constant/enum.constant'
 
 @InputType()
-export class CreateFlightCrewInput {
+export class CreateAirportCrewInput {
   @Field()
-  flightId: string
+  airportId: string
 
   @Field()
   employeeId: string

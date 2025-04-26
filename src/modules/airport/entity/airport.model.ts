@@ -12,6 +12,7 @@ import { Employee } from 'src/modules/employee/entity/employee.model'
 import { Terminal } from 'src/modules/terminal/entity/terminal.model'
 import { Flight } from 'src/modules/flight/entity/flight.model'
 import { Location } from 'src/modules/location/entity/location.model'
+import { Staff } from 'src/modules/flightCrew/entity/flightCrew.model'
 
 @ObjectType()
 @Table({
@@ -48,4 +49,7 @@ export class Airport extends BaseEntity<Airport> {
 
   @HasMany(() => Flight, { onDelete: 'SET NULL' })
   flights: Flight[]
+
+  @HasMany(() => Staff, { onDelete: 'SET NULL' })
+  flightCrews: Staff[]
 }

@@ -1,6 +1,6 @@
 import { Permission, Role } from './enum.constant'
 
-export const rolePermissionsMap: Record<Role, Permission[]> = {
+export const rolePermissionsMap = {
   [Role.PASSENGER]: [
     Permission.AIRPORT_READ_ALL,
     Permission.SEAT_BOOK,
@@ -91,6 +91,8 @@ export const rolePermissionsMap: Record<Role, Permission[]> = {
     Permission.EMPLOYEE_READ_ALL,
     Permission.CHECKIN_CREATE,
     Permission.EMPLOYEE_DELETE,
+    Permission.AIRPORT_CREW_CREATE,
+    Permission.AIRPORT_CREW_DELETE,
     Permission.FLIGHT_CREW_CREATE,
     Permission.FLIGHT_CREW_DELETE,
     Permission.GATE_CREATE,
@@ -118,15 +120,14 @@ export const rolePermissionsMap: Record<Role, Permission[]> = {
   [Role.SECURITY]: [
     Permission.EMPLOYEE_READ,
     Permission.BAGGAGE_READ,
-    Permission.TERMINAL_VIEW,
     Permission.BAGGAGE_READ_ALL,
-    Permission.AIRPORT_READ_ALL,
-    Permission.TICKET_BOOK,
+    Permission.TERMINAL_VIEW,
     Permission.TICKET_VIEW,
-    Permission.ACCOUNT_CHANGE_PASSWORD,
-    Permission.AIRPORT_READ,
     Permission.CHECKIN_CREATE,
     Permission.LOCATION_UPDATE_SELF,
+    Permission.ACCOUNT_CHANGE_PASSWORD,
+    Permission.AIRPORT_READ,
+    Permission.AIRPORT_READ_ALL,
   ],
   [Role.GROUND_STAFF]: [
     Permission.CHECKIN_CREATE,
@@ -147,5 +148,34 @@ export const rolePermissionsMap: Record<Role, Permission[]> = {
     Permission.LOCATION_UPDATE_SELF,
     Permission.AIRPORT_READ,
     Permission.CHECKIN_CREATE,
+  ],
+
+  [Role.CHECK_IN_AGENT]: [
+    Permission.CHECKIN_CREATE,
+    Permission.TICKET_VIEW,
+    Permission.TERMINAL_VIEW,
+    Permission.TICKET_BOOK,
+    Permission.LOCATION_UPDATE_SELF,
+    Permission.ACCOUNT_CHANGE_PASSWORD,
+    Permission.AIRPORT_READ,
+    Permission.AIRPORT_READ_ALL,
+  ],
+  [Role.BAGGAGE_HANDLER]: [
+    Permission.BAGGAGE_READ,
+    Permission.BAGGAGE_UPDATE,
+    Permission.BAGGAGE_DELETE,
+    Permission.TERMINAL_VIEW,
+    Permission.LOCATION_UPDATE_SELF,
+    Permission.ACCOUNT_CHANGE_PASSWORD,
+    Permission.AIRPORT_READ,
+  ],
+  [Role.CUSTOMER_SERVICE]: [
+    Permission.TICKET_VIEW,
+    Permission.CHECKIN_CREATE,
+    Permission.LOCATION_UPDATE_SELF,
+    Permission.ACCOUNT_CHANGE_PASSWORD,
+    Permission.TERMINAL_VIEW,
+    Permission.AIRPORT_READ,
+    Permission.AIRPORT_READ_ALL,
   ],
 }

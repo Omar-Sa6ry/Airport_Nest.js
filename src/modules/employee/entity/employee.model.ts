@@ -1,6 +1,6 @@
 import { ObjectType, Field } from '@nestjs/graphql'
 import { Airport } from 'src/modules/airport/entity/airport.model'
-import { FlightCrew } from 'src/modules/flightCrew/entity/flightCrew.model'
+import { Staff } from 'src/modules/flightCrew/entity/flightCrew.model'
 import { User } from '../../users/entities/user.entity'
 import { BaseEntity } from 'src/common/bases/BaseEntity'
 import {
@@ -27,8 +27,11 @@ export class Employee extends BaseEntity<Employee> {
   @Column({ type: DataType.STRING(26), allowNull: false, onDelete: 'CASCADE' })
   airportId: string
 
-  @HasMany(() => FlightCrew, { onDelete: 'SET NULL' })
-  flightCrews: FlightCrew[]
+  @HasMany(() => Staff, { onDelete: 'SET NULL' })
+  flightCrews: Staff[]
+
+  @HasMany(() => Staff, { onDelete: 'SET NULL' })
+  airportCrews: Staff[]
 
   @BelongsTo(() => User)
   user: User

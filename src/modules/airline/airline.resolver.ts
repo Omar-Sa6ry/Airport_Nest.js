@@ -86,7 +86,7 @@ export class AirlineResolver {
     return this.airlineService.delete(id, user.id)
   }
 
-  @ResolveField(() => [Flight])
+  @ResolveField(() => [Flight], { nullable: true })
   async flights (@Parent() airline: Airline): Promise<Flight[]> {
     return this.flightService.findAllFlightInAirline(airline.id)
   }

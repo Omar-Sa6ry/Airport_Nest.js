@@ -150,9 +150,6 @@ export class FlightService {
 
   async findAllFlightInAirline (airlineId: string): Promise<Flight[]> {
     const flights = await this.flightModel.findAll({ where: { airlineId } })
-    if (flights.length === 0) {
-      throw new NotFoundException(await this.i18n.t('flight.NOT_FOUNDS'))
-    }
 
     return flights.map(f => f.dataValues)
   }

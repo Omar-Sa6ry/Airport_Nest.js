@@ -15,6 +15,7 @@ import { FlightService } from '../flight/flight.service'
 import { FlightsFromAirportResponse } from '../flight/dtos/FlightsFromAirport.response'
 import { TerminalService } from '../terminal/terminal.service'
 import { GateData } from '../gate/dto/Gate.response'
+import { AirportCrewService } from '../flightCrew/airportCrew/airportCrew.service'
 import { EmployeeOutput } from '../employee/dto/Employee.response.dto'
 import { EmployeeService } from '../employee/employee.service'
 import {
@@ -26,12 +27,14 @@ import {
   ResolveField,
   Resolver,
 } from '@nestjs/graphql'
+import { StaffsData } from '../flightCrew/dtos/Staffs.response'
 
 @Resolver(() => Airport)
 export class AirportResolver {
   constructor (
     private readonly redisService: RedisService,
     private readonly airportService: AirportService,
+    private readonly airportCrewService: AirportCrewService,
     private readonly flighttService: FlightService,
     private readonly employeeService: EmployeeService,
     private readonly terminalService: TerminalService,
@@ -124,6 +127,11 @@ export class AirportResolver {
     @Parent() airport: Airport,
   ): Promise<FlightsFromAirportResponse> {
     return this.flighttService.findAllFromAirport(airport.id)
+  }
+
+  @ResolveField(() => [StaffsData], { nullable: true })
+  async airportCrews (@Parent() airport: Airport): Promise<StaffsData[]> {
+    return (await this.airportCrewService.findAllForAirport(airport.id)).items
   }
 
   @ResolveField(() => Location)

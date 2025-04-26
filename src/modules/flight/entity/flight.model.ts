@@ -2,7 +2,6 @@ import { Field, ObjectType } from '@nestjs/graphql'
 import { BaseEntity } from 'src/common/bases/BaseEntity'
 import { Airline } from 'src/modules/airline/entity/airline.model'
 import { Seat } from 'src/modules/seat/entity/seat.model'
-import { FlightCrew } from 'src/modules/flightCrew/entity/flightCrew.model'
 import { FlightStatus } from 'src/common/constant/enum.constant'
 import { Airport } from 'src/modules/airport/entity/airport.model'
 import { Gate } from 'src/modules/gate/entity/gate.model'
@@ -14,6 +13,7 @@ import {
   BelongsTo,
   HasMany,
 } from 'sequelize-typescript'
+import { Staff } from 'src/modules/flightCrew/entity/flightCrew.model'
 
 @ObjectType()
 @Table({
@@ -67,8 +67,8 @@ export class Flight extends BaseEntity<Flight> {
   @HasMany(() => Seat, { onDelete: 'SET NULL' })
   seats: Seat[]
 
-  @HasMany(() => FlightCrew, { onDelete: 'SET NULL' })
-  flightCrews: FlightCrew[]
+  @HasMany(() => Staff, { onDelete: 'SET NULL' })
+  flightCrews: Staff[]
 
   @Field(() => Gate)
   @BelongsTo(() => Gate, 'gateId')

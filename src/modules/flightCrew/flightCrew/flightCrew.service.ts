@@ -4,34 +4,34 @@ import {
   NotFoundException,
 } from '@nestjs/common'
 import { InjectModel } from '@nestjs/sequelize'
-import { Flight } from '../flight/entity/flight.model'
-import { Employee } from '../employee/entity/employee.model'
-import { FlightCrew } from './entity/flightCrew.model'
-import { CreateFlightCrewInput } from './inputs/CreateFlightCrew.input'
+import { Flight } from '../../flight/entity/flight.model'
+import { Employee } from '../../employee/entity/employee.model'
+import { Staff } from '../entity/flightCrew.model'
+import { CreateFlightCrewInput } from '../inputs/CreateFlightCrew.input'
 import { I18nService } from 'nestjs-i18n'
 import { WebSocketMessageGateway } from 'src/common/websocket/websocket.gateway'
-import { CrewRole } from 'src/common/constant/enum.constant'
-import { FlightCrewResponse } from './dtos/FlightCrew.response'
-import { User } from '../users/entities/user.entity'
-import { FllghtCrewsResponse } from './dtos/FlightCrews.response'
-import { FlightCrewDataLoader } from './loader/flightCrew.loader'
+import { AllRoles, CrewRole } from 'src/common/constant/enum.constant'
+import { User } from '../../users/entities/user.entity'
+import { SatffDataLoader } from '../loader/staff.loader'
+import { StaffsResponse } from '../dtos/Staffs.response'
+import { StaffResponse } from '../dtos/Staff.response'
 
 @Injectable()
 export class FlightCrewService {
   constructor (
     private readonly i18n: I18nService,
-    private readonly flightCrewLoader: FlightCrewDataLoader,
+    private readonly flightCrewLoader: SatffDataLoader,
     private readonly websocketGateway: WebSocketMessageGateway,
     @InjectModel(Flight) private readonly flightModel: typeof Flight,
     @InjectModel(User) private readonly userModel: typeof User,
     @InjectModel(Employee) private readonly employeeModel: typeof Employee,
-    @InjectModel(FlightCrew)
-    private readonly flightCrewModel: typeof FlightCrew,
+    @InjectModel(Staff)
+    private readonly flightCrewModel: typeof Staff,
   ) {}
 
   async create (
     createFlightCrewInput: CreateFlightCrewInput,
-  ): Promise<FlightCrewResponse> {
+  ): Promise<StaffResponse> {
     const [flight, employee] = await Promise.all([
       this.flightModel.findByPk(createFlightCrewInput.flightId),
       this.employeeModel.findByPk(createFlightCrewInput.employeeId),
@@ -64,7 +64,10 @@ export class FlightCrewService {
         await this.i18n.translate('flightCrew.EXISTED_CREW'),
       )
 
-    if (createFlightCrewInput.role === CrewRole.PILOT) {
+    if (
+      createFlightCrewInput.role.toString() == CrewRole.PILOT.toString() ||
+      AllRoles.includes(createFlightCrewInput.role)
+    ) {
       const pilots = await this.flightCrewModel.findAll({
         where: {
           role: CrewRole.PILOT,
@@ -88,7 +91,7 @@ export class FlightCrewService {
     }
   }
 
-  async findById (id: string): Promise<FlightCrewResponse> {
+  async findById (id: string): Promise<StaffResponse> {
     const flightCrew = await this.flightCrewModel.findByPk(id)
     if (!flightCrew) {
       throw new NotFoundException(
@@ -101,7 +104,7 @@ export class FlightCrewService {
     }
   }
 
-  async findAllForFlight (flightId: string): Promise<FllghtCrewsResponse> {
+  async findAllForFlight (flightId: string): Promise<StaffsResponse> {
     const flight = await this.flightModel.findByPk(flightId)
     if (!flight) {
       throw new NotFoundException(await this.i18n.translate('flight.NOT_FOUND'))
@@ -133,7 +136,7 @@ export class FlightCrewService {
     }
   }
 
-  async delete (flightCrewId: string): Promise<FlightCrewResponse> {
+  async delete (flightCrewId: string): Promise<StaffResponse> {
     const flightCrew = await this.flightCrewModel.findByPk(flightCrewId)
     if (!flightCrew) {
       throw new NotFoundException(

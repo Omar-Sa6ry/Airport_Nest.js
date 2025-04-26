@@ -20,7 +20,7 @@ export class Seat extends BaseEntity<Seat> {
   @Field(() => String)
   @ForeignKey(() => Flight)
   @Index({ name: 'flight_seat_unique', unique: true })
-  @Column(DataType.STRING)
+  @Column(DataType.STRING(26))
   flightId: string
 
   @Field(() => Int)

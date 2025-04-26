@@ -31,11 +31,11 @@ export class Location extends BaseEntity<Location> {
   airlineId?: string | null
 
   @Field()
-  @Column({ type: DataType.STRING, allowNull: false })
+  @Column({ type: DataType.STRING(20), allowNull: false })
   city: string
 
   @Field()
-  @Column({ type: DataType.STRING, allowNull: false })
+  @Column({ type: DataType.STRING(20), allowNull: false })
   country: string
 
   @Field(() => Currency)

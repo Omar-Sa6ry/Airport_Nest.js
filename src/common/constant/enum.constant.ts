@@ -9,6 +9,9 @@ export enum Role {
   GROUND_STAFF = 'ground_staff',
   AIRLINE_MANAGER = 'airline_manager',
   FLIGHT_ATTENDANT = 'flight_attendant',
+  CHECK_IN_AGENT = 'check_in_agent',
+  BAGGAGE_HANDLER = 'baggage_handler',
+  CUSTOMER_SERVICE = 'customer_service',
 }
 export const AllRoles: Role[] = Object.values(Role)
 
@@ -45,12 +48,18 @@ export enum SeatPosition {
   AISLE = 'alsle',
 }
 
-
 export enum TicketStatus {
   PENDING_PAYMENT = 'pending_payment',
   BOOKED = 'booked',
   CANCELED = 'canceled',
   EXPIRY = 'expiry',
+}
+
+export enum AirportCrew {
+  SECURITY = 'security',
+  CHECK_IN_AGENT = 'check_in_agent',
+  BAGGAGE_HANDLER = 'baggage_handler',
+  CUSTOMER_SERVICE = 'customer_service',
 }
 
 export enum Permission {
@@ -81,6 +90,9 @@ export enum Permission {
 
   FLIGHT_CREW_CREATE = 'FLIGHT_CREW_CREATE',
   FLIGHT_CREW_DELETE = 'FLIGHT_CREW_DELETE',
+
+  AIRPORT_CREW_CREATE = 'AIRPORT_CREW_CREATE',
+  AIRPORT_CREW_DELETE = 'AIRPORT_CREW_DELETE',
 
   GATE_CREATE = 'GATE_CREATE',
   GATE_UPDATE = 'GATE_UPDATE',
@@ -134,16 +146,13 @@ export enum Permission {
   BAGGAGE_UPDATE = 'baggage:update',
   BAGGAGE_DELETE = 'baggage:delete',
 
-    MANAGE_PASSENGERS = 'manage_passengers',
+  MANAGE_PASSENGERS = 'manage_passengers',
   MANAGE_FLIGHTS = 'manage_flights',
   MANAGE_STAFF = 'manage_staff',
   CHECK_FLIGHT_DETAILS = 'check_flight_details',
   BOOK_FLIGHT = 'book_flight',
   ALLOCATE_SEATS = 'allocate_seats',
 }
-
-
-
 
 export enum Currency {
   AED = 'aed', // United Arab Emirates Dirham

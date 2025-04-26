@@ -1,7 +1,12 @@
-import Stripe from 'stripe'
 import { BaggageService } from './../../../modules/baggage/baggage.service'
 import { CreateBaggageInput } from './../../../modules/baggage/inputs/CreateBaggage.input'
-import { BadRequestException, Inject, Injectable } from '@nestjs/common'
+import Stripe from 'stripe'
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common'
 import { InjectQueue } from '@nestjs/bullmq'
 import { Queue } from 'bullmq'
 import { UserService } from 'src/modules/users/users.service'
@@ -17,9 +22,6 @@ import { Terminal } from 'src/modules/terminal/entity/terminal.model'
 import { Airline } from 'src/modules/airline/entity/airline.model'
 import { Location } from 'src/modules/location/entity/location.model'
 import { CreateTicketResponse } from '../../../modules/ticket/dtos/CreateTicket.response'
-import { SeatClass } from 'src/common/constant/enum.constant'
-import { Flight } from 'src/modules/flight/entity/flight.model'
-import { UserInput } from 'src/modules/users/input/User.input'
 import { PubSub } from 'graphql-subscriptions'
 
 @Injectable()
@@ -32,13 +34,13 @@ export class SendTicketService {
     private readonly notificationService: NotificationService,
     private readonly userService: UserService,
     private readonly baggageService: BaggageService,
-    @Inject('PUB_SUB') private readonly pubSub: PubSub,
     @InjectModel(Ticket) private readonly ticketModel: typeof Ticket,
     @InjectModel(Terminal) private readonly terminalModel: typeof Terminal,
     @InjectModel(Seat) private readonly seatModel: typeof Seat,
     @InjectModel(Gate) private readonly gateModel: typeof Gate,
     @InjectModel(Airline) private readonly airlineModel: typeof Airline,
     @InjectModel(Location) private readonly locationModel: typeof Location,
+    @Inject('PUB_SUB') private readonly pubSub: PubSub,
     @InjectQueue('ticketQueue') private readonly ticketQueue: Queue,
     @InjectQueue('expiryticketQueue') private readonly expiryticketQueue: Queue,
   ) {
@@ -81,6 +83,12 @@ export class SendTicketService {
 
       this.baggageService.create({ ...createBaggageInput, ticketId: ticket.id })
 
+      this.expiryticketQueue.add(
+        'expire-ticket',
+        { seatId: seat.id, fcmToken: user.fcmToken, email: user.email },
+        { delay: 66 * 60 * 1000 },
+      )
+
       const lineItem = [
         {
           price_data: {
@@ -108,25 +116,18 @@ export class SendTicketService {
 
       await transaction.commit()
 
-      this.generatePdf(
+      const pdf = await generatePDF(
         ticket,
         user,
         seat.flight.dataValues,
-        terminal.name,
-        gate.gateNumber,
-        seat.class,
+        terminal.dataValues.name,
+        gate.dataValues.gateNumber,
+        seat.dataValues.class,
         airline.dataValues.name,
         seat.dataValues.seatNumber,
       )
 
-      this.pubSub.publish('ticketExpired', {
-        ticketExpired: {
-          id: seat.ticket.id,
-          seatId: seat.id,
-          message: 'Ticket expired due to unpaid status',
-        },
-      })
-
+      this.sendTicketToEmail(user.email, 'Ticket', `This is your ticket`, pdf)
       this.notificationService.sendNotification(
         user.fcmToken,
         'Send Ticket',
@@ -136,11 +137,13 @@ export class SendTicketService {
         ticketId: ticket.dataValues.id,
       })
 
-      this.expiryticketQueue.add(
-        'expire-ticket',
-        { seatId: seat.id, fcmToken: user.fcmToken, email: user.email },
-        { delay: 66 * 60 * 1000 },
-      )
+      this.pubSub.publish('ticketExpired', {
+        ticketExpired: {
+          message: 'Ticket will be expired in 1 hour',
+          seatId: seat.dataValues.id,
+          id: ticket.dataValues.id,
+        },
+      })
 
       return {
         data: ticket.dataValues,
@@ -152,30 +155,6 @@ export class SendTicketService {
       await transaction.rollback()
       throw error
     }
-  }
-
-  async generatePdf (
-    ticket: Ticket,
-    user: UserInput,
-    flight: Flight,
-    terminalName: string,
-    gateNumber: string,
-    seatClass: SeatClass,
-    airlineName: string,
-    seatNumber: number,
-  ) {
-    const pdf = await generatePDF(
-      ticket,
-      user,
-      flight,
-      terminalName,
-      gateNumber,
-      seatClass,
-      airlineName,
-      seatNumber,
-    )
-
-    this.sendTicketToEmail(user.email, 'Ticket', `This is your ticket`, pdf)
   }
 
   async sendTicketToEmail (

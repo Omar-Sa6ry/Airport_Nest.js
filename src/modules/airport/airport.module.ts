@@ -11,6 +11,7 @@ import { GateModule } from '../gate/gate.module'
 import { WebSocketModule } from 'src/common/websocket/websocket.module'
 import { Gate } from '../gate/entity/gate.model'
 import { FlightModule } from '../flight/flight.module'
+import { AirportCrewModule } from '../flightCrew/airportCrew/airportCrew.module'
 
 @Module({
   imports: [
@@ -18,12 +19,13 @@ import { FlightModule } from '../flight/flight.module'
     LocationModule,
     forwardRef(() => TerminalModule),
     forwardRef(() => FlightModule),
+    forwardRef(() => AirportCrewModule),
     EmployeeModule,
     GateModule,
     RedisModule,
     WebSocketModule,
   ],
   providers: [AirportService, AirportResolver],
-  exports: [AirportService],
+  exports: [AirportService, SequelizeModule],
 })
 export class AirportModule {}

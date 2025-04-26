@@ -7,8 +7,7 @@ import { Auth } from 'src/common/decerator/auth.decerator'
 import { FlightOutput, FlightResponse } from './dtos/Flight.response'
 import { FlightsFromAirportResponse } from './dtos/FlightsFromAirport.response'
 import { FlightsToAirportResponse } from './dtos/FlightsToAirport.response'
-import { FlightCrewService } from '../flightCrew/flightCrew.service'
-import { FllghtCrewsData } from '../flightCrew/dtos/FlightCrews.response'
+import { FlightCrewService } from '../flightCrew/flightCrew/flightCrew.service'
 import { SeatService } from '../seat/seat.service'
 import { Seat } from '../seat/entity/seat.model'
 import { RedisService } from 'src/common/redis/redis.service'
@@ -30,6 +29,7 @@ import {
   ResolveField,
   Parent,
 } from '@nestjs/graphql'
+import { StaffsData } from '../flightCrew/dtos/Staffs.response'
 
 @Resolver(() => FlightOutput)
 export class FlightResolver {
@@ -140,10 +140,10 @@ export class FlightResolver {
     return (await this.gateService.findById(flight.gateId)).data
   }
 
-  @ResolveField(() => [FllghtCrewsData], { nullable: true })
+  @ResolveField(() => [StaffsData], { nullable: true })
   async flightCrews (
     @Parent() flight: FlightOutput,
-  ): Promise<FllghtCrewsData[]> {
+  ): Promise<StaffsData[]> {
     return (await this.flightCrewService.findAllForFlight(flight.id)).items
   }
 
